@@ -1,0 +1,949 @@
+screen 402x800
+  border
+    visible true
+    width 1
+    style "solid"
+    color @border
+    radius 28
+  shadow
+    visible false
+  scroll "none"
+  style "max-width:402px;margin:12px auto 36px;width:100%;box-sizing:border-box;"
+  al
+    gap 0
+    padding 0
+    direction "column"
+    alignItems "stretch"
+    stackClass "xa-al-showcase-phone-frame"
+  main: panel at 0 0 560 32
+    scroll "vertical"
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 0
+      padding 0
+      maxHeight "min(747px, calc(100vh - 200px))"
+      stackClass "xa-al-showcase-phone-scroll"
+    top: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 10
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 0
+        padding "12px 16px 8px"
+        direction "row"
+        alignItems "center"
+        justifyContent "space-between"
+        stackClass "xa-al-air-topbar"
+      logo: shape "<span class=\"xa-showcase-stay-logo\">xcon<span>bnb</span></span>" at 0 0 200 40
+        shape "rectangle"
+        renderHtml true
+        border
+          visible false
+        font
+          family "Plus Jakarta Sans, var(--font-body), system-ui, sans-serif"
+        textAlign "left"
+        verticalAlign "middle"
+        whiteSpace "nowrap"
+        overflow "visible"
+        al
+          width "auto"
+          flex "0 0 auto"
+      toolbar: panel at 0 0 88 40
+        border
+          visible false
+          width 1
+          color @border
+          radius 10
+        shadow
+          visible false
+        al
+          autoHeight true
+          gap 6px
+          padding 0
+          direction "row"
+          alignItems "center"
+          flex "0 0 auto"
+          width "auto"
+          maxWidth 100%
+        b1: button at 0 0 40 40
+          border
+            visible true
+            color @border2
+            radius 20
+          backgroundColor @surface2
+          color @ink-3
+          title "History"
+          al
+            flex "0 0 auto"
+          icon
+            name "schedule"
+        b2: button at 0 0 40 40
+          border
+            visible true
+            color @border2
+            radius 20
+          backgroundColor @surface2
+          color @ink-3
+          title "Menu"
+          al
+            flex "0 0 auto"
+          icon
+            name "menu"
+    search: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 10
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 0
+        padding "0 16px 12px"
+      tf: textField "Where are you going?" at 0 0 520 48
+        border
+          visible false
+          radius 24
+        backgroundColor @surface2
+        al
+          alignSelf "stretch"
+          width 100%
+        prefix
+          icon "search"
+    heroCta: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 10
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 14px
+        padding "0 16px 0"
+      hero: banner at 0 0 560 228
+        indicator
+          show true
+          color "255,255,255,255"
+        border
+          visible false
+          radius 20
+        shadow
+          visible true
+        bannerHeight "228px"
+        al
+          width 100%
+          alignSelf "stretch"
+        direction "horizontal"
+        slides [{"type":"image","src":"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80","objectFit":"fill","overlayTag":"LIVE","overlayTitle":"anywhere","overlaySub":"Millions of stays\nare waiting for you.","overlayCta":"Explore","pos":[0,0,560,400],"al":{"width":"100%","alignSelf":"stretch"}},{"type":"image","src":"https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200&q=80","objectFit":"fill","overlayTag":"HOST","overlayTitle":"earn","overlaySub":"Share your extra space.","overlayCta":"Become a host","pos":[0,0,560,400],"al":{"width":"100%","alignSelf":"stretch"}},{"type":"image","src":"https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=1200&q=80","objectFit":"fill","overlayTag":"TRIP","overlayTitle":"plan","overlaySub":"Plan your whole trip\nin one place.","overlayCta":"Start","pos":[0,0,560,400],"al":{"width":"100%","alignSelf":"stretch"}}]
+        autoplay
+          enabled true
+          interval 4000
+          loop true
+          rolling true
+      cta: panel at 0 0 560 32
+        border
+          visible false
+          width 1
+          color @border
+          radius 10
+        shadow
+          visible false
+        al
+          autoHeight true
+          gap 9px
+          padding "0 0 14px"
+          direction "row"
+          alignItems "stretch"
+        a: button "Get recommendations" at 0 0 120 42
+          font
+            size 13
+            weight 700
+          border
+            visible false
+            radius 8
+          backgroundColor @accent
+          color "#fff"
+          al
+            flex "1.35 1 0"
+        b: button "View map" at 0 0 120 42
+          font
+            size 13
+            weight 600
+          border
+            visible true
+            color @accent
+            radius 8
+          backgroundColor @surface
+          color @accent
+          al
+            flex "1 1 0"
+    hR: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 10
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 8px
+        padding "8px 16px 12px"
+        direction "row"
+        alignItems "center"
+        justifyContent "space-between"
+      h2: label "Recently viewed stays" at 0 0 560 28
+        font
+          size 16
+          weight 700
+        textAlign "left"
+        color @ink
+        labelPadding "0"
+        style "letter-spacing:-0.3px;"
+        al
+          flex "1 1 auto"
+      link: label "View all >" at 0 0 560 28
+        font
+          size 13
+          weight 600
+        textAlign "right"
+        color @ink-2
+        labelPadding "0"
+        al
+          flex "0 0 auto"
+    xlStay: list at 0 0 560 228
+      backgroundColor "252,250,247,255"
+      dataTemplate {"type":"template","template":{"tabledata":[{"title":"Cozy studio","line":"Mapo, Seoul · ₩89,000/night","image":"https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&q=80"},{"title":"Mountain-view house","line":"Pyeongchang, Gangwon · ₩210,000/night","image":"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=80"},{"title":"Forest cabin","line":"Hallim, Jeju · ₩125,000/night","image":"https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80"}]}}
+      al
+        width 100%
+        alignSelf "stretch"
+      borderRadius "0"
+      direction "horizontal"
+      itemSize
+        height 228
+        width 168
+      separator
+        color "0,0,0,0"
+        size 12
+      templates {"cell":{"cover":{"type":"image","pos":[0,0,168,168],"src":"{{item.image}}","objectFit":"fill","border":{"radius":"0px"}},"titleT":{"type":"label","pos":[10,178,148,20],"text":"{{item.title}}","color":"28,23,16,255","font":{"size":"13","weight":"700"}},"subS":{"type":"label","pos":[10,201,148,22],"text":"{{item.line}}","color":"168,153,138,255","font":{"size":"11"}},"itemSize":{"height":"228","width":"168"}}}
+    hC: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 10
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 0
+        padding "8px 16px 0"
+      h2: label "Where to next?" at 0 0 560 28
+        font
+          size 16
+          weight 700
+        textAlign "left"
+        color @ink
+        labelPadding "0 0 12px 0"
+        style "letter-spacing:-0.3px;"
+    xlStayCat: list at 0 0 560 96
+      backgroundColor "252,250,247,255"
+      dataTemplate {"type":"template","template":{"tabledata":[{"label":"All","image":"https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=200&h=200&fit=crop&q=80"},{"label":"Europe","image":"https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=200&h=200&fit=crop&q=80"},{"label":"Japan","image":"https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=200&h=200&fit=crop&q=80"},{"label":"Southeast Asia","image":"https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=200&h=200&fit=crop&q=80"},{"label":"Domestic","image":"https://images.unsplash.com/photo-1519681393784-d120267933ba?w=200&h=200&fit=crop&q=80"}]}}
+      al
+        width 100%
+        alignSelf "stretch"
+      borderRadius "0"
+      direction "horizontal"
+      itemSize
+        height 96
+        width 72
+      separator
+        color "0,0,0,0"
+        size 14
+      templates {"cell":{"avatar":{"type":"image","pos":[4,0,64,64],"src":"{{item.image}}","objectFit":"fill","border":{"visible":"2px solid var(--surface)","radius":"50%"},"shadow":{"visible":"var(--shadow-sm)"}},"lbl":{"type":"label","pos":[0,72,72,22],"text":"{{item.label}}","textAlign":"center","style":"color:var(--ink-2);line-height:1.2;","font":{"size":"11","weight":"600"}},"itemSize":{"height":"96","width":"72"}}}
+    div: label " " at 0 0 560 28
+      font
+        size 1
+      textAlign "left"
+      color "transparent"
+      labelPadding "0"
+      style "display:block;height:1px;background:var(--border);margin:8px 16px;"
+      al
+        width 100%
+    hN: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 10
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 8px
+        padding "8px 16px 12px"
+        direction "row"
+        alignItems "center"
+        justifyContent "space-between"
+      h2: label "Nearby stays" at 0 0 560 28
+        font
+          size 16
+          weight 700
+        textAlign "left"
+        color @ink
+        labelPadding "0"
+        style "letter-spacing:-0.3px;"
+        al
+          flex "1 1 auto"
+      link: label "More >" at 0 0 560 28
+        font
+          size 13
+          weight 600
+        textAlign "right"
+        color @ink-2
+        labelPadding "0"
+        al
+          flex "0 0 auto"
+    near: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 10
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 12px
+        padding "0 16px"
+        direction "row"
+        alignItems "stretch"
+        stackClass "xa-al-air-near-grid"
+      c1: panel at 0 0 184 320
+        style "overflow:hidden;"
+        border
+          visible false
+          width 1
+          color @border
+          radius 12
+        shadow
+          visible false
+        al
+          autoHeight true
+          gap 0
+          padding 0
+          alignItems "stretch"
+          flex "1 1 0"
+          minWidth 0
+          width 100%
+        img: image at 0 0 180 168
+          src "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=500&q=80"
+          border
+            visible false
+            radius 10px
+          objectFit "fill"
+          overlayTag "Guest"
+          al
+            alignSelf "stretch"
+            width 100%
+            minHeight 168px
+        body: panel at 0 0 560 32
+          border
+            visible false
+            width 1
+            color @border
+            radius 0
+          shadow
+            visible false
+          backgroundColor @surface2
+          al
+            autoHeight true
+            gap 0
+            padding "0 0 10px 0"
+          t: label "Han River view apartment" at 0 0 560 28
+            font
+              size 13
+              weight 700
+            textAlign "left"
+            color @ink
+            labelPadding "10px 0 0 0"
+            al
+              width 100%
+          l: label "Yeongdeungpo · ★ 4.92" at 0 0 560 28
+            font
+              size 11
+            textAlign "left"
+            color @ink-3
+            labelPadding "4px 0 0 0"
+            al
+              width 100%
+          p: label "₩₩142,000 / night" at 0 0 560 28
+            font
+              size 13
+              weight 700
+            textAlign "left"
+            color @ink
+            labelPadding "8px 0 0 0"
+            al
+              width 100%
+      c2: panel at 0 0 184 320
+        style "overflow:hidden;"
+        border
+          visible false
+          width 1
+          color @border
+          radius 12
+        shadow
+          visible false
+        al
+          autoHeight true
+          gap 0
+          padding 0
+          alignItems "stretch"
+          flex "1 1 0"
+          minWidth 0
+          width 100%
+        img: image at 0 0 180 168
+          src "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=500&q=80"
+          border
+            visible false
+            radius 10px
+          objectFit "fill"
+          overlayTag "Superhost"
+          al
+            alignSelf "stretch"
+            width 100%
+            minHeight 168px
+        body: panel at 0 0 560 32
+          border
+            visible false
+            width 1
+            color @border
+            radius 0
+          shadow
+            visible false
+          backgroundColor @surface2
+          al
+            autoHeight true
+            gap 0
+            padding "0 0 10px 0"
+          t: label "Private pool villa" at 0 0 560 28
+            font
+              size 13
+              weight 700
+            textAlign "left"
+            color @ink
+            labelPadding "10px 0 0 0"
+            al
+              width 100%
+          l: label "Gapyeong · ★ 4.88" at 0 0 560 28
+            font
+              size 11
+            textAlign "left"
+            color @ink-3
+            labelPadding "4px 0 0 0"
+            al
+              width 100%
+          p: label "₩₩389,000 / night" at 0 0 560 28
+            font
+              size 13
+              weight 700
+            textAlign "left"
+            color @ink
+            labelPadding "8px 0 0 0"
+            al
+              width 100%
+    hE: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 10
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 8px
+        padding "8px 16px 12px"
+        direction "row"
+        alignItems "center"
+        justifyContent "space-between"
+      h2: label "Looking for a special experience?" at 0 0 560 28
+        font
+          size 16
+          weight 700
+        textAlign "left"
+        color @ink
+        labelPadding "0"
+        style "letter-spacing:-0.3px;"
+        al
+          flex "1 1 auto"
+      link: label "More >" at 0 0 560 28
+        font
+          size 13
+          weight 600
+        textAlign "right"
+        color @ink-2
+        labelPadding "0"
+        al
+          flex "0 0 auto"
+    feat: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 10
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 0
+        padding "0 16px"
+      img: image at 0 0 560 220
+        src "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=700&q=80"
+        border
+          visible false
+          radius 14px
+        objectFit "fill"
+        overlayTag "EXPERIENCE"
+        overlayTitle "Night sky stargazing tour"
+        overlaySub "Local guide · small group · 3 hours"
+        al
+          alignSelf "stretch"
+          width 100%
+          minHeight 200px
+        overlayCta "₩₩49,000 / person"
+    note: panel at 0 0 520 88
+      border
+        visible true
+        color @border
+        radius 10
+      backgroundColor @surface2
+      shadow
+        visible true
+        opacity 0.08
+        blur 4
+        spread 16
+      al
+        autoHeight true
+        gap 6px
+        padding "18px 20px"
+      style "border-left:4px solid var(--accent);border-radius:0 var(--r) var(--r) 0;"
+      t: label "Notice · basic panel pattern" at 0 0 560 28
+        font
+          family "'Playfair Display', serif"
+          size 13
+          weight 600
+        textAlign "left"
+        color @ink
+      b: label "This area reuses the component-showcase-basic panel and border emphasis style as a notice banner. In a real app, it can be used for promotion and policy notices." at 0 0 560 28
+        font
+          size 12
+          lineHeight 1.7
+        textAlign "left"
+        color @ink-2
+    hU: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 10
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 0
+        padding "8px 16px 0"
+      h2: label "Looking for unique stays?" at 0 0 560 28
+        font
+          size 16
+          weight 700
+        textAlign "left"
+        color @ink
+        labelPadding "0 0 12px 0"
+        style "letter-spacing:-0.3px;"
+    xlStayCat2: list at 0 0 560 96
+      backgroundColor "252,250,247,255"
+      dataTemplate {"type":"template","template":{"tabledata":[{"label":"Jeju","image":"https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=200&h=200&fit=crop&q=80"},{"label":"Hanok","image":"https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=200&h=200&fit=crop&q=80"},{"label":"Pool villa","image":"https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=200&h=200&fit=crop&q=80"},{"label":"Pension","image":"https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=200&h=200&fit=crop&q=80"}]}}
+      al
+        width 100%
+        alignSelf "stretch"
+      borderRadius "0"
+      direction "horizontal"
+      itemSize
+        height 96
+        width 72
+      separator
+        color "0,0,0,0"
+        size 14
+      templates {"cell":{"avatar":{"type":"image","pos":[4,0,64,64],"src":"{{item.image}}","objectFit":"fill","border":{"visible":"2px solid var(--surface)","radius":"50%"},"shadow":{"visible":"var(--shadow-sm)"}},"lbl":{"type":"label","pos":[0,72,72,22],"text":"{{item.label}}","textAlign":"center","style":"color:var(--ink-2);line-height:1.2;","font":{"size":"11","weight":"600"}},"itemSize":{"height":"96","width":"72"}}}
+    hP: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 10
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 8px
+        padding "8px 16px 12px"
+        direction "row"
+        alignItems "center"
+        justifyContent "space-between"
+      h2: label "Guest-favorite popular stays" at 0 0 560 28
+        font
+          size 16
+          weight 700
+        textAlign "left"
+        color @ink
+        labelPadding "0"
+        style "letter-spacing:-0.3px;"
+        al
+          flex "1 1 auto"
+      link: label "More >" at 0 0 560 28
+        font
+          size 13
+          weight 600
+        textAlign "right"
+        color @ink-2
+        labelPadding "0"
+        al
+          flex "0 0 auto"
+    xlStayPop: list at 0 0 560 360
+      xListVariant "showcase"
+      backgroundColor "252,250,247,255"
+      dataTemplate {"type":"template","template":{"tabledata":[{"title":"Seongsu loft","meta":"Host Minji · ★ 4.97 · 328 reviews","oldPrice":"₩180,000","newPrice":"₩142,000","image":"https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?w=300&h=300&fit=crop&q=80"},{"title":"Busan ocean view","meta":"Host Junho · ★ 4.91 · 156 reviews","oldPrice":"₩220,000","newPrice":"₩189,000","image":"https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=300&h=300&fit=crop&q=80"}]}}
+      al
+        width 100%
+        alignSelf "stretch"
+        maxHeight 260px
+      borderRadius "0"
+      direction "vertical"
+      itemSize
+        height 104
+        width 200
+      separator
+        color "0,0,0,0"
+        size 8
+      templates {"cell":{"thumb":{"type":"image","pos":[0,8,88,88],"src":"{{item.image}}","objectFit":"fill","border":{"visible":"1px solid var(--border)","radius":"8px"},"shadow":{"visible":"none"}},"titleL":{"type":"label","pos":[100,10,288,24],"text":"{{item.title}}","color":"28,23,16,255","font":{"size":"14","weight":"700"}},"metaL":{"type":"label","pos":[100,38,288,36],"text":"{{item.meta}}","style":"color:var(--ink-3);line-height:1.35;","font":{"size":"11"}},"oldP":{"type":"label","pos":[400,26,120,20],"text":"{{item.oldPrice}}","textAlign":"right","style":"color:var(--ink-3);text-decoration:line-through;","font":{"size":"12"}},"newP":{"type":"label","pos":[400,48,120,28],"text":"{{item.newPrice}}","textAlign":"right","style":"color:var(--accent);line-height:1.2;","font":{"size":"14","weight":"800"}},"itemSize":{"height":"104"}}}
+    hA: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 10
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 0
+        padding "8px 16px 0"
+      h2: label "Special trips with premium amenities" at 0 0 560 28
+        font
+          size 16
+          weight 700
+        textAlign "left"
+        color @ink
+        labelPadding "0 0 12px 0"
+        style "letter-spacing:-0.3px;"
+    xlStayCat3: list at 0 0 560 96
+      backgroundColor "252,250,247,255"
+      dataTemplate {"type":"template","template":{"tabledata":[{"label":"Golf course","image":"https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=200&h=200&fit=crop&q=80"},{"label":"Grand piano","image":"https://images.unsplash.com/photo-1552422535-c45813c61732?w=200&h=200&fit=crop&q=80"},{"label":"Private pool","image":"https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?w=200&h=200&fit=crop&q=80"}]}}
+      al
+        width 100%
+        alignSelf "stretch"
+      borderRadius "0"
+      direction "horizontal"
+      itemSize
+        height 96
+        width 72
+      separator
+        color "0,0,0,0"
+        size 14
+      templates {"cell":{"avatar":{"type":"image","pos":[4,0,64,64],"src":"{{item.image}}","objectFit":"fill","border":{"visible":"2px solid var(--surface)","radius":"50%"},"shadow":{"visible":"var(--shadow-sm)"}},"lbl":{"type":"label","pos":[0,72,72,22],"text":"{{item.label}}","textAlign":"center","style":"color:var(--ink-2);line-height:1.2;","font":{"size":"11","weight":"600"}},"itemSize":{"height":"96","width":"72"}}}
+    hH: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 10
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 8px
+        padding "8px 16px 12px"
+        direction "row"
+        alignItems "center"
+        justifyContent "space-between"
+      h2: label "Trending experiences now" at 0 0 560 28
+        font
+          size 16
+          weight 700
+        textAlign "left"
+        color @ink
+        labelPadding "0"
+        style "letter-spacing:-0.3px;"
+        al
+          flex "1 1 auto"
+      link: label "More >" at 0 0 560 28
+        font
+          size 13
+          weight 600
+        textAlign "right"
+        color @ink-2
+        labelPadding "0"
+        al
+          flex "0 0 auto"
+    hot: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 10
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 12px
+        padding "0 16px 0"
+        direction "row"
+        alignItems "stretch"
+        stackClass "xa-al-air-near-grid"
+      c1: panel at 0 0 184 320
+        style "overflow:hidden;"
+        border
+          visible false
+          width 1
+          color @border
+          radius 12
+        shadow
+          visible false
+        al
+          autoHeight true
+          gap 0
+          padding 0
+          alignItems "stretch"
+          flex "1 1 0"
+          minWidth 0
+          width 100%
+        img: image at 0 0 180 168
+          src "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&q=80"
+          border
+            visible false
+            radius 10px
+          objectFit "fill"
+          overlayTag "1,428 booked"
+          al
+            alignSelf "stretch"
+            width 100%
+            minHeight 168px
+        body: panel at 0 0 560 32
+          border
+            visible false
+            width 1
+            color @border
+            radius 0
+          shadow
+            visible false
+          backgroundColor @surface2
+          al
+            autoHeight true
+            gap 0
+            padding "0 0 10px 0"
+          t: label "Sunrise hiking" at 0 0 560 28
+            font
+              size 13
+              weight 700
+            textAlign "left"
+            color @ink
+            labelPadding "10px 0 0 0"
+            al
+              width 100%
+          l: label "Host Taesan · ★ 4.99" at 0 0 560 28
+            font
+              size 11
+            textAlign "left"
+            color @ink-3
+            labelPadding "4px 0 0 0"
+            al
+              width 100%
+          p: label "₩₩35,000 / person" at 0 0 560 28
+            font
+              size 13
+              weight 700
+            textAlign "left"
+            color @ink
+            labelPadding "8px 0 0 0"
+            al
+              width 100%
+      c2: panel at 0 0 184 320
+        style "overflow:hidden;"
+        border
+          visible false
+          width 1
+          color @border
+          radius 12
+        shadow
+          visible false
+        al
+          autoHeight true
+          gap 0
+          padding 0
+          alignItems "stretch"
+          flex "1 1 0"
+          minWidth 0
+          width 100%
+        img: image at 0 0 180 168
+          src "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=500&q=80"
+          border
+            visible false
+            radius 10px
+          objectFit "fill"
+          overlayTag "892 booked"
+          al
+            alignSelf "stretch"
+            width 100%
+            minHeight 168px
+        body: panel at 0 0 560 32
+          border
+            visible false
+            width 1
+            color @border
+            radius 0
+          shadow
+            visible false
+          backgroundColor @surface2
+          al
+            autoHeight true
+            gap 0
+            padding "0 0 10px 0"
+          t: label "Lake kayaking" at 0 0 560 28
+            font
+              size 13
+              weight 700
+            textAlign "left"
+            color @ink
+            labelPadding "10px 0 0 0"
+            al
+              width 100%
+          l: label "Host Yura · ★ 4.95" at 0 0 560 28
+            font
+              size 11
+            textAlign "left"
+            color @ink-3
+            labelPadding "4px 0 0 0"
+            al
+              width 100%
+          p: label "₩₩42,000 / person" at 0 0 560 28
+            font
+              size 13
+              weight 700
+            textAlign "left"
+            color @ink
+            labelPadding "8px 0 0 0"
+            al
+              width 100%
+  tabs: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 0
+    shadow
+      visible false
+    backgroundColor "253,252,250,255"
+    al
+      autoHeight true
+      gap 0
+      padding "8px 4px 10px"
+      direction "row"
+      alignItems "stretch"
+      justifyContent "space-between"
+    t1: button "Home" at 0 0 72 52
+      font
+        size 10
+        weight 700
+      border
+        visible false
+        radius 0
+      backgroundColor "transparent"
+      color @accent
+      layout "column"
+      al
+        flex "1 1 0"
+      icon
+        name "home"
+    t2: button "Search" at 0 0 72 52
+      font
+        size 10
+        weight 600
+      border
+        visible false
+        radius 0
+      backgroundColor "transparent"
+      color @ink-3
+      layout "column"
+      al
+        flex "1 1 0"
+      icon
+        name "search"
+    t3: button "Save" at 0 0 72 52
+      font
+        size 10
+        weight 600
+      border
+        visible false
+        radius 0
+      backgroundColor "transparent"
+      color @ink-3
+      layout "column"
+      al
+        flex "1 1 0"
+      icon
+        name "favorite"
+    t4: button "Messages" at 0 0 72 52
+      font
+        size 10
+        weight 600
+      border
+        visible false
+        radius 0
+      backgroundColor "transparent"
+      color @ink-3
+      layout "column"
+      al
+        flex "1 1 0"
+      icon
+        name "chat"
+    t5: button "Profile" at 0 0 72 52
+      font
+        size 10
+        weight 600
+      border
+        visible false
+        radius 0
+      backgroundColor "transparent"
+      color @ink-3
+      layout "column"
+      al
+        flex "1 1 0"
+      icon
+        name "person"

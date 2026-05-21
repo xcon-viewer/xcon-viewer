@@ -1,0 +1,92 @@
+# XCON Viewer LLM Guide
+
+XCON Viewer is a public viewer for XCON UI documents. XCON describes screens as structured objects built from names, values, arrays, and dictionaries. The same screen can be represented as XCON/JSON, XCON/XML, XCON/TAGLESS, or XCON/SKETCH.
+
+## Core Guidance
+
+- XCON Viewer is viewer-only.
+- XCON renders declarative UI documents without executing application behavior.
+- Prefer XCON/JSON when generating examples.
+- Use XCON/XML for UI authoring, comments, designer metadata, and round-trip editing.
+- Use XCON/TAGLESS for transport-friendly symbolic serialization.
+- Use XCON/SKETCH for compact Markdown examples and LLM-generated drafts.
+- Do not invent event handlers, backend calls, database sections, or behavior logic in public XCON examples.
+
+## Public URLs
+
+- Home: https://xconviewer.dev/
+- Docs: https://xconviewer.dev/docs
+- Spec: https://xconviewer.dev/spec
+- Examples: https://xconviewer.dev/examples
+- Live Editor: https://xconviewer.dev/play
+- SKETCH Editor: https://xconviewer.dev/play/sketch
+- Markdown Playground: https://xconviewer.dev/play/markdown
+- API: https://xconviewer.dev/api
+- Security: https://xconviewer.dev/security
+- History: https://xconviewer.dev/history
+- FAQ: https://xconviewer.dev/faq
+- JSON Schema: https://xconviewer.dev/xcon.schema.json
+- Sitemap: https://xconviewer.dev/sitemap.xml
+
+## Syntax Forms
+
+XCON/JSON is the canonical structure for APIs, schema validation, and LLM generation.
+
+XCON/XML is the authoring syntax for UI tools, comments, metadata, and designer integration. Semantic XML components should use child component name attributes when a round trip through JSON, XML, and TAGLESS needs stable keys.
+
+XCON/TAGLESS is a symbolic syntax for transport-friendly serialization. Marker sets can be selected at the document level to reduce delimiter conflicts. If marker characters appear in data, escape them or choose another marker set.
+
+XCON/SKETCH is a compact authoring syntax. It parses into the same Object Model and can be converted with JSON, XML, or TAGLESS by public tooling where that conversion is available.
+
+## Minimal XCON/JSON Example
+
+```json
+{
+  "type": "form",
+  "pos": [0, 0, 402, 300],
+  "backgroundColor": "#F8FAFC",
+  "components": {
+    "title": {
+      "type": "label",
+      "pos": [24, 32, 354, 34],
+      "text": "Hello XCON",
+      "font": { "size": 24, "weight": 800 },
+      "color": "#111827"
+    }
+  }
+}
+```
+
+## Packages
+
+- @xcon-viewer/core: Object Model, parser, serializer, converter, and validator.
+- @xcon-viewer/viewer: Secure renderer and Web Component.
+- @xcon-viewer/cli: validate, convert, format, and render commands.
+- @xcon-viewer/react: React wrapper for the Web Component.
+- @xcon-viewer/vue: Vue wrapper for the Web Component.
+- @xcon-viewer/markdown-it: markdown-it plugin for XCON fences.
+- @xcon-viewer/remark: remark plugin for XCON code nodes.
+- @xcon-viewer/vite-plugin: imports .xcon, .xcon.xml, .xcon.json, .xcon.sketch, and .xcons as modules.
+- @xcon-viewer/github-action: validates and renders XCON code blocks in CI.
+
+## Security Boundary
+
+Allowed: structured screen data, public component properties, safe inline styles, local resource URLs, and design metadata needed for rendering.
+
+Blocked: JavaScript execution, event handlers, backend/database sections, unsafe URLs, raw HTML injection by default, and behavior execution.
+
+## Example Sources
+
+Use https://xconviewer.dev/examples as the public entry point. The repository also contains generated examples under examples/*. Each example normally includes:
+
+- *.xcon.json
+- *.xcon.xml
+- *.xcon
+- optional *.xcon.sketch or *.xcons
+- README.md
+
+## Component Guidance
+
+Use the component reference at https://xconviewer.dev/docs for the detailed public property list. Keep property names LLM-friendly and CSS-adjacent where appropriate, such as backgroundColor, color, font, border, shadow, padding, margin, direction, alignment, items, components, and content.
+
+Unknown properties should be treated as strings unless the public property spec defines a clearer type.

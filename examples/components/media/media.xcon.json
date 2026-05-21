@@ -1,0 +1,95 @@
+{
+  "type": "form",
+  "pos": [
+    0,
+    0,
+    402,
+    900
+  ],
+  "components": {
+    "image": {
+      "type": "image",
+      "pos": [
+        24,
+        24,
+        354,
+        160
+      ],
+      "src": "assets/photo.jpg",
+      "alt": "Photo",
+      "objectFit": "cover"
+    },
+    "video": {
+      "type": "videoView",
+      "pos": [
+        24,
+        204,
+        354,
+        180
+      ],
+      "src": "assets/demo.mp4",
+      "controls": true,
+      "poster": "assets/poster.jpg"
+    },
+    "banner": {
+      "type": "banner",
+      "pos": [
+        24,
+        404,
+        354,
+        140
+      ],
+      "slides": [
+        {
+          "type": "image",
+          "src": "assets/slide-1.jpg"
+        },
+        {
+          "type": "image",
+          "src": "assets/slide-2.jpg"
+        }
+      ],
+      "indicator": {
+        "show": true
+      }
+    },
+    "carousel": {
+      "type": "carousel",
+      "pos": [
+        24,
+        564,
+        354,
+        140
+      ],
+      "items": [
+        {
+          "type": "card",
+          "title": "First"
+        },
+        {
+          "type": "card",
+          "title": "Second"
+        }
+      ],
+      "showDots": true
+    },
+    "gallery": {
+      "type": "gallery",
+      "pos": [
+        24,
+        724,
+        354,
+        140
+      ],
+      "columns": 3,
+      "images": [
+        {
+          "src": "assets/a.jpg"
+        },
+        {
+          "src": "assets/b.jpg"
+        }
+      ]
+    }
+  }
+}

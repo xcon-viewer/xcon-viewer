@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XCON Viewer</title>
+  <meta name="description" content="XCON Viewer is a public viewer for XCON UI documents in JSON, XML, TAGLESS, and SKETCH syntax.">
+  <link rel="stylesheet" href="/styles.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "@xcon-viewer/core": "/packages/core/dist/index.js",
+        "@xcon-viewer/viewer": "/packages/viewer/dist/index.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/"><span class="mark">X</span><span>XCON Viewer</span></a>
+    <nav class="nav" aria-label="Primary">
+      <a href="/docs">Docs</a>
+      <a href="/spec">Spec</a>
+      <a href="/examples">Examples</a>
+      <a href="/play">Play</a>
+      <a href="/api">API</a>
+      <a href="/security">Security</a>
+      <a href="/history">History</a>
+      <a href="/faq">FAQ</a>
+      <a class="nav-icon" href="https://github.com/xcon-viewer/xcon-viewer" target="_blank" rel="noopener noreferrer" aria-label="XCON Viewer on GitHub">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.86 8.37 6.84 9.73.5.1.68-.22.68-.5 0-.24-.01-1.05-.01-1.9-2.78.62-3.37-1.22-3.37-1.22-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.36 1.12 2.93.86.09-.67.35-1.12.63-1.38-2.22-.26-4.55-1.14-4.55-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.38 9.38 0 0 1 12 6.96c.85 0 1.7.12 2.5.34 1.9-1.33 2.74-1.05 2.74-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.8-4.56 5.06.36.32.68.94.68 1.9 0 1.38-.01 2.49-.01 2.82 0 .28.18.6.69.5A10.14 10.14 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z"/>
+        </svg>
+      </a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Viewer-only UI documents</p>
+        <h1>XCON Viewer</h1>
+        <p class="lead">XCON lets you generate, embed, and share UI interfaces as structured documents. No scripts. No execution. Safe by design.</p>
+        <div class="actions">
+          <a class="button primary" href="/play">Try Live Editor</a>
+          <a class="button" href="/examples">View Examples</a>
+          <a class="button" href="/spec">Read Spec</a>
+        </div>
+      </div>
+      <figure class="visual" aria-label="Rendered XCON document preview">
+        <div class="visual-head"><span>account.xcon.json</span><span>rendered preview</span></div>
+        <div class="preview-screen">
+          <div class="phone">
+            <div class="phone-title">Account</div>
+            <div class="pill-row">
+              <span class="pill">JSON</span>
+              <span class="pill green">XML</span>
+              <span class="pill amber">TAGLESS</span>
+              <span class="pill">SKETCH</span>
+            </div>
+            <div class="phone-card">
+              <strong>Profile</strong>
+              <span>Structured UI document</span>
+            </div>
+            <div class="phone-card">
+              <strong>Viewer boundary</strong>
+              <span>Scripts are blocked by design. Share UI from anyone - open it anywhere, safely.</span>
+            </div>
+          </div>
+        </div>
+      </figure>
+    </section>
+
+    <section class="section live-sketch-demo" id="live-sketch-demo" aria-labelledby="live-sketch-title">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Live SKETCH demo</p>
+          <h2 id="live-sketch-title">Write XCON/SKETCH. See it render.</h2>
+        </div>
+        <p>LLMs speak SKETCH natively. Write or generate UI on the left - the viewer renders the same document model on the right, using only the packages shipped on this site.</p>
+      </div>
+      <div class="live-sketch-surface">
+        <div class="live-sketch-editor" aria-label="Animated XCON/SKETCH code sample">
+          <div class="live-sketch-panel-head">
+            <span>example.xcon.sketch</span>
+            <span id="liveSketchStatus">typing...</span>
+          </div>
+          <pre class="live-sketch-code"><code id="liveSketchCode"></code><span class="live-sketch-caret" aria-hidden="true"></span></pre>
+        </div>
+        <div class="live-sketch-viewer" aria-label="Rendered XCON/SKETCH preview">
+          <div id="liveSketchPreview" class="live-sketch-preview">
+            <div class="live-sketch-fallback">
+              <strong>XCON/SKETCH</strong>
+              <span>Render Preview</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="actions live-sketch-actions">
+        <a class="button primary" href="/play/sketch">Open SKETCH Editor</a>
+        <a class="button" href="/play/markdown">Open Markdown Playground</a>
+        <a class="button" href="/spec/xcon-sketch-syntax.md">Read SKETCH Spec</a>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>One Screen. Four Syntaxes.</h2>
+        <p>LLMs write SKETCH. APIs consume JSON. Tools edit XML. All four syntaxes parse into the same XCON Object Model - so examples, conversion, validation, and rendering share one public contract.</p>
+      </div>
+      <div class="grid">
+        <article class="card">
+          <h3>XCON/JSON</h3>
+          <p>Canonical structure for APIs, schema validation, and LLM generation.</p>
+        </article>
+        <article class="card">
+          <h3>XCON/XML</h3>
+          <p>Authoring syntax for UI tooling, comments, metadata, and round-trip editing.</p>
+        </article>
+        <article class="card">
+          <h3>XCON/TAGLESS</h3>
+          <p>Transport-friendly symbolic syntax with document-level marker selection.</p>
+        </article>
+        <article class="card">
+          <h3>XCON/SKETCH</h3>
+          <p>The format LLMs generate best. Compact Markdown authoring syntax for examples and AI-generated drafts.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Public Entry Points</h2>
+        <p>The initial site is intentionally complete at the navigation and discovery layer, while each section can keep growing independently. Start with the spec, explore examples, or drop XCON into your LLM prompt today.</p>
+      </div>
+      <div class="grid">
+        <a class="card" href="/docs"><h3>Docs</h3><p>Guides, package references, and integration notes.</p></a>
+        <a class="card" href="/spec"><h3>Spec</h3><p>Object Model plus JSON, XML, TAGLESS, and SKETCH syntax rules.</p></a>
+        <a class="card" href="/examples"><h3>Examples</h3><p>Generated examples in all public syntax forms.</p></a>
+        <a class="card" href="/api"><h3>API</h3><p>Core, viewer, CLI, framework wrappers, and plugins.</p></a>
+        <a class="card" href="/security"><h3>Security</h3><p>Viewer-only boundary and blocked runtime features.</p></a>
+        <a class="card" href="/llms.txt"><h3>LLM Index</h3><p>Machine-readable guidance for assistants and search systems.</p></a>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Install</h2>
+        <p>Use the viewer in HTML, JavaScript, Markdown, Vite, React, Vue, or CI workflows.</p>
+      </div>
+      <pre><code>npm install @xcon-viewer/core @xcon-viewer/viewer
+npm install @xcon-viewer/react @xcon-viewer/vue
+npm install @xcon-viewer/markdown-it @xcon-viewer/remark @xcon-viewer/vite-plugin</code></pre>
+    </section>
+  </main>
+
+  <footer class="page footer">
+    <span>XCON Viewer is a viewer-only public UI document renderer.</span>
+  </footer>
+  <script type="module">
+    import { parseBySyntax } from '@xcon-viewer/core';
+    import { render, viewerCss } from '@xcon-viewer/viewer';
+
+    const sample = `screen 360x220 bg #f8fafc
+
+title: label "XCON/SKETCH" at 24 24 312 36
+  font 24 800
+  align center
+
+cta: button "Render Preview" at 72 142 216 44
+  bg #db2777
+  color white
+  radius 12`;
+
+    const code = document.getElementById('liveSketchCode');
+    const preview = document.getElementById('liveSketchPreview');
+    const status = document.getElementById('liveSketchStatus');
+
+    ensureViewerStyle();
+    code.textContent = '';
+    typeSketch();
+
+    function ensureViewerStyle() {
+      if (document.getElementById('xcon-viewer-style')) return;
+      const style = document.createElement('style');
+      style.id = 'xcon-viewer-style';
+      style.textContent = viewerCss;
+      document.head.appendChild(style);
+    }
+
+    function typeSketch() {
+      let index = 0;
+      const typeDelayMs = 42;
+      const step = () => {
+        const next = sample.slice(0, index);
+        code.textContent = next;
+        renderSketch(next, 'typing...');
+        index += 1;
+
+        if (index <= sample.length + 1) {
+          window.setTimeout(step, typeDelayMs);
+          return;
+        }
+
+        code.textContent = sample;
+        renderSketch(sample, 'rendered');
+        window.setTimeout(() => {
+          index = 0;
+          code.textContent = '';
+          renderSketch('', 'typing...');
+          window.setTimeout(step, 420);
+        }, 3600);
+      };
+
+      step();
+    }
+
+    function renderSketch(source, nextStatus) {
+      status.textContent = nextStatus;
+      if (!source.trim()) return;
+
+      try {
+        const documentModel = parseBySyntax(source, 'sketch');
+        render(documentModel, preview, {
+          allowExternalResources: false,
+          allowHtml: false,
+        });
+        status.textContent = source === sample ? 'rendered' : nextStatus;
+      } catch {
+        status.textContent = nextStatus;
+      }
+    }
+  </script>
+</body>
+</html>

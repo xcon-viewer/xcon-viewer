@@ -1,0 +1,125 @@
+screen 560x1532
+  border
+    visible true
+    width 1
+    color @border
+    radius 10
+  shadow
+    visible true
+    opacity 0.08
+    blur 6
+  al
+    autoHeight true
+    gap 18px
+    padding "14px 16px"
+  hdr: label "Extended · tabs" at 0 0 560 28
+    font
+      size 11
+      weight "bold"
+    textAlign "left"
+  ex1: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    cap: label "Full showcase" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+      color @ink-3
+      labelPadding "0 0 10px 0"
+      style "letter-spacing:0.4px;text-transform:uppercase;"
+    c: tabs at 0 0 560 460
+      extVariant "showcase"
+      al
+        width 100%
+        alignSelf "stretch"
+  ex2: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    cap: label "Default · 3 tabs" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+      color @ink-3
+      labelPadding "16px 0 10px 0"
+      style "letter-spacing:0.4px;text-transform:uppercase;"
+    c: tabs at 0 0 560 280
+      variant "default"
+      al
+        width 100%
+        alignSelf "stretch"
+      items [{"title":"Overview","content":"Project overview tab."},{"title":"Details","content":"Details are shown here."},{"title":"Settings","content":"Environment and permission settings."}]
+      activeIndex 0
+  ex3: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    cap: label "pills" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+      color @ink-3
+      labelPadding "16px 0 10px 0"
+      style "letter-spacing:0.4px;text-transform:uppercase;"
+    c: tabs at 0 0 560 260
+      variant "pills"
+      al
+        width 100%
+        alignSelf "stretch"
+      items [{"title":"All","content":"All items"},{"title":"In Progress","content":"In progress"},{"title":"Archived","content":"Archived"}]
+      activeIndex 1
+  ex4: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    cap: label "underline · headerLayout center" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+      color @ink-3
+      labelPadding "16px 0 10px 0"
+      style "letter-spacing:0.4px;text-transform:uppercase;"
+    c: tabs at 0 0 560 260
+      variant "underline"
+      al
+        width 100%
+        alignSelf "stretch"
+      tabsLayout "center"
+      items [{"title":"Docs","content":"Docs tab"},{"title":"API","content":"API reference"}]

@@ -1,0 +1,92 @@
+♤♡◇♧
+♤
+  ♧type♣◇form◆
+  ♧pos♣
+  ♡
+    ◇0◆
+    ◇0◆
+    ◇402◆
+    ◇720◆
+  ♥
+  ♧components♣
+  ♤
+    ♧avatar♣
+    ♤
+      ♧type♣◇avatar◆
+      ♧pos♣
+      ♡
+        ◇24◆
+        ◇32◆
+        ◇72◆
+        ◇72◆
+      ♥
+      ♧initials♣◇HK◆
+      ♧backgroundColor♣◇#0F172A◆
+      ♧color♣◇#FFFFFF◆
+    ♠
+    ♧name♣
+    ♤
+      ♧type♣◇textField◆
+      ♧pos♣
+      ♡
+        ◇24◆
+        ◇132◆
+        ◇354◆
+        ◇44◆
+      ♥
+      ♧placeholder♣◇Display name◆
+      ♧value♣◇Hong Kim◆
+    ♠
+    ♧language♣
+    ♤
+      ♧type♣◇select◆
+      ♧pos♣
+      ♡
+        ◇24◆
+        ◇192◆
+        ◇354◆
+        ◇44◆
+      ♥
+      ♧value♣◇ko◆
+      ♧options♣
+      ♡
+        ♤
+          ♧value♣◇ko◆
+          ♧label♣◇Korean◆
+        ♠
+        ♤
+          ♧value♣◇en◆
+          ♧label♣◇English◆
+        ♠
+      ♥
+    ♠
+    ♧marketing♣
+    ♤
+      ♧type♣◇switch◆
+      ♧pos♣
+      ♡
+        ◇24◆
+        ◇260◆
+        ◇300◆
+        ◇44◆
+      ♥
+      ♧title♣◇Marketing emails◆
+      ♧checked♣◇false◆
+    ♠
+    ♧save♣
+    ♤
+      ♧type♣◇button◆
+      ♧pos♣
+      ♡
+        ◇24◆
+        ◇336◆
+        ◇354◆
+        ◇48◆
+      ♥
+      ♧label♣◇Save profile◆
+      ♧backgroundColor♣◇#2563EB◆
+      ♧color♣◇#FFFFFF◆
+    ♠
+  ♠
+♠
+♠♥◆♣

@@ -1,0 +1,207 @@
+screen 560x994
+  border
+    visible true
+    width 1
+    color @border
+    radius 10
+  shadow
+    visible true
+    opacity 0.08
+    blur 6
+  al
+    autoHeight true
+    gap 18px
+    padding "14px 16px"
+  hdr: label "Extended · spinner" at 0 0 560 28
+    font
+      size 11
+      weight "bold"
+    textAlign "left"
+  ex1: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    cap: label "Full row showcase" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+      color @ink-3
+      labelPadding "0 0 10px 0"
+      style "letter-spacing:0.4px;text-transform:uppercase;"
+    c: spinner at 0 0 560 120
+      extVariant "showcase"
+      color "0,123,255,255"
+      al
+        width 100%
+        alignSelf "stretch"
+  ex2: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    cap: label "Ring · sm" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+      color @ink-3
+      labelPadding "16px 0 10px 0"
+      style "letter-spacing:0.4px;text-transform:uppercase;"
+    c: spinner at 0 0 560 72
+      size "small"
+      color "0,123,255,255"
+      al
+        width 100%
+        alignSelf "stretch"
+      variant "border"
+  ex3: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    cap: label "Ring · md" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+      color @ink-3
+      labelPadding "16px 0 10px 0"
+      style "letter-spacing:0.4px;text-transform:uppercase;"
+    c: spinner at 0 0 560 72
+      size "medium"
+      color "0,123,255,255"
+      al
+        width 100%
+        alignSelf "stretch"
+      variant "ring"
+  ex4: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    cap: label "Ring · lg" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+      color @ink-3
+      labelPadding "16px 0 10px 0"
+      style "letter-spacing:0.4px;text-transform:uppercase;"
+    c: spinner at 0 0 560 80
+      size "large"
+      color "0,123,255,255"
+      al
+        width 100%
+        alignSelf "stretch"
+      variant "border"
+  ex5: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    cap: label "Dots" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+      color @ink-3
+      labelPadding "16px 0 10px 0"
+      style "letter-spacing:0.4px;text-transform:uppercase;"
+    c: spinner at 0 0 560 72
+      size "medium"
+      color "0,123,255,255"
+      al
+        width 100%
+        alignSelf "stretch"
+      variant "dots"
+  ex6: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    cap: label "Pulse" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+      color @ink-3
+      labelPadding "16px 0 10px 0"
+      style "letter-spacing:0.4px;text-transform:uppercase;"
+    c: spinner at 0 0 560 72
+      size "medium"
+      color "0,123,255,255"
+      al
+        width 100%
+        alignSelf "stretch"
+      variant "pulse"
+  ex7: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    cap: label "Bars" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+      color @ink-3
+      labelPadding "16px 0 10px 0"
+      style "letter-spacing:0.4px;text-transform:uppercase;"
+    c: spinner at 0 0 560 72
+      size "medium"
+      color "0,123,255,255"
+      al
+        width 100%
+        alignSelf "stretch"
+      variant "bars"

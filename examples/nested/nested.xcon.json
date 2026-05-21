@@ -1,0 +1,81 @@
+{
+  "type": "form",
+  "pos": [
+    0,
+    0,
+    402,
+    520
+  ],
+  "backgroundColor": "#F8FAFC",
+  "components": {
+    "panel": {
+      "type": "panel",
+      "pos": [
+        20,
+        40,
+        362,
+        300
+      ],
+      "backgroundColor": "#FFFFFF",
+      "border": {
+        "width": 1,
+        "color": "#E5E7EB",
+        "radius": 16
+      },
+      "padding": 20,
+      "components": {
+        "title": {
+          "type": "label",
+          "pos": [
+            20,
+            20,
+            300,
+            28
+          ],
+          "text": "Project Health",
+          "font": {
+            "size": 20,
+            "weight": 800
+          }
+        },
+        "status": {
+          "type": "progressBar",
+          "pos": [
+            20,
+            72,
+            300,
+            24
+          ],
+          "label": "Progress",
+          "value": 68,
+          "max": 100,
+          "color": "#22C55E"
+        },
+        "alert": {
+          "type": "alert",
+          "pos": [
+            20,
+            120,
+            300,
+            68
+          ],
+          "severity": "warning",
+          "message": "Two tasks need review.",
+          "showIcon": true
+        },
+        "action": {
+          "type": "button",
+          "pos": [
+            20,
+            216,
+            160,
+            44
+          ],
+          "label": "Open",
+          "backgroundColor": "#2563EB",
+          "color": "#FFFFFF"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "name": "@xcon-viewer/viewer",
+  "version": "0.1.2",
+  "type": "module",
+  "description": "XCON viewer-only renderer. Renders XCON documents safely — scripts are blocked by design. Embed UI in Markdown, share from anyone, open anywhere.",
+  "keywords": [
+    "xcon",
+    "xcon-viewer",
+    "ui",
+    "document",    
+    "viewer",
+    "renderer",
+    "web-component",
+    "json",
+    "xml",
+    "tagless",
+    "sketch",
+    "llm",
+    "markdown"    
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xcon-viewer/xcon-viewer.git",
+    "directory": "packages/viewer"
+  },
+  "homepage": "https://xconviewer.dev",
+  "bugs": {
+    "url": "https://github.com/xcon-viewer/xcon-viewer/issues"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./web-component": {
+      "types": "./dist/web-component.d.ts",
+      "import": "./dist/web-component.js"
+    }
+  },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup && tsc -b tsconfig.json --force --emitDeclarationOnly",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run test && npm run build"
+  },
+  "dependencies": {
+    "@xcon-viewer/core": "0.1.2"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^3.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
+

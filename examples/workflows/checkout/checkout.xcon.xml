@@ -1,0 +1,8 @@
+<Form pos="[0,0,402,820]">
+  <Label name="title" pos="[24,28,354,34]" text="Checkout" font="{&quot;size&quot;:24,&quot;weight&quot;:800}" />
+  <Textarea name="address" pos="[24,88,354,96]" placeholder="Shipping address" rows="null" />
+  <RadioButton name="shipping" pos="[24,204,260,32]" label="Standard shipping" group="shipping" value="standard" checked="true" />
+  <RadioButton name="express" pos="[24,244,260,32]" label="Express shipping" group="shipping" value="express" />
+  <Card name="total" pos="[24,304,354,140]" title="Total" subtitle="$128.00" text="Includes taxes and shipping." padding="16" />
+  <Button name="pay" pos="[24,476,354,48]" label="Pay now" backgroundColor="#16A34A" color="#FFFFFF" />
+</Form>

@@ -1,0 +1,1935 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://xconviewer.dev/xcon.schema.json",
+  "title": "XCON Document",
+  "description": "Public viewer-only XCON/JSON schema for declarative UI documents. It covers renderable component documents and nested data for XCON/JSON, XCON/XML, XCON/TAGLESS, and XCON/SKETCH conversion.",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "#/definitions/component"
+    }
+  ],
+  "definitions": {
+    "color": {
+      "type": "string",
+      "description": "CSS color string such as #RRGGBB, #RRGGBBAA, rgb(...), rgba(...), transparent, a named color, var(--token), or the XCON theme token alias @token (rendered as var(--token))."
+    },
+    "numberLike": {
+      "oneOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "stringOrNumber": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        }
+      ]
+    },
+    "rect": {
+      "description": "Component bounds as [x, y, width, height], an x,y,width,height string, or an object with x/y/width/height.",
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        {
+          "type": "string",
+          "pattern": "^\\s*-?\\d+(?:\\.\\d+)?\\s*,\\s*-?\\d+(?:\\.\\d+)?\\s*,\\s*-?\\d+(?:\\.\\d+)?\\s*,\\s*-?\\d+(?:\\.\\d+)?\\s*$"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            },
+            "width": {
+              "type": "number"
+            },
+            "height": {
+              "type": "number"
+            },
+            "w": {
+              "type": "number"
+            },
+            "h": {
+              "type": "number"
+            }
+          }
+        }
+      ]
+    },
+    "size": {
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "width": {
+              "type": "number"
+            },
+            "height": {
+              "type": "number"
+            },
+            "w": {
+              "type": "number"
+            },
+            "h": {
+              "type": "number"
+            }
+          }
+        }
+      ]
+    },
+    "spacing": {
+      "oneOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 4
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "top": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "right": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "bottom": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "left": {
+              "$ref": "#/definitions/stringOrNumber"
+            }
+          }
+        }
+      ]
+    },
+    "font": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "family": {
+              "type": "string"
+            },
+            "size": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "weight": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "style": {
+              "type": "string"
+            },
+            "bold": {
+              "type": "boolean"
+            },
+            "italic": {
+              "type": "boolean"
+            },
+            "underline": {
+              "type": "boolean"
+            },
+            "strikethrough": {
+              "type": "boolean"
+            },
+            "decoration": {
+              "type": "string"
+            },
+            "lineHeight": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "letterSpacing": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "autoFit": {
+              "type": "boolean"
+            }
+          }
+        }
+      ]
+    },
+    "border": {
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "visible": {
+              "type": "boolean"
+            },
+            "width": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "style": {
+              "type": "string"
+            },
+            "color": {
+              "$ref": "#/definitions/color"
+            },
+            "radius": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "left": {},
+            "top": {},
+            "right": {},
+            "bottom": {},
+            "topLeftRadius": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "topRightRadius": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "bottomLeftRadius": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "bottomRightRadius": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "image": {},
+            "imageSource": {
+              "type": "string"
+            },
+            "imageSlice": {},
+            "imageRepeat": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "shadow": {
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "visible": {
+              "type": "boolean"
+            },
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            },
+            "blur": {
+              "type": "number"
+            },
+            "spread": {
+              "type": "number"
+            },
+            "radius": {
+              "type": "number"
+            },
+            "color": {
+              "$ref": "#/definitions/color"
+            },
+            "opacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "css": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "iconSpec": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "library": {
+              "type": "string"
+            },
+            "position": {
+              "type": "string"
+            },
+            "size": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "color": {
+              "$ref": "#/definitions/color"
+            }
+          }
+        }
+      ]
+    },
+    "imageSpec": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "src": {
+              "type": "string"
+            },
+            "alt": {
+              "type": "string"
+            },
+            "mode": {
+              "type": "string"
+            },
+            "fit": {
+              "type": "string"
+            },
+            "position": {
+              "type": "string"
+            },
+            "repeat": {
+              "type": "string"
+            },
+            "size": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "opacity": {
+              "type": "number"
+            },
+            "blendMode": {
+              "type": "string"
+            },
+            "filter": {},
+            "slideshow": {
+              "$ref": "#/definitions/slideshow"
+            }
+          }
+        }
+      ]
+    },
+    "slideshow": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/definitions/safeObject"
+              }
+            ]
+          }
+        },
+        "duration": {
+          "$ref": "#/definitions/stringOrNumber"
+        },
+        "mode": {
+          "type": "string"
+        }
+      }
+    },
+    "autoplay": {
+      "oneOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "interval": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "loop": {
+              "type": "boolean"
+            },
+            "rolling": {
+              "type": "boolean"
+            }
+          }
+        }
+      ]
+    },
+    "selectOption": {
+      "type": "object",
+      "required": [
+        "value",
+        "label"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "value": {},
+        "label": {
+          "type": "string"
+        },
+        "disabled": {
+          "type": "boolean"
+        }
+      }
+    },
+    "safeObject": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "componentType": {
+      "type": "string",
+      "enum": [
+        "accordion",
+        "alert",
+        "avatar",
+        "badge",
+        "banner",
+        "barcode",
+        "button",
+        "calendar",
+        "card",
+        "carousel",
+        "chart",
+        "chatBubble",
+        "checkbox",
+        "codeEditor",
+        "colorPicker",
+        "dataViz",
+        "datePicker",
+        "divider",
+        "flexBox",
+        "flipbook",
+        "form",
+        "gallery",
+        "grid",
+        "icon",
+        "image",
+        "label",
+        "list",
+        "map",
+        "modal",
+        "myCard",
+        "myCounter",
+        "myIconRail",
+        "myProgressBar",
+        "myThemeAccentPanel",
+        "myToggleSwitch",
+        "networkDiagram",
+        "notice",
+        "panel",
+        "passwordField",
+        "progressBar",
+        "qrCode",
+        "radioButton",
+        "rating",
+        "richEditor",
+        "searchBar",
+        "select",
+        "shape",
+        "slider",
+        "spacer",
+        "spinner",
+        "stack",
+        "switch",
+        "tabs",
+        "template",
+        "text",
+        "textarea",
+        "textField",
+        "textView",
+        "timePicker",
+        "tooltip",
+        "treeView",
+        "videoView"
+      ]
+    },
+    "componentOrData": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/component"
+        },
+        {
+          "$ref": "#/definitions/safeObject"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "component": {
+      "type": "object",
+      "required": [
+        "type"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/componentType"
+        },
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "pos": {
+          "$ref": "#/definitions/rect"
+        },
+        "al": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "direction": {
+              "type": "string"
+            },
+            "gap": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "padding": {
+              "$ref": "#/definitions/spacing"
+            },
+            "alignItems": {
+              "type": "string"
+            },
+            "justifyContent": {
+              "type": "string"
+            },
+            "wrap": {
+              "type": "string"
+            },
+            "flex": {
+              "type": "string"
+            },
+            "alignSelf": {
+              "type": "string"
+            },
+            "width": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "height": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "minWidth": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "maxWidth": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "minHeight": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "maxHeight": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "overflow": {
+              "type": "string"
+            },
+            "layerZ": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "layerPointerEvents": {
+              "type": "string"
+            }
+          }
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "visible": {
+          "type": "boolean"
+        },
+        "hidden": {
+          "type": "boolean"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "readonly": {
+          "type": "boolean"
+        },
+        "readOnly": {
+          "type": "boolean"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "title": {
+          "type": "string"
+        },
+        "subtitle": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "value": {},
+        "placeholder": {
+          "type": "string"
+        },
+        "backgroundColor": {
+          "$ref": "#/definitions/color"
+        },
+        "backgroundImage": {
+          "type": "string"
+        },
+        "background": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "color": {
+              "$ref": "#/definitions/color"
+            },
+            "image": {
+              "type": "string"
+            },
+            "gradient": {
+              "type": "string"
+            },
+            "gradientType": {
+              "type": "string"
+            },
+            "gradientDirection": {
+              "type": "string"
+            },
+            "gradientColors": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/color"
+              }
+            },
+            "gradientStops": {
+              "type": "array"
+            },
+            "pattern": {
+              "type": "string"
+            },
+            "patternSize": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "patternColor": {
+              "$ref": "#/definitions/color"
+            },
+            "patternOpacity": {
+              "type": "number"
+            }
+          }
+        },
+        "color": {
+          "$ref": "#/definitions/color"
+        },
+        "foregroundColor": {
+          "$ref": "#/definitions/color"
+        },
+        "font": {
+          "$ref": "#/definitions/font"
+        },
+        "border": {
+          "$ref": "#/definitions/border"
+        },
+        "shadow": {
+          "$ref": "#/definitions/shadow"
+        },
+        "effects": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "opacity": {
+              "type": "number"
+            },
+            "blendMode": {
+              "type": "string"
+            },
+            "boxShadow": {
+              "type": "string"
+            },
+            "dropShadow": {
+              "type": "string"
+            },
+            "innerShadow": {
+              "type": "string"
+            },
+            "glow": {},
+            "glowColor": {
+              "$ref": "#/definitions/color"
+            },
+            "glowIntensity": {
+              "type": "number"
+            },
+            "filter": {}
+          }
+        },
+        "transform": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "rotate": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "scale": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "scaleX": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "scaleY": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "translateX": {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            "translateY": {
+              "$ref": "#/definitions/stringOrNumber"
+            }
+          }
+        },
+        "margin": {
+          "$ref": "#/definitions/spacing"
+        },
+        "padding": {
+          "$ref": "#/definitions/spacing"
+        },
+        "width": {
+          "$ref": "#/definitions/stringOrNumber"
+        },
+        "height": {
+          "$ref": "#/definitions/stringOrNumber"
+        },
+        "minWidth": {
+          "$ref": "#/definitions/stringOrNumber"
+        },
+        "maxWidth": {
+          "type": "number"
+        },
+        "minHeight": {
+          "$ref": "#/definitions/stringOrNumber"
+        },
+        "maxHeight": {
+          "type": "number"
+        },
+        "size": {
+          "$ref": "#/definitions/stringOrNumber"
+        },
+        "contentSize": {
+          "$ref": "#/definitions/size"
+        },
+        "scroll": {
+          "type": "string"
+        },
+        "scrollbar": {
+          "type": "string"
+        },
+        "overflow": {
+          "type": "string"
+        },
+        "opacity": {
+          "type": "number"
+        },
+        "zIndex": {
+          "$ref": "#/definitions/stringOrNumber"
+        },
+        "components": {
+          "type": "object",
+          "properties": {
+            "componentsOrder": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": {
+            "$ref": "#/definitions/component"
+          }
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/componentOrData"
+          }
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/componentOrData"
+          }
+        },
+        "slides": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/componentOrData"
+          }
+        },
+        "content": {
+          "$ref": "#/definitions/componentOrData"
+        },
+        "template": {
+          "$ref": "#/definitions/componentOrData"
+        },
+        "templates": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/componentOrData"
+          },
+          "properties": {
+            "cell": {
+              "$ref": "#/definitions/componentOrData"
+            },
+            "placeholder": {
+              "$ref": "#/definitions/componentOrData"
+            },
+            "selector": {}
+          }
+        },
+        "data": {},
+        "dataTemplate": {},
+        "src": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "href": {
+          "type": "string"
+        },
+        "alt": {
+          "type": "string"
+        },
+        "objectFit": {
+          "type": "string"
+        },
+        "objectPosition": {
+          "type": "string"
+        },
+        "fallback": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/definitions/safeObject"
+            }
+          ]
+        },
+        "image": {
+          "$ref": "#/definitions/imageSpec"
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/definitions/safeObject"
+              }
+            ]
+          }
+        },
+        "slideshow": {
+          "$ref": "#/definitions/slideshow"
+        },
+        "poster": {
+          "type": "string"
+        },
+        "autoplay": {
+          "$ref": "#/definitions/autoplay"
+        },
+        "controls": {
+          "type": "boolean"
+        },
+        "loop": {
+          "type": "boolean"
+        },
+        "muted": {
+          "type": "boolean"
+        },
+        "preload": {
+          "type": "string"
+        },
+        "sandbox": {
+          "type": "string"
+        },
+        "html": {
+          "type": "string"
+        },
+        "renderHtml": {
+          "type": "boolean"
+        },
+        "bind": {
+          "type": "string"
+        },
+        "inputType": {
+          "type": "string"
+        },
+        "inputMode": {
+          "type": "string"
+        },
+        "minLength": {
+          "type": "number"
+        },
+        "maxLength": {
+          "type": "number"
+        },
+        "pattern": {
+          "type": "string"
+        },
+        "prefix": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "suffix": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "trailingButton": {
+          "type": "string"
+        },
+        "fieldState": {
+          "type": "string"
+        },
+        "floatLabel": {
+          "type": "string"
+        },
+        "showToggle": {
+          "type": "boolean"
+        },
+        "showStrength": {
+          "type": "boolean"
+        },
+        "toggleLabel": {
+          "type": "string"
+        },
+        "rows": {
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cols": {
+          "type": "number"
+        },
+        "resize": {
+          "type": "string"
+        },
+        "showCharCount": {
+          "type": "boolean"
+        },
+        "maxLines": {
+          "type": "number"
+        },
+        "lineNumbers": {
+          "type": "boolean"
+        },
+        "textAlign": {
+          "type": "string"
+        },
+        "textVerticalAlign": {
+          "type": "string"
+        },
+        "textOverflow": {
+          "type": "string"
+        },
+        "whiteSpace": {
+          "type": "string"
+        },
+        "icon": {
+          "$ref": "#/definitions/iconSpec"
+        },
+        "icons": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "states": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "appearance": {
+          "type": "string"
+        },
+        "segment": {
+          "type": "string"
+        },
+        "split": {
+          "type": "string"
+        },
+        "loadingState": {
+          "type": "boolean"
+        },
+        "loading": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "boolean"
+            }
+          ]
+        },
+        "layout": {
+          "type": "string"
+        },
+        "layoutGap": {
+          "$ref": "#/definitions/stringOrNumber"
+        },
+        "checked": {
+          "type": "boolean"
+        },
+        "group": {
+          "type": "string"
+        },
+        "labelHtml": {
+          "type": "string"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/selectOption"
+          }
+        },
+        "multiple": {
+          "type": "boolean"
+        },
+        "min": {
+          "$ref": "#/definitions/stringOrNumber"
+        },
+        "max": {
+          "$ref": "#/definitions/stringOrNumber"
+        },
+        "step": {
+          "$ref": "#/definitions/stringOrNumber"
+        },
+        "showValue": {
+          "type": "boolean"
+        },
+        "ticks": {
+          "type": "boolean"
+        },
+        "showLabels": {
+          "type": "boolean"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "direction": {
+          "type": "string"
+        },
+        "justify": {
+          "type": "string"
+        },
+        "align": {
+          "type": "string"
+        },
+        "wrap": {
+          "type": "string"
+        },
+        "gap": {
+          "$ref": "#/definitions/stringOrNumber"
+        },
+        "columns": {
+          "$ref": "#/definitions/stringOrNumber"
+        },
+        "responsive": {
+          "type": "boolean"
+        },
+        "itemSize": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "separator": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "selection": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "offset": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/size"
+            },
+            {
+              "type": "object",
+              "additionalProperties": true
+            }
+          ]
+        },
+        "activeIndex": {
+          "type": "number"
+        },
+        "activeId": {
+          "type": "string"
+        },
+        "position": {
+          "type": "string"
+        },
+        "tabsLayout": {
+          "type": "string"
+        },
+        "defaultOpen": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/stringOrNumber"
+          }
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "pending": {
+          "type": "boolean"
+        },
+        "indicator": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "variant": {
+          "type": "string"
+        },
+        "showPreview": {
+          "type": "boolean"
+        },
+        "showHex": {
+          "type": "boolean"
+        },
+        "alpha": {
+          "type": "boolean"
+        },
+        "accept": {
+          "type": "string"
+        },
+        "showIcon": {
+          "type": "boolean"
+        },
+        "showIcons": {
+          "type": "boolean"
+        },
+        "showSearchButton": {
+          "type": "boolean"
+        },
+        "showClearButton": {
+          "type": "boolean"
+        },
+        "showSaveButton": {
+          "type": "boolean"
+        },
+        "showCloseButton": {
+          "type": "boolean"
+        },
+        "showText": {
+          "type": "boolean"
+        },
+        "showCaption": {
+          "type": "boolean"
+        },
+        "showThumbnails": {
+          "type": "boolean"
+        },
+        "showDots": {
+          "type": "boolean"
+        },
+        "showArrows": {
+          "type": "boolean"
+        },
+        "allowZoom": {
+          "type": "boolean"
+        },
+        "allowCrop": {
+          "type": "boolean"
+        },
+        "maxSize": {
+          "type": "number"
+        },
+        "quality": {
+          "type": "number"
+        },
+        "previewSize": {
+          "type": "string"
+        },
+        "previewPosition": {
+          "type": "string"
+        },
+        "searchIcon": {
+          "type": "string"
+        },
+        "clearIcon": {
+          "type": "string"
+        },
+        "debounceDelay": {
+          "type": "number"
+        },
+        "penColor": {
+          "$ref": "#/definitions/color"
+        },
+        "penWidth": {
+          "type": "number"
+        },
+        "expandedNodes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "selectable": {
+          "type": "boolean"
+        },
+        "errorCorrectionLevel": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string"
+        },
+        "displayValue": {
+          "type": "boolean"
+        },
+        "library": {
+          "type": "string"
+        },
+        "rotation": {
+          "type": "number"
+        },
+        "weight": {
+          "type": "number"
+        },
+        "initials": {
+          "type": "string"
+        },
+        "shape": {
+          "type": "string"
+        },
+        "dismissible": {
+          "type": "boolean"
+        },
+        "severity": {
+          "type": "string"
+        },
+        "trigger": {
+          "type": "string"
+        },
+        "delay": {
+          "type": "number"
+        },
+        "arrow": {
+          "type": "boolean"
+        },
+        "theme": {
+          "type": "string"
+        },
+        "backdropClose": {
+          "type": "boolean"
+        },
+        "animation": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "chartType": {
+          "type": "string"
+        },
+        "chartData": {},
+        "chartOptions": {},
+        "mode": {
+          "type": "string"
+        },
+        "modules": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "vizType": {
+          "type": "string"
+        },
+        "config": {},
+        "interactive": {
+          "type": "boolean"
+        },
+        "pageWidth": {
+          "type": "number"
+        },
+        "pageHeight": {
+          "type": "number"
+        },
+        "pages": {
+          "type": "number"
+        },
+        "pageFolder": {
+          "type": "string"
+        },
+        "pageData": {
+          "type": "array",
+          "items": {}
+        },
+        "loadRegions": {
+          "type": "boolean"
+        },
+        "autoCenter": {
+          "type": "boolean"
+        },
+        "duration": {
+          "$ref": "#/definitions/stringOrNumber"
+        },
+        "acceleration": {
+          "type": "boolean"
+        },
+        "gradients": {
+          "type": "boolean"
+        },
+        "elevation": {
+          "type": "number"
+        },
+        "when": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "nodeRadius": {
+          "type": "number"
+        },
+        "linkDistance": {
+          "type": "number"
+        },
+        "charge": {
+          "type": "number"
+        },
+        "friction": {
+          "type": "number"
+        },
+        "gravity": {
+          "type": "number"
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/safeObject"
+          }
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/safeObject"
+          }
+        },
+        "rootNodeId": {
+          "type": "string"
+        },
+        "nodeColor": {
+          "$ref": "#/definitions/color"
+        },
+        "linkColor": {
+          "$ref": "#/definitions/color"
+        },
+        "refLinkColor": {
+          "$ref": "#/definitions/color"
+        },
+        "primaryColor": {
+          "$ref": "#/definitions/color"
+        },
+        "secondaryColor": {
+          "$ref": "#/definitions/color"
+        },
+        "accentColor": {
+          "$ref": "#/definitions/color"
+        },
+        "textColor": {
+          "$ref": "#/definitions/color"
+        },
+        "shadowColor": {
+          "$ref": "#/definitions/color"
+        },
+        "enableDrag": {
+          "type": "boolean"
+        },
+        "enableZoom": {
+          "type": "boolean"
+        },
+        "enablePan": {
+          "type": "boolean"
+        },
+        "enableClick": {
+          "type": "boolean"
+        },
+        "enableHover": {
+          "type": "boolean"
+        },
+        "latitude": {
+          "type": "number"
+        },
+        "longitude": {
+          "type": "number"
+        },
+        "zoom": {
+          "type": "number"
+        },
+        "tileLayer": {
+          "type": "string"
+        },
+        "markers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/safeObject"
+          }
+        },
+        "initialView": {
+          "type": "string"
+        },
+        "headerToolbar": {},
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/safeObject"
+          }
+        },
+        "editable": {
+          "type": "boolean"
+        },
+        "weekends": {
+          "type": "boolean"
+        },
+        "locale": {
+          "type": "string"
+        },
+        "autoUpload": {
+          "type": "boolean"
+        },
+        "railBg": {
+          "$ref": "#/definitions/color"
+        },
+        "selectedBg": {
+          "$ref": "#/definitions/color"
+        },
+        "unselectedColor": {
+          "$ref": "#/definitions/color"
+        },
+        "iconSize": {
+          "$ref": "#/definitions/stringOrNumber"
+        },
+        "labelFontSize": {
+          "$ref": "#/definitions/stringOrNumber"
+        },
+        "itemGap": {
+          "$ref": "#/definitions/stringOrNumber"
+        },
+        "railWidth": {
+          "$ref": "#/definitions/stringOrNumber"
+        },
+        "selectedId": {
+          "type": "string"
+        },
+        "accent": {
+          "$ref": "#/definitions/color"
+        }
+      },
+      "not": {
+        "anyOf": [
+          {
+            "required": [
+              "action"
+            ]
+          },
+          {
+            "required": [
+              "actions"
+            ]
+          },
+          {
+            "required": [
+              "triggers"
+            ]
+          },
+          {
+            "required": [
+              "actionRef"
+            ]
+          },
+          {
+            "required": [
+              "dataSourceRef"
+            ]
+          },
+          {
+            "required": [
+              "backend"
+            ]
+          },
+          {
+            "required": [
+              "database"
+            ]
+          },
+          {
+            "required": [
+              "auth"
+            ]
+          },
+          {
+            "required": [
+              "storage"
+            ]
+          },
+          {
+            "required": [
+              "server"
+            ]
+          },
+          {
+            "required": [
+              "requestPayload"
+            ]
+          },
+          {
+            "required": [
+              "successResult"
+            ]
+          },
+          {
+            "required": [
+              "failureCases"
+            ]
+          },
+          {
+            "required": [
+              "requiredPermission"
+            ]
+          },
+          {
+            "required": [
+              "validStatuses"
+            ]
+          },
+          {
+            "required": [
+              "serverDerived"
+            ]
+          },
+          {
+            "required": [
+              "cellAction"
+            ]
+          },
+          {
+            "required": [
+              "dummyAction"
+            ]
+          },
+          {
+            "required": [
+              "easySelectAction"
+            ]
+          },
+          {
+            "required": [
+              "deleteAction"
+            ]
+          },
+          {
+            "required": [
+              "after"
+            ]
+          },
+          {
+            "required": [
+              "catch"
+            ]
+          },
+          {
+            "required": [
+              "failure"
+            ]
+          },
+          {
+            "required": [
+              "onBeginEdit"
+            ]
+          },
+          {
+            "required": [
+              "onCheckedChanged"
+            ]
+          },
+          {
+            "required": [
+              "onClick"
+            ]
+          },
+          {
+            "required": [
+              "onCreate"
+            ]
+          },
+          {
+            "required": [
+              "onEndEdit"
+            ]
+          },
+          {
+            "required": [
+              "onEnter"
+            ]
+          },
+          {
+            "required": [
+              "onKeyDown"
+            ]
+          },
+          {
+            "required": [
+              "onKeyUp"
+            ]
+          },
+          {
+            "required": [
+              "onLoad"
+            ]
+          },
+          {
+            "required": [
+              "onPause"
+            ]
+          },
+          {
+            "required": [
+              "onResume"
+            ]
+          },
+          {
+            "required": [
+              "onShowEffect"
+            ]
+          },
+          {
+            "required": [
+              "onTextChanged"
+            ]
+          },
+          {
+            "required": [
+              "onHideEffect"
+            ]
+          },
+          {
+            "required": [
+              "onUnload"
+            ]
+          },
+          {
+            "required": [
+              "success"
+            ]
+          },
+          {
+            "required": [
+              "try"
+            ]
+          }
+        ]
+      },
+      "propertyNames": {
+        "not": {
+          "pattern": "^on[A-Z]"
+        }
+      }
+    },
+    "stringList": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "viewerOnlyForbiddenRequirements": {
+      "anyOf": [
+        {
+          "required": [
+            "action"
+          ]
+        },
+        {
+          "required": [
+            "actions"
+          ]
+        },
+        {
+          "required": [
+            "triggers"
+          ]
+        },
+        {
+          "required": [
+            "actionRef"
+          ]
+        },
+        {
+          "required": [
+            "dataSourceRef"
+          ]
+        },
+        {
+          "required": [
+            "backend"
+          ]
+        },
+        {
+          "required": [
+            "database"
+          ]
+        },
+        {
+          "required": [
+            "auth"
+          ]
+        },
+        {
+          "required": [
+            "storage"
+          ]
+        },
+        {
+          "required": [
+            "server"
+          ]
+        },
+        {
+          "required": [
+            "requestPayload"
+          ]
+        },
+        {
+          "required": [
+            "successResult"
+          ]
+        },
+        {
+          "required": [
+            "failureCases"
+          ]
+        },
+        {
+          "required": [
+            "requiredPermission"
+          ]
+        },
+        {
+          "required": [
+            "validStatuses"
+          ]
+        },
+        {
+          "required": [
+            "serverDerived"
+          ]
+        },
+        {
+          "required": [
+            "cellAction"
+          ]
+        },
+        {
+          "required": [
+            "dummyAction"
+          ]
+        },
+        {
+          "required": [
+            "easySelectAction"
+          ]
+        },
+        {
+          "required": [
+            "deleteAction"
+          ]
+        },
+        {
+          "required": [
+            "after"
+          ]
+        },
+        {
+          "required": [
+            "catch"
+          ]
+        },
+        {
+          "required": [
+            "failure"
+          ]
+        },
+        {
+          "required": [
+            "onBeginEdit"
+          ]
+        },
+        {
+          "required": [
+            "onCheckedChanged"
+          ]
+        },
+        {
+          "required": [
+            "onClick"
+          ]
+        },
+        {
+          "required": [
+            "onCreate"
+          ]
+        },
+        {
+          "required": [
+            "onEndEdit"
+          ]
+        },
+        {
+          "required": [
+            "onEnter"
+          ]
+        },
+        {
+          "required": [
+            "onKeyDown"
+          ]
+        },
+        {
+          "required": [
+            "onKeyUp"
+          ]
+        },
+        {
+          "required": [
+            "onLoad"
+          ]
+        },
+        {
+          "required": [
+            "onPause"
+          ]
+        },
+        {
+          "required": [
+            "onResume"
+          ]
+        },
+        {
+          "required": [
+            "onShowEffect"
+          ]
+        },
+        {
+          "required": [
+            "onTextChanged"
+          ]
+        },
+        {
+          "required": [
+            "onHideEffect"
+          ]
+        },
+        {
+          "required": [
+            "onUnload"
+          ]
+        },
+        {
+          "required": [
+            "success"
+          ]
+        },
+        {
+          "required": [
+            "try"
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,7 @@
+<Form pos="[0,0,402,720]">
+  <Avatar name="avatar" pos="[24,32,72,72]" initials="HK" backgroundColor="#0F172A" color="#FFFFFF" />
+  <TextField name="name" pos="[24,132,354,44]" placeholder="Display name" value="Hong Kim" />
+  <Select name="language" pos="[24,192,354,44]" value="ko" options="[{&quot;value&quot;:&quot;ko&quot;,&quot;label&quot;:&quot;Korean&quot;},{&quot;value&quot;:&quot;en&quot;,&quot;label&quot;:&quot;English&quot;}]" />
+  <Switch name="marketing" pos="[24,260,300,44]" title="Marketing emails" checked="false" />
+  <Button name="save" pos="[24,336,354,48]" label="Save profile" backgroundColor="#2563EB" color="#FFFFFF" />
+</Form>

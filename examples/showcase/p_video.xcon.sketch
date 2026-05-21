@@ -1,0 +1,32 @@
+screen 560x576
+  border
+    visible true
+    width 1
+    color @border
+    radius 10
+  shadow
+    opacity 0.08
+    blur 6
+  al
+    autoHeight true
+    gap 0
+    padding "14px 16px"
+  hdr: label "videoView · custom player" at 0 0 560 28
+    font
+      family "JetBrains Mono"
+      size 10
+      weight "normal"
+    textAlign "left"
+    color @ink-3
+    labelPadding "0 0 16px 0"
+    suffixTextColor @accent
+    cssClass "xa-al-vv-card-cap"
+    al
+      width 100%
+    suffix
+      text "#09"
+  vv: videoView at 0 0 560 520
+    videoViewMode "showcase"
+    al
+      width 100%
+      alignSelf "stretch"

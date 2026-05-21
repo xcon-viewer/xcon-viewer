@@ -1,0 +1,157 @@
+{
+  "type": "form",
+  "pos": [
+    0,
+    0,
+    402,
+    960
+  ],
+  "components": {
+    "stack": {
+      "type": "stack",
+      "pos": [
+        24,
+        24,
+        354,
+        120
+      ],
+      "direction": "column",
+      "gap": 8,
+      "items": [
+        {
+          "type": "label",
+          "text": "Stack item A"
+        },
+        {
+          "type": "spacer",
+          "size": 8
+        },
+        {
+          "type": "label",
+          "text": "Stack item B"
+        }
+      ]
+    },
+    "grid": {
+      "type": "grid",
+      "pos": [
+        24,
+        164,
+        354,
+        120
+      ],
+      "columns": 3,
+      "gap": 8,
+      "items": [
+        {
+          "type": "badge",
+          "text": "A"
+        },
+        {
+          "type": "badge",
+          "text": "B"
+        },
+        {
+          "type": "badge",
+          "text": "C"
+        }
+      ]
+    },
+    "flex": {
+      "type": "flexBox",
+      "pos": [
+        24,
+        304,
+        354,
+        80
+      ],
+      "direction": "row",
+      "justify": "space-between",
+      "items": [
+        {
+          "type": "button",
+          "label": "Back"
+        },
+        {
+          "type": "button",
+          "label": "Next"
+        }
+      ]
+    },
+    "tabs": {
+      "type": "tabs",
+      "pos": [
+        24,
+        404,
+        354,
+        160
+      ],
+      "items": [
+        {
+          "id": "one",
+          "label": "One",
+          "content": {
+            "type": "label",
+            "text": "First tab"
+          }
+        },
+        {
+          "id": "two",
+          "label": "Two",
+          "content": {
+            "type": "label",
+            "text": "Second tab"
+          }
+        }
+      ],
+      "activeId": "one"
+    },
+    "accordion": {
+      "type": "accordion",
+      "pos": [
+        24,
+        584,
+        354,
+        160
+      ],
+      "items": [
+        {
+          "id": "a",
+          "title": "Section A",
+          "content": "Alpha"
+        },
+        {
+          "id": "b",
+          "title": "Section B",
+          "content": "Beta"
+        }
+      ],
+      "defaultOpen": [
+        "a"
+      ]
+    },
+    "list": {
+      "type": "list",
+      "pos": [
+        24,
+        764,
+        354,
+        160
+      ],
+      "itemSize": {
+        "height": 48,
+        "width": 354
+      },
+      "items": [
+        {
+          "type": "label",
+          "text": "Row 1"
+        },
+        {
+          "type": "label",
+          "text": "Row 2"
+        }
+      ]
+    }
+  }
+}

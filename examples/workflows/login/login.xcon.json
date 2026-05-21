@@ -1,0 +1,79 @@
+{
+  "type": "form",
+  "pos": [
+    0,
+    0,
+    402,
+    700
+  ],
+  "backgroundColor": "#F8FAFC",
+  "components": {
+    "title": {
+      "type": "label",
+      "pos": [
+        32,
+        96,
+        338,
+        40
+      ],
+      "text": "Sign in",
+      "font": {
+        "size": 30,
+        "weight": 800
+      },
+      "textAlign": "center"
+    },
+    "email": {
+      "type": "textField",
+      "pos": [
+        32,
+        176,
+        338,
+        44
+      ],
+      "placeholder": "Email",
+      "inputType": "email",
+      "prefix": {
+        "icon": "mail",
+        "library": "lucide"
+      }
+    },
+    "password": {
+      "type": "passwordField",
+      "pos": [
+        32,
+        236,
+        338,
+        44
+      ],
+      "placeholder": "Password",
+      "showToggle": true
+    },
+    "remember": {
+      "type": "checkbox",
+      "pos": [
+        32,
+        300,
+        180,
+        32
+      ],
+      "label": "Remember me",
+      "value": "unchecked"
+    },
+    "submit": {
+      "type": "button",
+      "pos": [
+        32,
+        356,
+        338,
+        48
+      ],
+      "label": "Sign in",
+      "backgroundColor": "#2563EB",
+      "color": "#FFFFFF",
+      "border": {
+        "radius": 10
+      }
+    }
+  }
+}

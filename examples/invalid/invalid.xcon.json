@@ -1,0 +1,41 @@
+{
+  "type": "form",
+  "pos": [
+    0,
+    0,
+    402
+  ],
+  "onClick": "runRuntimeAction",
+  "actions": {
+    "save": {
+      "type": "httpRequest",
+      "url": "/api/save"
+    }
+  },
+  "database": {
+    "Product": {
+      "fields": {
+        "id": "string"
+      }
+    }
+  },
+  "components": {
+    "unsafe": {
+      "type": "image",
+      "src": "javascript:alert(1)"
+    },
+    "list": {
+      "type": "list",
+      "actionRef": "loadRows",
+      "backend": {
+        "method": "GET",
+        "path": "/api/products"
+      }
+    },
+    "cta": {
+      "type": "button",
+      "label": "Save",
+      "onClick_ref": "save"
+    }
+  }
+}

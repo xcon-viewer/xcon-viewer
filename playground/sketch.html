@@ -1,0 +1,1235 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XCON/SKETCH Live Editor</title>
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js"></script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f4ef;
+      --panel: #fffdfa;
+      --panel-2: #f2ede5;
+      --ink: #1c1710;
+      --muted: #7b6f62;
+      --line: rgba(60, 45, 25, 0.14);
+      --accent: #c4622d;
+      --accent-rgb: 196, 98, 45;
+      --ok: #12805c;
+      --danger: #b42318;
+      --editor-bg: #ffffff;
+      --editor-fg: #111827;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #0c0c0f;
+      --panel: #16161a;
+      --panel-2: #1e1e24;
+      --ink: #f0eef8;
+      --muted: #a7a3b8;
+      --line: rgba(255, 255, 255, 0.12);
+      --accent: #7c6af7;
+      --accent-rgb: 124, 106, 247;
+      --ok: #34d399;
+      --danger: #f87171;
+      --editor-bg: #101827;
+      --editor-fg: #f8fafc;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    .shell {
+      height: 100vh;
+      min-width: 1080px;
+      display: grid;
+      grid-template-columns: 232px minmax(390px, 1fr) 8px minmax(390px, 0.95fr) 300px;
+      gap: 10px;
+      padding: 10px;
+    }
+
+    .panel {
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel);
+      box-shadow: 0 14px 36px rgba(28, 23, 16, 0.08);
+    }
+
+    .side {
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 12px 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand strong {
+      display: block;
+      font-size: 14px;
+      line-height: 1.15;
+    }
+
+    .brand span,
+    .muted {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .btn {
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--panel);
+      color: var(--ink);
+      padding: 7px 11px;
+      cursor: pointer;
+    }
+
+    .btn:hover { border-color: rgba(var(--accent-rgb), 0.55); }
+
+    .btn.primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .btn.active {
+      border-color: rgba(var(--accent-rgb), 0.55);
+      color: var(--accent);
+      background: rgba(var(--accent-rgb), 0.08);
+      font-weight: 700;
+    }
+
+    .scroll {
+      min-height: 0;
+      overflow: auto;
+      padding: 12px;
+    }
+
+    .section {
+      padding: 0 0 14px;
+      margin: 0 0 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section:last-child {
+      margin-bottom: 0;
+      border-bottom: 0;
+    }
+
+    .section-title {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+
+    .segmented,
+    .accent-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .segmented {
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-2);
+    }
+
+    .segmented .btn {
+      flex: 1;
+      min-height: 28px;
+      border-radius: 5px;
+      background: transparent;
+      border-color: transparent;
+      padding: 4px 8px;
+    }
+
+    .segmented .btn.active {
+      background: var(--panel);
+      box-shadow: 0 2px 8px rgba(28, 23, 16, 0.08);
+    }
+
+    .accent-input {
+      width: 42px;
+      height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--panel);
+      padding: 4px;
+    }
+
+    .accent-hex,
+    .preset-select {
+      width: 100%;
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--panel-2);
+      color: var(--ink);
+      padding: 7px 9px;
+    }
+
+    .preset-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .dot {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--panel);
+      border-radius: 999px;
+      box-shadow: 0 0 0 1px var(--line);
+      cursor: pointer;
+    }
+
+    .snippet {
+      display: block;
+      width: 100%;
+      margin: 0 0 7px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--ink);
+      padding: 10px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .snippet strong {
+      display: block;
+      font-size: 12px;
+      line-height: 1.3;
+    }
+
+    .snippet span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .workbench {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    .pane-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 46px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .file-label,
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .pill {
+      flex: 0 0 auto;
+      border-radius: 999px;
+      background: rgba(var(--accent-rgb), 0.1);
+      color: var(--accent);
+      padding: 5px 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .file-label span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #editorHost,
+    #fallbackEditor {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+    }
+
+    #fallbackEditor {
+      display: none;
+      resize: none;
+      border: 0;
+      background: var(--editor-bg);
+      color: var(--editor-fg);
+      padding: 16px;
+      font-family: "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+      font-size: 13px;
+      line-height: 1.55;
+      outline: none;
+    }
+
+    .status-line {
+      min-height: 30px;
+      padding: 7px 12px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .status-line.ok { color: var(--ok); }
+    .status-line.error { color: var(--danger); }
+
+    .splitter {
+      width: 8px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      cursor: col-resize;
+      position: relative;
+    }
+
+    .splitter::before {
+      content: "";
+      position: absolute;
+      inset: 20px 3px;
+      border-radius: 999px;
+      background: rgba(28, 23, 16, 0.18);
+    }
+
+    html[data-theme="dark"] .splitter::before {
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .preview {
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .preview-body {
+      min-width: 0;
+      min-height: 0;
+      overflow: auto;
+      padding: 18px;
+      background:
+        linear-gradient(var(--line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line) 1px, transparent 1px),
+        var(--panel);
+      background-size: 24px 24px;
+    }
+
+    .preview-canvas {
+      width: max-content;
+      height: max-content;
+      transform-origin: top left;
+      transition: transform 120ms ease;
+    }
+
+    .app-content {
+      overflow: visible;
+      border-radius: 14px;
+      background: transparent;
+    }
+
+    .inspector {
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .inspector-body {
+      min-height: 0;
+      overflow: auto;
+      padding: 12px;
+    }
+
+    .diagnostics {
+      min-height: 64px;
+      white-space: pre-wrap;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-2);
+      padding: 10px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .diagnostics.ok { color: var(--ok); }
+    .diagnostics.error { color: var(--danger); }
+
+    .component-list {
+      display: grid;
+      gap: 7px;
+    }
+
+    .component-row {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 8px 10px;
+    }
+
+    .component-row strong {
+      display: block;
+      font-size: 12px;
+    }
+
+    .component-row span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .json-box {
+      width: 100%;
+      min-height: 220px;
+      resize: vertical;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #101827;
+      color: #e5e7eb;
+      padding: 12px;
+      font-family: "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 1180px) {
+      body { overflow: auto; }
+      .shell {
+        min-width: 0;
+        height: auto;
+        min-height: 100vh;
+        grid-template-columns: 1fr;
+      }
+      .side,
+      .workbench,
+      .preview,
+      .inspector {
+        min-height: 420px;
+      }
+      .splitter { display: none; }
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "@xcon-viewer/core": "../packages/core/dist/index.js",
+        "@xcon-viewer/viewer": "../packages/viewer/dist/index.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="shell" id="shell">
+    <aside class="panel side">
+      <div class="brand">
+        <div>
+          <strong>XCON/SKETCH</strong>
+          <span>Live editor for public viewer documents</span>
+        </div>
+        <a class="btn" href="/play" title="Open full playground">Play</a>
+      </div>
+      <div class="toolbar">
+        <button class="btn primary" id="runBtn" type="button">Run</button>
+        <button class="btn" id="formatBtn" type="button">Format</button>
+        <button class="btn" id="saveBtn" type="button">Save</button>
+      </div>
+      <div class="scroll">
+        <section class="section">
+          <p class="section-title">Theme</p>
+          <div class="segmented">
+            <button class="btn active" id="lightBtn" type="button">Light</button>
+            <button class="btn" id="darkBtn" type="button">Dark</button>
+          </div>
+        </section>
+        <section class="section">
+          <p class="section-title">Accent</p>
+          <div class="accent-row">
+            <input class="accent-input" id="accentInput" type="color" value="#c4622d" aria-label="Accent color">
+            <input class="accent-hex" id="accentHex" value="#C4622D" aria-label="Accent hex">
+          </div>
+          <div class="preset-grid" aria-label="Accent presets">
+            <button class="dot" type="button" data-hex="#C4622D" style="background:#C4622D" title="Terracotta"></button>
+            <button class="dot" type="button" data-hex="#7C6AF7" style="background:#7C6AF7" title="Violet"></button>
+            <button class="dot" type="button" data-hex="#2D7D4F" style="background:#2D7D4F" title="Forest"></button>
+            <button class="dot" type="button" data-hex="#2B5FA0" style="background:#2B5FA0" title="Ocean"></button>
+            <button class="dot" type="button" data-hex="#C03A2B" style="background:#C03A2B" title="Crimson"></button>
+            <button class="dot" type="button" data-hex="#B07D12" style="background:#B07D12" title="Amber"></button>
+            <button class="dot" type="button" data-hex="#0D9488" style="background:#0D9488" title="Teal"></button>
+            <button class="dot" type="button" data-hex="#DB2777" style="background:#DB2777" title="Pink"></button>
+          </div>
+        </section>
+        <section class="section">
+          <p class="section-title">Showcase</p>
+          <select class="preset-select" id="presetSelect" aria-label="Showcase sketch preset"></select>
+        </section>
+        <section class="section">
+          <p class="section-title">Screen</p>
+          <button class="snippet" type="button" data-snippet="screen"><strong>Phone screen</strong><span>Root form declaration</span></button>
+          <button class="snippet" type="button" data-snippet="stack"><strong>Panel stack</strong><span>Auto-layout container</span></button>
+          <button class="snippet" type="button" data-snippet="label"><strong>Label title</strong><span>Aligned text block</span></button>
+        </section>
+        <section class="section">
+          <p class="section-title">Controls</p>
+          <button class="snippet" type="button" data-snippet="search"><strong>Search field</strong><span>Prefix icon and pill style</span></button>
+          <button class="snippet" type="button" data-snippet="button"><strong>Button pair</strong><span>Primary and outline CTAs</span></button>
+        </section>
+        <section class="section">
+          <p class="section-title">Media</p>
+          <button class="snippet" type="button" data-snippet="image"><strong>Image overlay</strong><span>Tag, title, subtitle, CTA</span></button>
+          <button class="snippet" type="button" data-snippet="banner"><strong>Banner slides</strong><span>Carousel slide array</span></button>
+          <button class="snippet" type="button" data-snippet="list"><strong>List cards</strong><span>Template-backed list</span></button>
+        </section>
+      </div>
+    </aside>
+
+    <section class="panel workbench">
+      <div class="pane-head">
+        <div class="file-label"><span class="pill">Sketch</span><span id="fileName">untitled.xcon.sketch</span></div>
+        <div class="toolbar" style="padding:0;border:0">
+          <button class="btn" id="copySketchBtn" type="button">Copy</button>
+        </div>
+      </div>
+      <div id="editorHost"></div>
+      <textarea id="fallbackEditor" spellcheck="false"></textarea>
+      <div id="editorStatus" class="status-line">Ready.</div>
+    </section>
+
+    <button class="splitter" id="splitter" type="button" aria-label="Resize editor and preview"></button>
+
+    <section class="panel preview">
+      <div class="pane-head">
+        <div class="file-label"><span class="pill">Preview</span><span id="renderTime">not rendered</span></div>
+        <div class="toolbar" style="padding:0;border:0">
+          <button class="btn active" id="fitBtn" type="button">Fit</button>
+          <button class="btn" id="originalBtn" type="button">Original</button>
+        </div>
+      </div>
+      <div class="preview-body" id="previewBody">
+        <div class="preview-canvas" id="previewCanvas">
+          <div class="app-content" id="appContent"></div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel inspector">
+      <div class="brand">
+        <div>
+          <strong>Inspector</strong>
+          <span>Parse, validate, and inspect</span>
+        </div>
+      </div>
+      <div class="inspector-body">
+        <section class="section">
+          <p class="section-title">Diagnostics</p>
+          <div id="diagnostics" class="diagnostics">Waiting for render.</div>
+        </section>
+        <section class="section">
+          <p class="section-title">Components</p>
+          <div id="componentList" class="component-list"></div>
+        </section>
+        <section class="section">
+          <p class="section-title">Converted JSON</p>
+          <textarea id="jsonBox" class="json-box" readonly></textarea>
+          <div class="toolbar" style="padding:8px 0 0;border:0">
+            <button class="btn" id="copyJsonBtn" type="button">Copy JSON</button>
+            <button class="btn" id="copyXmlBtn" type="button">Copy XML</button>
+          </div>
+        </section>
+      </div>
+    </aside>
+  </div>
+
+  <script type="module">
+    import {
+      fromSketch,
+      printValidationResult,
+      serializeBySyntax,
+      toJSONObject,
+      validate
+    } from '@xcon-viewer/core';
+    import { render, viewerCss } from '@xcon-viewer/viewer';
+
+    const SAMPLE = `screen "Public SKETCH Demo" 402x800 bg @surface
+  header: panel at 0 0 402 86
+    al
+      direction "row"
+      alignItems "center"
+      justifyContent "space-between"
+      padding "18px 20px"
+    logo: label "xcon" at 0 0 120 28
+      color @accent
+      font
+        size 18
+        weight 800
+    menu: button at 0 0 42 42
+      backgroundColor @surface2
+      border
+        visible true
+        width 1
+        color @border2
+        radius 21
+      icon
+        name "menu"
+
+  search: textField "Search documents" at 20 86 362 48
+    backgroundColor @surface2
+    border
+      visible false
+      radius 24
+    prefix
+      icon "search"
+
+  hero: banner at 20 150 362 228
+    border
+      visible false
+      radius 20
+    shadow
+      visible true
+    indicator
+      show true
+      color "255,255,255,255"
+    slides [{"type":"image","src":"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80","objectFit":"fill","overlayTag":"LIVE","overlayTitle":"anywhere","overlaySub":"Structured UI documents\\nrender everywhere.","overlayCta":"Open","pos":[0,0,362,228]},{"type":"image","src":"https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200&q=80","objectFit":"fill","overlayTag":"XML","overlayTitle":"portable","overlaySub":"JSON, XML, TAGLESS,\\nand SKETCH.","overlayCta":"Read spec","pos":[0,0,362,228]}]
+
+  cta: panel at 20 392 362 46
+    al
+      direction "row"
+      gap 10
+    primary: button "Render Preview" at 0 0 176 42
+      backgroundColor @accent
+      color "#ffffff"
+      border
+        visible false
+        radius 8
+    secondary: button "Read Spec" at 0 0 176 42
+      backgroundColor @surface
+      color @accent
+      border
+        visible true
+        width 1
+        color @accent
+        radius 8
+
+  title: label "Showcase examples" at 20 456 220 28
+    color @ink
+    font
+      size 16
+      weight 700`;
+
+    const SHOWCASE_PRESETS = [
+      ['XconBnB main', '../examples/showcase/p_xconbnb_main.xcon.sketch'],
+      ['Button catalog', '../examples/showcase/p_button.xcon.sketch'],
+      ['Label catalog', '../examples/showcase/p_label.xcon.sketch'],
+      ['Text field catalog', '../examples/showcase/p_textField.xcon.sketch'],
+      ['Banner catalog', '../examples/showcase/p_banner.xcon.sketch'],
+      ['Image catalog', '../examples/showcase/p_image.xcon.sketch'],
+      ['List catalog', '../examples/showcase/p_xList.xcon.sketch'],
+      ['Panel catalog', '../examples/showcase/p_panel.xcon.sketch'],
+      ['Shape catalog', '../examples/showcase/p_shape.xcon.sketch'],
+      ['Text view catalog', '../examples/showcase/p_textView.xcon.sketch']
+    ];
+
+    const SNIPPETS = {
+      screen: `screen "New Screen" 402x800 bg @surface
+  title: label "New screen" at 20 40 260 36
+    color @ink
+    font
+      size 24
+      weight 800`,
+      stack: `stackPanel: panel at 20 120 362 180
+  backgroundColor @surface
+  border
+    visible true
+    width 1
+    color @border
+    radius 16
+  al
+    direction "column"
+    gap 12
+    padding 18`,
+      label: `titleLabel: label "Section title" at 20 40 260 44
+  color @ink
+  font
+    size 22
+    weight 800
+    align center
+    valign middle`,
+      search: `search: textField "Search anything..." at 20 86 362 48
+  backgroundColor @surface2
+  border
+    visible false
+    radius 24
+  prefix
+    icon "search"`,
+      button: `cta: panel at 20 392 362 46
+  al
+    direction "row"
+    gap 10
+  primary: button "Primary action" at 0 0 176 42
+    backgroundColor @accent
+    color "#ffffff"
+    border
+      visible false
+      radius 8
+  secondary: button "Secondary" at 0 0 176 42
+    backgroundColor @surface
+    color @accent
+    border
+      visible true
+      width 1
+      color @accent
+      radius 8`,
+      image: `cover: image at 20 120 362 220
+  src "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=900&q=80"
+  objectFit "fill"
+  overlayTag "LIVE"
+  overlayTitle "anywhere"
+  overlaySub "Structured UI documents\\nrender everywhere."
+  overlayCta "Open"
+  border
+    visible false
+    radius 18`,
+      banner: `hero: banner at 20 150 362 228
+  border
+    visible false
+    radius 20
+  indicator
+    show true
+  slides [{"type":"image","src":"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80","overlayTag":"LIVE","overlayTitle":"anywhere","pos":[0,0,362,228]},{"type":"image","src":"https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200&q=80","overlayTag":"XML","overlayTitle":"portable","pos":[0,0,362,228]}]`,
+      list: `cards: list at 20 470 362 180
+  direction "horizontal"
+  itemSize
+    width 140
+    height 160
+  separator
+    size 12
+    color "0,0,0,0"
+  dataTemplate {"type":"template","template":{"tabledata":[{"title":"JSON","line":"Object model"},{"title":"XML","line":"Portable markup"},{"title":"SKETCH","line":"Compact authoring"}]}}
+  templates {"cell":{"title":{"type":"label","pos":[12,18,116,24],"text":"{{item.title}}","font":{"size":14,"weight":800}},"line":{"type":"label","pos":[12,48,116,48],"text":"{{item.line}}","font":{"size":12},"color":"@ink-2"},"itemSize":{"width":140,"height":160}}}`
+    };
+
+    const COMPONENTS = [
+      'form', 'panel', 'label', 'button', 'textField', 'textView', 'image', 'banner', 'list',
+      'shape', 'checkbox', 'radioButton', 'select', 'slider', 'switch', 'datePicker', 'timePicker',
+      'progressBar', 'spinner', 'badge', 'avatar', 'divider', 'tabs', 'accordion', 'grid'
+    ];
+    const ROOT_PROPS = ['bg', 'backgroundColor', 'title', 'name', 'border', 'shadow', 'scroll', 'style', 'al'];
+    const COMPONENT_PROPS = [
+      'backgroundColor', 'color', 'font', 'align', 'valign', 'border', 'shadow', 'radius', 'style',
+      'al', 'src', 'objectFit', 'placeholder', 'label', 'text', 'icon', 'prefix', 'suffix',
+      'indicator', 'slides', 'templates', 'dataTemplate', 'itemSize', 'separator', 'direction',
+      'layout', 'scroll', 'visible', 'enabled', 'renderHtml', 'html'
+    ];
+    const BLOCK_PROPS = {
+      font: ['family', 'size', 'weight', 'style', 'lineHeight', 'align', 'valign', 'underline', 'strikethrough'],
+      border: ['visible', 'width', 'style', 'color', 'radius'],
+      shadow: ['visible', 'x', 'y', 'blur', 'spread', 'opacity', 'color'],
+      al: ['direction', 'alignItems', 'justifyContent', 'gap', 'padding', 'autoHeight', 'width', 'height', 'flex', 'alignSelf', 'maxHeight', 'minHeight', 'stackClass'],
+      icon: ['name', 'size', 'color'],
+      prefix: ['icon', 'text'],
+      suffix: ['icon', 'text'],
+      indicator: ['show', 'color'],
+      itemSize: ['width', 'height'],
+      separator: ['color', 'size']
+    };
+
+    const editorHost = document.getElementById('editorHost');
+    const fallbackEditor = document.getElementById('fallbackEditor');
+    const previewBody = document.getElementById('previewBody');
+    const previewCanvas = document.getElementById('previewCanvas');
+    const appContent = document.getElementById('appContent');
+    const diagnostics = document.getElementById('diagnostics');
+    const jsonBox = document.getElementById('jsonBox');
+    const componentList = document.getElementById('componentList');
+    const editorStatus = document.getElementById('editorStatus');
+    const renderTime = document.getElementById('renderTime');
+    const fileName = document.getElementById('fileName');
+    const presetSelect = document.getElementById('presetSelect');
+    const accentInput = document.getElementById('accentInput');
+    const accentHex = document.getElementById('accentHex');
+    const fitBtn = document.getElementById('fitBtn');
+    const originalBtn = document.getElementById('originalBtn');
+    const styleEl = document.createElement('style');
+
+    let editor = null;
+    let latestTree = null;
+    let latestPlain = null;
+    let fitMode = true;
+    let renderTimer = 0;
+
+    styleEl.id = 'xcon-viewer-style';
+    styleEl.textContent = viewerCss;
+    document.head.appendChild(styleEl);
+
+    populatePresets();
+    initTheme();
+    initSplitter();
+    initEvents();
+    setupMonaco();
+    loadInitialSource();
+
+    function populatePresets() {
+      presetSelect.innerHTML = '<option value="">Load showcase example</option>' + SHOWCASE_PRESETS.map(([label, url]) => (
+        `<option value="${escapeHtml(url)}">${escapeHtml(label)}</option>`
+      )).join('');
+    }
+
+    async function loadInitialSource() {
+      const params = new URLSearchParams(location.search);
+      const src = params.get('src');
+      if (src) {
+        await loadSource(src);
+        return;
+      }
+      setCode(localStorage.getItem('xcon-sketch-live-editor-source') || SAMPLE);
+      renderNow();
+    }
+
+    function initTheme() {
+      document.getElementById('lightBtn').addEventListener('click', () => setTheme('light'));
+      document.getElementById('darkBtn').addEventListener('click', () => setTheme('dark'));
+      accentInput.addEventListener('input', () => applyAccent(accentInput.value));
+      accentHex.addEventListener('change', () => applyAccent(accentHex.value));
+      accentHex.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') applyAccent(accentHex.value);
+      });
+      document.querySelectorAll('.dot[data-hex]').forEach((button) => {
+        button.addEventListener('click', () => applyAccent(button.dataset.hex));
+      });
+      setTheme('light');
+      applyAccent('#C4622D');
+    }
+
+    function setTheme(mode) {
+      const next = mode === 'dark' ? 'dark' : 'light';
+      document.documentElement.dataset.theme = next;
+      document.getElementById('lightBtn').classList.toggle('active', next === 'light');
+      document.getElementById('darkBtn').classList.toggle('active', next === 'dark');
+      if (editor && window.monaco) monaco.editor.setTheme(next === 'dark' ? 'xconSketchDark' : 'xconSketchLight');
+      renderNow();
+    }
+
+    function applyAccent(value) {
+      const normalized = normalizeHex(value);
+      if (!normalized) return;
+      const rgb = hexToRgb(normalized);
+      document.documentElement.style.setProperty('--accent', normalized);
+      document.documentElement.style.setProperty('--accent-rgb', `${rgb.r}, ${rgb.g}, ${rgb.b}`);
+      accentInput.value = normalized;
+      accentHex.value = normalized;
+      renderNow();
+    }
+
+    function initEvents() {
+      document.getElementById('runBtn').addEventListener('click', renderNow);
+      document.getElementById('formatBtn').addEventListener('click', formatSketch);
+      document.getElementById('saveBtn').addEventListener('click', saveSketch);
+      document.getElementById('copySketchBtn').addEventListener('click', () => copyText(getCode(), 'SKETCH copied.'));
+      document.getElementById('copyJsonBtn').addEventListener('click', () => copyText(jsonBox.value, 'JSON copied.'));
+      document.getElementById('copyXmlBtn').addEventListener('click', () => latestTree && copyText(serializeBySyntax(latestTree, 'xml', true), 'XML copied.'));
+      fitBtn.addEventListener('click', () => setFitMode(true));
+      originalBtn.addEventListener('click', () => setFitMode(false));
+      presetSelect.addEventListener('change', () => presetSelect.value && loadSource(presetSelect.value));
+      fallbackEditor.addEventListener('input', scheduleRender);
+      window.addEventListener('resize', fitCanvas);
+      document.querySelectorAll('[data-snippet]').forEach((button) => {
+        button.addEventListener('click', () => insertSnippet(button.dataset.snippet));
+      });
+    }
+
+    function setupMonaco() {
+      if (!window.require) {
+        fallbackEditor.style.display = 'block';
+        editorHost.style.display = 'none';
+        return;
+      }
+      window.require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
+      window.require(['vs/editor/editor.main'], () => {
+        const monaco = window.monaco;
+        monaco.languages.register({ id: 'xconSketch' });
+        monaco.languages.setMonarchTokensProvider('xconSketch', {
+          tokenizer: {
+            root: [
+              [/\/\/.*$/, 'comment'],
+              [/"([^"\\]|\\.)*$/, 'string.invalid'],
+              [/"([^"\\]|\\.)*"/, 'string'],
+              [/@[A-Za-z_][\w-]*/, 'variable'],
+              [/\b(screen|at|true|false|null)\b/, 'keyword'],
+              [/\b(panel|label|button|textField|image|banner|list|shape|textView)\b/, 'type.identifier'],
+              [/[{}[\]]/, '@brackets'],
+              [/-?\d+(?:\.\d+)?(?:x-?\d+(?:\.\d+)?)?/, 'number'],
+              [/[A-Za-z_][\w-]*(?=\s*:)/, 'entity.name'],
+              [/[A-Za-z_][\w-]*/, 'identifier']
+            ]
+          }
+        });
+        monaco.editor.defineTheme('xconSketchLight', {
+          base: 'vs',
+          inherit: true,
+          rules: [
+            { token: 'keyword', foreground: '2563eb', fontStyle: 'bold' },
+            { token: 'type.identifier', foreground: '008080', fontStyle: 'bold' },
+            { token: 'variable', foreground: 'db2777' },
+            { token: 'string', foreground: 'b45309' }
+          ],
+          colors: {
+            'editor.background': '#ffffff',
+            'editor.foreground': '#111827',
+            'editorSuggestWidget.background': '#ffffff',
+            'editorSuggestWidget.foreground': '#111827',
+            'editorSuggestWidget.selectedBackground': '#f2e4dc'
+          }
+        });
+        monaco.editor.defineTheme('xconSketchDark', {
+          base: 'vs-dark',
+          inherit: true,
+          rules: [
+            { token: 'keyword', foreground: '93c5fd', fontStyle: 'bold' },
+            { token: 'type.identifier', foreground: '5eead4', fontStyle: 'bold' },
+            { token: 'variable', foreground: 'f472b6' },
+            { token: 'string', foreground: 'fbbf24' }
+          ],
+          colors: {
+            'editor.background': '#101827',
+            'editor.foreground': '#f8fafc',
+            'editorSuggestWidget.background': '#111827',
+            'editorSuggestWidget.foreground': '#f8fafc',
+            'editorSuggestWidget.selectedBackground': '#263244'
+          }
+        });
+        monaco.languages.registerCompletionItemProvider('xconSketch', {
+          triggerCharacters: [' ', ':', '\n'],
+          provideCompletionItems(model, position) {
+            return { suggestions: completionItems(model, position) };
+          }
+        });
+        editor = monaco.editor.create(editorHost, {
+          value: fallbackEditor.value || SAMPLE,
+          language: 'xconSketch',
+          theme: document.documentElement.dataset.theme === 'dark' ? 'xconSketchDark' : 'xconSketchLight',
+          fontFamily: '"Cascadia Code", "JetBrains Mono", Consolas, monospace',
+          fontSize: 13,
+          lineHeight: 21,
+          minimap: { enabled: false },
+          automaticLayout: true,
+          tabSize: 2,
+          insertSpaces: true,
+          scrollBeyondLastLine: false,
+          wordWrap: 'off',
+          suggest: { showWords: false, localityBonus: true }
+        });
+        editor.onDidChangeModelContent(scheduleRender);
+        if (fallbackEditor.value) editor.setValue(fallbackEditor.value);
+        renderNow();
+      });
+    }
+
+    function completionItems(model, position) {
+      const block = activeBlockName(model, position);
+      const line = model.getLineContent(position.lineNumber).trim();
+      const kinds = window.monaco.languages.CompletionItemKind;
+      const mk = (label, kind, insertText, detail) => ({ label, kind, insertText: insertText || label, detail });
+      if (block) return (BLOCK_PROPS[block] || []).map((prop) => mk(prop, kinds.Property, prop, `${block} property`));
+      if (/^[A-Za-z_][\w-]*:\s*$/.test(line)) return COMPONENTS.map((type) => mk(type, kinds.Class, `${type} `, 'component type'));
+      if (!line || /^\w*$/.test(line)) {
+        return [
+          mk('screen', kinds.Keyword, 'screen "Screen" 402x800 bg @surface', 'root declaration'),
+          ...COMPONENTS.map((type) => mk(type, kinds.Class, `${type} "Text" at 20 20 120 44`, 'component')),
+          ...ROOT_PROPS.concat(COMPONENT_PROPS).map((prop) => mk(prop, kinds.Property, prop, 'property'))
+        ];
+      }
+      return COMPONENT_PROPS.map((prop) => mk(prop, kinds.Property, prop, 'property'));
+    }
+
+    function activeBlockName(model, position) {
+      const lineNo = position.lineNumber;
+      const currentLine = model.getLineContent(lineNo);
+      const indent = currentLine.length - currentLine.trimStart().length;
+      for (let index = lineNo - 1; index >= 1; index -= 1) {
+        const text = model.getLineContent(index);
+        const trimmed = text.trim();
+        if (!trimmed) continue;
+        const rowIndent = text.length - text.trimStart().length;
+        if (rowIndent < indent && /^[A-Za-z_][\w-]*$/.test(trimmed) && BLOCK_PROPS[trimmed]) return trimmed;
+        if (rowIndent < indent && /:\s*[A-Za-z_][\w-]*/.test(trimmed)) return '';
+      }
+      return '';
+    }
+
+    function getCode() {
+      return editor ? editor.getValue() : fallbackEditor.value;
+    }
+
+    function setCode(value) {
+      fallbackEditor.value = value;
+      if (editor) editor.setValue(value);
+    }
+
+    function scheduleRender() {
+      clearTimeout(renderTimer);
+      renderTimer = setTimeout(renderNow, 220);
+    }
+
+    function renderNow() {
+      clearTimeout(renderTimer);
+      try {
+        latestTree = fromSketch(getCode());
+        latestPlain = toJSONObject(latestTree);
+        const result = validate(latestTree, { trustedRendererPolicy: true });
+        jsonBox.value = JSON.stringify(latestPlain, null, 2);
+        appContent.innerHTML = '';
+        applyViewerThemeVars(appContent);
+        render(latestTree, appContent, { allowExternalResources: true, allowHtml: true });
+        renderComponents(latestPlain);
+        fitCanvas();
+        writeDiagnostics(result.valid && result.warnings.length === 0 ? 'ok' : 'error', printValidationResult(result));
+        writeStatus('Rendered.', 'ok');
+        renderTime.textContent = `${new Date().toLocaleTimeString()} rendered`;
+      } catch (error) {
+        latestTree = null;
+        latestPlain = null;
+        jsonBox.value = '';
+        componentList.innerHTML = '';
+        writeDiagnostics('error', error && error.message ? error.message : String(error));
+        writeStatus('Render failed.', 'error');
+      }
+    }
+
+    function applyViewerThemeVars(target) {
+      const dark = document.documentElement.dataset.theme === 'dark';
+      const accent = normalizeHex(accentInput.value) || (dark ? '#7C6AF7' : '#C4622D');
+      const vars = {
+        '--bg': dark ? '#0C0C0F' : '#F7F4EF',
+        '--bg2': dark ? '#121218' : '#EFEBE3',
+        '--surface': dark ? '#16161A' : '#FDFCFA',
+        '--surface2': dark ? '#1E1E24' : '#F2EDE5',
+        '--border': dark ? 'rgba(255,255,255,0.055)' : 'rgba(60,45,25,0.1)',
+        '--border2': dark ? 'rgba(255,255,255,0.1)' : 'rgba(60,45,25,0.18)',
+        '--ink': dark ? '#F0EEF8' : '#1C1710',
+        '--ink-2': dark ? '#8B88A0' : '#6B5F4E',
+        '--ink-3': dark ? '#5A5770' : '#A8998A',
+        '--accent': accent,
+        '--font-body': '"Plus Jakarta Sans", Inter, system-ui, sans-serif'
+      };
+      Object.entries(vars).forEach(([name, value]) => target.style.setProperty(name, value));
+    }
+
+    function fitCanvas() {
+      if (!latestPlain) return;
+      const { width, height } = getDocumentSize(latestPlain);
+      previewCanvas.style.width = `${width}px`;
+      previewCanvas.style.height = `${height}px`;
+      appContent.style.width = `${width}px`;
+      appContent.style.height = `${height}px`;
+      appContent.style.minWidth = `${width}px`;
+      appContent.style.minHeight = `${height}px`;
+      const availableW = Math.max(160, previewBody.clientWidth - 36);
+      const availableH = Math.max(160, previewBody.clientHeight - 36);
+      const scale = fitMode ? Math.min(1, availableW / width, availableH / height) : 1;
+      previewCanvas.style.transform = `scale(${scale})`;
+      previewCanvas.style.marginRight = `${width * (scale - 1)}px`;
+      previewCanvas.style.marginBottom = `${height * (scale - 1)}px`;
+    }
+
+    function setFitMode(next) {
+      fitMode = Boolean(next);
+      fitBtn.classList.toggle('active', fitMode);
+      originalBtn.classList.toggle('active', !fitMode);
+      fitCanvas();
+    }
+
+    function getDocumentSize(plain) {
+      const pos = Array.isArray(plain?.pos) ? plain.pos : [0, 0, 360, 640];
+      return {
+        width: Math.max(1, Number(pos[2]) || 360),
+        height: Math.max(1, Number(pos[3]) || 640)
+      };
+    }
+
+    function renderComponents(plain) {
+      const rows = [];
+      collectComponents(plain, 'root', rows);
+      componentList.innerHTML = rows.map((row) => (
+        `<div class="component-row"><strong>${escapeHtml(row.path)}</strong><span>${escapeHtml(row.type)} · ${escapeHtml(row.pos)}</span></div>`
+      )).join('') || '<p class="muted">No components.</p>';
+    }
+
+    function collectComponents(node, path, rows) {
+      if (!node || typeof node !== 'object') return;
+      rows.push({ path, type: node.type || 'component', pos: Array.isArray(node.pos) ? node.pos.join(' ') : '' });
+      const components = node.components;
+      if (!components || typeof components !== 'object') return;
+      const order = typeof components.componentsOrder === 'string'
+        ? components.componentsOrder.split(',').map((item) => item.trim()).filter(Boolean)
+        : Object.keys(components).filter((key) => key !== 'componentsOrder');
+      order.forEach((key) => collectComponents(components[key], key, rows));
+    }
+
+    function formatSketch() {
+      try {
+        const tree = fromSketch(getCode());
+        setCode(serializeBySyntax(tree, 'sketch', true));
+        renderNow();
+      } catch (error) {
+        writeDiagnostics('error', error.message || String(error));
+      }
+    }
+
+    function saveSketch() {
+      localStorage.setItem('xcon-sketch-live-editor-source', getCode());
+      writeStatus('Saved to this browser.', 'ok');
+    }
+
+    async function loadSource(src) {
+      try {
+        const url = new URL(src, location.href);
+        if (url.origin !== location.origin) throw new Error('Only same-origin showcase files can be loaded.');
+        const response = await fetch(url.href, { headers: { accept: 'text/plain, */*' } });
+        if (!response.ok) throw new Error(`Failed to load ${url.pathname}: ${response.status} ${response.statusText}`);
+        const text = await response.text();
+        setCode(text);
+        fileName.textContent = decodeURIComponent(url.pathname.split('/').pop() || 'preset.xcon.sketch');
+        const matchingPreset = [...presetSelect.options].find((option) => {
+          if (!option.value) return false;
+          return new URL(option.value, location.href).pathname === url.pathname;
+        });
+        if (matchingPreset) presetSelect.value = matchingPreset.value;
+        renderNow();
+      } catch (error) {
+        writeDiagnostics('error', error.message || String(error));
+      }
+    }
+
+    function insertSnippet(key) {
+      const snippet = SNIPPETS[key];
+      if (!snippet) return;
+      if (editor) {
+        const selection = editor.getSelection();
+        editor.executeEdits('snippet', [{ range: selection, text: snippet, forceMoveMarkers: true }]);
+        editor.focus();
+      } else {
+        fallbackEditor.setRangeText(snippet, fallbackEditor.selectionStart, fallbackEditor.selectionEnd, 'end');
+      }
+      renderNow();
+    }
+
+    function initSplitter() {
+      const shell = document.getElementById('shell');
+      const splitter = document.getElementById('splitter');
+      if (!shell || !splitter) return;
+      const columns = () => getComputedStyle(shell).gridTemplateColumns.split(' ');
+      splitter.addEventListener('pointerdown', (event) => {
+        if (window.matchMedia('(max-width: 1180px)').matches) return;
+        event.preventDefault();
+        splitter.setPointerCapture?.(event.pointerId);
+        window.addEventListener('pointermove', resize);
+        window.addEventListener('pointerup', stop, { once: true });
+      });
+      function resize(event) {
+        const rect = shell.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const side = 232;
+        const gap = 10;
+        const inspector = 300;
+        const splitterWidth = 8;
+        const left = Math.max(390, x - side - gap);
+        const totalMiddle = rect.width - side - inspector - splitterWidth - gap * 4;
+        const right = Math.max(390, totalMiddle - left);
+        shell.style.gridTemplateColumns = `232px ${left}px 8px ${right}px 300px`;
+      }
+      function stop(event) {
+        window.removeEventListener('pointermove', resize);
+        splitter.releasePointerCapture?.(event.pointerId);
+      }
+    }
+
+    function writeDiagnostics(kind, message) {
+      diagnostics.className = `diagnostics ${kind || ''}`.trim();
+      diagnostics.textContent = message;
+    }
+
+    function writeStatus(message, kind = '') {
+      editorStatus.className = `status-line ${kind || ''}`.trim();
+      editorStatus.textContent = message;
+    }
+
+    async function copyText(value, statusMessage) {
+      await navigator.clipboard.writeText(value || '');
+      writeStatus(statusMessage || 'Copied.', 'ok');
+    }
+
+    function normalizeHex(value) {
+      if (typeof value !== 'string') return null;
+      const trimmed = value.trim();
+      if (/^#[0-9a-fA-F]{6}$/.test(trimmed)) return trimmed.toUpperCase();
+      if (/^[0-9a-fA-F]{6}$/.test(trimmed)) return `#${trimmed.toUpperCase()}`;
+      if (/^#[0-9a-fA-F]{3}$/.test(trimmed)) {
+        return `#${trimmed[1]}${trimmed[1]}${trimmed[2]}${trimmed[2]}${trimmed[3]}${trimmed[3]}`.toUpperCase();
+      }
+      return null;
+    }
+
+    function hexToRgb(hex) {
+      const value = normalizeHex(hex) || '#C4622D';
+      return {
+        r: parseInt(value.slice(1, 3), 16),
+        g: parseInt(value.slice(3, 5), 16),
+        b: parseInt(value.slice(5, 7), 16)
+      };
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+<Form pos="[0,0,402,520]">
+  <Label name="label" pos="[24,32,280,32]" text="Basic Components" font="{&quot;size&quot;:22,&quot;weight&quot;:800}" />
+  <Icon name="icon" pos="[24,84,32,32]" xcon-prop-name="star" library="lucide" color="#F59E0B" />
+  <Badge name="badge" pos="[72,88,96,24]" text="READY" backgroundColor="#DCFCE7" color="#166534" />
+  <Avatar name="avatar" pos="[24,136,56,56]" initials="XC" backgroundColor="#0F172A" color="#FFFFFF" />
+  <Divider name="divider" pos="[24,216,354,1]" color="#E5E7EB" />
+  <Button name="button" pos="[24,248,180,44]" label="Action" backgroundColor="#2563EB" color="#FFFFFF" />
+</Form>

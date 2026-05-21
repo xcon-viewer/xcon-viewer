@@ -1,0 +1,83 @@
+{
+  "type": "form",
+  "pos": [
+    0,
+    0,
+    402,
+    520
+  ],
+  "components": {
+    "label": {
+      "type": "label",
+      "pos": [
+        24,
+        32,
+        280,
+        32
+      ],
+      "text": "Basic Components",
+      "font": {
+        "size": 22,
+        "weight": 800
+      }
+    },
+    "icon": {
+      "type": "icon",
+      "pos": [
+        24,
+        84,
+        32,
+        32
+      ],
+      "name": "star",
+      "library": "lucide",
+      "color": "#F59E0B"
+    },
+    "badge": {
+      "type": "badge",
+      "pos": [
+        72,
+        88,
+        96,
+        24
+      ],
+      "text": "READY",
+      "backgroundColor": "#DCFCE7",
+      "color": "#166534"
+    },
+    "avatar": {
+      "type": "avatar",
+      "pos": [
+        24,
+        136,
+        56,
+        56
+      ],
+      "initials": "XC",
+      "backgroundColor": "#0F172A",
+      "color": "#FFFFFF"
+    },
+    "divider": {
+      "type": "divider",
+      "pos": [
+        24,
+        216,
+        354,
+        1
+      ],
+      "color": "#E5E7EB"
+    },
+    "button": {
+      "type": "button",
+      "pos": [
+        24,
+        248,
+        180,
+        44
+      ],
+      "label": "Action",
+      "backgroundColor": "#2563EB",
+      "color": "#FFFFFF"
+    }
+  }
+}

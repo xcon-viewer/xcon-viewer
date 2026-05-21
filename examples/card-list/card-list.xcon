@@ -1,0 +1,62 @@
+♤♡◇♧
+♤
+  ♧type♣◇form◆
+  ♧pos♣
+  ♡
+    ◇0◆
+    ◇0◆
+    ◇402◆
+    ◇700◆
+  ♥
+  ♧backgroundColor♣◇#F8FAFC◆
+  ♧components♣
+  ♤
+    ♧list♣
+    ♤
+      ♧type♣◇list◆
+      ♧pos♣
+      ♡
+        ◇16◆
+        ◇24◆
+        ◇370◆
+        ◇620◆
+      ♥
+      ♧direction♣◇vertical◆
+      ♧itemSize♣
+      ♤
+        ♧height♣◇120◆
+        ♧width♣◇370◆
+      ♠
+      ♧separator♣
+      ♤
+        ♧style♣◇none◆
+        ♧size♣◇0◆
+      ♠
+      ♧items♣
+      ♡
+        ♤
+          ♧type♣◇card◆
+          ♧title♣◇Design Review◆
+          ♧subtitle♣◇Today 10:00◆
+          ♧text♣◇Confirm public API naming and examples.◆
+          ♧padding♣◇16◆
+        ♠
+        ♤
+          ♧type♣◇card◆
+          ♧title♣◇Security Pass◆
+          ♧subtitle♣◇Today 14:00◆
+          ♧text♣◇Review viewer-only restrictions.◆
+          ♧padding♣◇16◆
+        ♠
+        ♤
+          ♧type♣◇card◆
+          ♧title♣◇Docs Update◆
+          ♧subtitle♣◇Tomorrow◆
+          ♧text♣◇Publish component reference.◆
+          ♧padding♣◇16◆
+        ♠
+      ♥
+    ♠
+  ♠
+♠
+♠♥◆♣

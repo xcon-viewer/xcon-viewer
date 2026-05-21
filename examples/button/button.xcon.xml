@@ -1,0 +1,3 @@
+<Form pos="[0,0,320,180]" backgroundColor="#F8FAFC">
+  <Button name="start" pos="[40,68,240,48]" label="Start" backgroundColor="#2563EB" color="#FFFFFF" border="{&quot;radius&quot;:10}" font="{&quot;weight&quot;:700}" states="{&quot;hover&quot;:{&quot;backgroundColor&quot;:&quot;#1D4ED8&quot;},&quot;disabled&quot;:{&quot;backgroundColor&quot;:&quot;#9CA3AF&quot;}}" />
+</Form>

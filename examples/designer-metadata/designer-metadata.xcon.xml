@@ -1,0 +1,4 @@
+<Form pos="[0,0,402,360]" designer:note="Hero screen draft" designer:locked="true">
+  <Label name="title" id="title" text="Designer Metadata" font="{&quot;size&quot;:22,&quot;weight&quot;:800}" />
+  <Button name="cta" id="cta" label="Preview" backgroundColor="#2563EB" color="#FFFFFF" />
+</Form>

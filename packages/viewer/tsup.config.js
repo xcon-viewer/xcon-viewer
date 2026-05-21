@@ -1,0 +1,17 @@
+import { defineConfig } from 'tsup';
+export default defineConfig([
+    {
+        entry: { index: 'src/index.ts' },
+        format: ['esm'],
+        dts: false,
+        sourcemap: true,
+        clean: true,
+    },
+    {
+        entry: { 'web-component': 'src/web-component.ts' },
+        format: ['esm'],
+        dts: false,
+        sourcemap: true,
+    },
+]);
+//# sourceMappingURL=tsup.config.js.map

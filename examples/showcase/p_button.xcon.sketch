@@ -1,0 +1,491 @@
+screen 560x930
+  border
+    visible true
+    width 1
+    color @border
+    radius 10
+  shadow
+    opacity 0.08
+    blur 6
+  al
+    autoHeight true
+    gap 10px
+    padding "14px 16px"
+  hdr: label "02 · Button" at 0 0 560 28
+    font
+      size 11
+      weight "bold"
+    textAlign "left"
+  h02a: label "button · styles & states (#02-A)" at 0 0 560 28
+    font
+      size 10
+      weight 600
+    textAlign "left"
+  c02a: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 0
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 14px
+      padding 0
+    hdr: label " " at 0 0 560 28
+      font
+        size 11
+        weight "bold"
+      textAlign "left"
+    pv: panel at 0 0 560 32
+      border
+        visible true
+        width 1
+        color @border
+        radius 8
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 8px
+        padding "6px 0"
+        direction "row"
+        alignItems "center"
+      p1: button "Get Started" at 0 0 128 40
+        font
+          size 13
+          weight 600
+        border
+          visible false
+          radius 8
+        backgroundColor @accent
+        color "#ffffff"
+      p2: button "Learn More" at 0 0 128 40
+        font
+          size 13
+          weight 600
+        border
+          visible true
+          color @border
+          radius 8
+        backgroundColor @surface2
+        color @ink
+      p3: button "Cancel" at 0 0 100 40
+        font
+          size 13
+          weight 600
+        border
+          visible true
+          radius 8
+        backgroundColor "transparent"
+        color @ink-2
+      p4: button "Download" at 0 0 112 40
+        font
+          size 13
+          weight 600
+        border
+          visible false
+          radius 8
+        backgroundColor "28,23,16,255"
+        color "#f7f4ef"
+    sem: panel at 0 0 560 32
+      border
+        visible true
+        width 1
+        color @border
+        radius 8
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 8px
+        padding "6px 0"
+        direction "row"
+        alignItems "center"
+      s1: button "Approve" at 0 0 132 40
+        font
+          size 13
+          weight 600
+        border
+          visible false
+          radius 8
+        backgroundColor @green
+        color "#fff"
+        icon
+          name "check"
+      s2: button "Delete" at 0 0 124 40
+        font
+          size 13
+          weight 600
+        border
+          visible false
+          radius 8
+        backgroundColor @red
+        color "#fff"
+        icon
+          name "delete"
+      s3: button "Info" at 0 0 108 40
+        font
+          size 13
+          weight 600
+        border
+          visible false
+          radius 8
+        backgroundColor @blue
+        color "#fff"
+        icon
+          name "info"
+    sz: panel at 0 0 560 32
+      border
+        visible true
+        width 1
+        color @border
+        radius 8
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 8px
+        padding "6px 0"
+        direction "row"
+        alignItems "center"
+      z1: button "Tiny" at 0 0 72 30
+        font
+          size 11
+          weight 600
+        border
+          visible false
+          radius 6
+        backgroundColor @accent
+        color "#fff"
+      z2: button "Small" at 0 0 88 34
+        font
+          size 12
+          weight 600
+        border
+          visible false
+          radius 7
+        backgroundColor @accent
+        color "#fff"
+      z3: button "Medium" at 0 0 104 40
+        font
+          size 13
+          weight 600
+        border
+          visible false
+          radius 8
+        backgroundColor @accent
+        color "#fff"
+      z4: button "Large" at 0 0 120 46
+        font
+          size 14
+          weight 600
+        border
+          visible false
+          radius 9
+        backgroundColor @accent
+        color "#fff"
+    st: panel at 0 0 560 32
+      border
+        visible true
+        width 1
+        color @border
+        radius 8
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 8px
+        padding "6px 0"
+        direction "row"
+        alignItems "center"
+      n: button "Normal" at 0 0 112 40
+        font
+          size 13
+          weight 600
+        border
+          visible false
+          radius 8
+        backgroundColor @accent
+        color "#fff"
+      ld: button "Loading…" at 0 0 120 40
+        font
+          size 13
+          weight 600
+        border
+          visible false
+          radius 8
+        backgroundColor @accent
+        color "#fff"
+        loading "true"
+      ds: button "Disabled" at 0 0 112 40
+        font
+          size 13
+          weight 600
+        border
+          visible false
+          radius 8
+        backgroundColor @accent
+        color "#fff"
+        enabled false
+  h02b: label "button · advanced patterns (#02-B)" at 0 0 560 28
+    font
+      size 10
+      weight 600
+    textAlign "left"
+  c02b: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 0
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 16px
+      padding 0
+    hdr: label " " at 0 0 560 28
+      font
+        size 11
+        weight "bold"
+      textAlign "left"
+    ic: panel at 0 0 560 32
+      border
+        visible true
+        width 1
+        color @border
+        radius 8
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 8px
+        padding "6px 0"
+        direction "row"
+        alignItems "center"
+      i1: button "New Project" at 0 0 140 40
+        font
+          size 13
+        border
+          visible false
+          radius 8
+        backgroundColor @accent
+        color "#fff"
+        icon
+          name "add"
+      i2: button "Export" at 0 0 120 40
+        font
+          size 13
+        border
+          visible true
+          color @border
+          radius 8
+        backgroundColor @surface2
+        color @ink
+        icon
+          name "file_download"
+      i3: button "Search" at 0 0 112 40
+        font
+          size 13
+        border
+          visible false
+          radius 8
+        backgroundColor "transparent"
+        color @ink-2
+        icon
+          name "search"
+    ico: panel at 0 0 560 32
+      border
+        visible true
+        width 1
+        color @border
+        radius 8
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 8px
+        padding "6px 0"
+        direction "row"
+        alignItems "center"
+      o1: button at 0 0 44 44
+        border
+          visible true
+          color @border
+          radius 22
+        backgroundColor @surface2
+        color @accent
+        icon
+          name "favorite"
+      o2: button at 0 0 44 44
+        border
+          visible true
+          color @border
+          radius 22
+        backgroundColor @surface2
+        color @ink
+        icon
+          name "share"
+      o3: button at 0 0 44 44
+        border
+          visible true
+          color @border
+          radius 22
+        backgroundColor @surface2
+        color @ink
+        icon
+          name "edit"
+      o4: button at 0 0 44 44
+        border
+          visible false
+          radius 22
+        backgroundColor @red
+        color "#fff"
+        icon
+          name "delete"
+    gf: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 0
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 12px
+        padding 0
+      hdr: label "Button Group & Split" at 0 0 560 28
+        font
+          size 11
+          weight "bold"
+        textAlign "left"
+      grp: panel at 0 0 560 32
+        border
+          visible true
+          width 1
+          color @border
+          radius 8
+        shadow
+          visible false
+        al
+          autoHeight true
+          gap 0
+          padding "6px 0"
+          direction "row"
+          alignItems "center"
+        g1: button "Day" at 0 0 64 32
+          font
+            size 12
+          border
+            visible true
+            color @border
+            radius 6
+          backgroundColor @surface2
+          color @ink
+          segment "first"
+        g2: button "Week" at 0 0 72 32
+          font
+            size 12
+          border
+            visible false
+            radius 6
+          backgroundColor @accent
+          color "#fff"
+          segment "middle"
+        g3: button "Month" at 0 0 72 32
+          font
+            size 12
+          border
+            visible true
+            color @border
+            radius 6
+          backgroundColor @surface2
+          color @ink
+          segment "middle"
+        g4: button "Year" at 0 0 68 32
+          font
+            size 12
+          border
+            visible true
+            color @border
+            radius 6
+          backgroundColor @surface2
+          color @ink
+          segment "last"
+      spl: panel at 0 0 560 32
+        border
+          visible true
+          width 1
+          color @border
+          radius 8
+        shadow
+          visible false
+        al
+          autoHeight true
+          gap 0
+          padding "6px 0"
+          direction "row"
+          alignItems "center"
+        d1: button "Deploy" at 0 0 160 40
+          font
+            size 13
+          border
+            visible false
+            radius 8
+          backgroundColor @accent
+          color "#fff"
+          split "main"
+          icon
+            name "cloud_download"
+        d2: button "▾" at 0 0 44 40
+          font
+            size 14
+          border
+            visible false
+            radius 8
+          backgroundColor @accent
+          color "#fff"
+          split "caret"
+    fl: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 0
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 10px
+        padding 0
+        alignItems "stretch"
+      hdr: label "Full Width & Link" at 0 0 560 28
+        font
+          size 11
+          weight "bold"
+        textAlign "left"
+      fw: button "Continue to Checkout →" at 0 0 520 48
+        font
+          size 15
+          weight 600
+        border
+          visible false
+          radius 10
+        backgroundColor @accent
+        color "#fff"
+        al
+          alignSelf "stretch"
+          width 100%
+      lk: button "Already have an account? Sign in" at 0 0 360 36
+        font
+          size 13
+          weight 600
+        border
+          visible false
+          radius 6
+        backgroundColor "transparent"
+        color @accent
+        appearance "link"

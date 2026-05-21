@@ -1,0 +1,5 @@
+<Form pos="[0,0,402,620]">
+  <TreeView name="tree" pos="[24,24,354,180]" data="[{&quot;id&quot;:&quot;docs&quot;,&quot;label&quot;:&quot;docs&quot;,&quot;children&quot;:[{&quot;id&quot;:&quot;spec&quot;,&quot;label&quot;:&quot;spec.md&quot;}]}]" expandedNodes="[&quot;docs&quot;]" />
+  <QrCode name="qr" pos="[24,228,180,210]" text="https://xconviewer.dev" size="160" errorCorrectionLevel="M" />
+  <Barcode name="barcode" pos="[24,456,300,120]" text="1234567890" format="CODE128" width="2" height="80" displayValue="true" font="{&quot;size&quot;:14}" />
+</Form>

@@ -1,0 +1,72 @@
+screen 560x924
+  border
+    visible true
+    width 1
+    color @border
+    radius 10
+  shadow
+    visible true
+    opacity 0.08
+    blur 6
+  al
+    autoHeight true
+    gap 18px
+    padding "14px 16px"
+  hdr: label "Extended · gallery" at 0 0 560 28
+    font
+      size 11
+      weight "bold"
+    textAlign "left"
+  ex1: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    cap: label "Full showcase" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+      color @ink-3
+      labelPadding "0 0 10px 0"
+      style "letter-spacing:0.4px;text-transform:uppercase;"
+    c: gallery at 0 0 560 400
+      extVariant "showcase"
+      al
+        width 100%
+        alignSelf "stretch"
+  ex2: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    cap: label "Grid · 2 columns" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+      color @ink-3
+      labelPadding "16px 0 10px 0"
+      style "letter-spacing:0.4px;text-transform:uppercase;"
+    c: gallery at 0 0 560 360
+      columns 2
+      gap 10
+      showCaption true
+      images [{"src":"https://picsum.photos/seed/algal1/400/240","caption":"Slide 1"},{"src":"https://picsum.photos/seed/algal2/400/240","caption":"Slide 2"},{"src":"https://picsum.photos/seed/algal3/400/240","caption":"Slide 3"}]
+      al
+        width 100%
+        alignSelf "stretch"

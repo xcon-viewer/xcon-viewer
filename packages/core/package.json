@@ -1,0 +1,77 @@
+{
+  "name": "@xcon-viewer/core",
+  "version": "0.1.2",
+  "type": "module",
+  "description": "XCON core parser, validator, and object model. Parse JSON, XML, TAGLESS, or SKETCH syntax into a unified XCON Object Model. Built for the LLM era — safe, structured, and format-agnostic.",
+  "keywords": [
+    "xcon",
+    "xcon-viewer",
+    "ui",
+    "document",    
+    "parser",
+    "validator",
+    "converter",
+    "json",
+    "xml",
+    "tagless",
+    "sketch",
+    "llm",
+    "markdown"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xcon-viewer/xcon-viewer.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://xconviewer.dev",
+  "bugs": {
+    "url": "https://github.com/xcon-viewer/xcon-viewer/issues"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./parser": {
+      "types": "./dist/parser/index.d.ts",
+      "import": "./dist/parser/index.js"
+    },
+    "./model": {
+      "types": "./dist/model/index.d.ts",
+      "import": "./dist/model/index.js"
+    },
+    "./validator": {
+      "types": "./dist/validator/index.d.ts",
+      "import": "./dist/validator/index.js"
+    },
+    "./converter": {
+      "types": "./dist/converter/index.d.ts",
+      "import": "./dist/converter/index.js"
+    }
+  },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup && tsc -b tsconfig.json --force --emitDeclarationOnly",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run test && npm run build"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^3.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
+

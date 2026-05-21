@@ -1,0 +1,7 @@
+<Form pos="[0,0,402,700]" backgroundColor="#F8FAFC">
+  <Label name="title" pos="[32,96,338,40]" text="Sign in" font="{&quot;size&quot;:30,&quot;weight&quot;:800}" textAlign="center" />
+  <TextField name="email" pos="[32,176,338,44]" placeholder="Email" inputType="email" prefix="{&quot;icon&quot;:&quot;mail&quot;,&quot;library&quot;:&quot;lucide&quot;}" />
+  <PasswordField name="password" pos="[32,236,338,44]" placeholder="Password" showToggle="true" />
+  <Checkbox name="remember" pos="[32,300,180,32]" label="Remember me" value="unchecked" />
+  <Button name="submit" pos="[32,356,338,48]" label="Sign in" backgroundColor="#2563EB" color="#FFFFFF" border="{&quot;radius&quot;:10}" />
+</Form>

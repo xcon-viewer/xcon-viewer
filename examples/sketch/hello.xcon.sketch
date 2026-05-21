@@ -1,0 +1,17 @@
+screen 360x220 bg #f8fafc
+
+title: label "XCON/SKETCH" at 24 24 312 36
+  font 24 800
+  align center
+  color #111827
+
+summary: label "Write like a sketch. Render like XCON." at 32 72 296 44
+  font 13 500
+  color #475569
+  align center
+
+cta: button "Render Preview" at 72 142 216 44
+  bg #db2777
+  color white
+  radius 12
+  font 14 800

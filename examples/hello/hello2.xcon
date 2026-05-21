@@ -1,0 +1,35 @@
+♤♡◇♧
+    ♤
+        ♧type♣◇form◆
+        ♧pos♣
+        ♡
+            ◇0◆
+            ◇0◆
+            ◇320◆
+            ◇180◆
+        ♥
+        ♧backgroundColor♣◇#FFFFFF◆
+        ♧components♣
+        ♤
+            ♧hello♣
+            ♤
+                ♧type♣◇label◆
+                ♧pos♣
+                ♡
+                    ◇24◆
+                    ◇64◆
+                    ◇272◆
+                    ◇40◆
+                ♥
+                ♧text♣◇Hello XCON◆
+                ♧font♣
+                ♤
+                    ♧size♣◇24◆
+                    ♧weight♣◇800◆
+                ♠
+                ♧color♣◇#111827◆
+                ♧textAlign♣◇center◆
+            ♠
+        ♠
+    ♠
+♠♥◆♣

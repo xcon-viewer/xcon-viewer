@@ -1,0 +1,459 @@
+screen 560x1022
+  border
+    visible true
+    width 1
+    color @border
+    radius 10
+  shadow
+    opacity 0.08
+    blur 6
+  al
+    autoHeight true
+    gap 10px
+    padding "14px 16px"
+  hdr: label "01 · Label" at 0 0 560 28
+    font
+      size 11
+      weight "bold"
+    textAlign "left"
+  typo: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 0
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    hdr: label "Typography Scale" at 0 0 560 28
+      font
+        size 11
+        weight "bold"
+      textAlign "left"
+    a: label "Caption · Extra Small" at 0 0 560 28
+      font
+        size 10
+      textAlign "left"
+      color @ink-3
+    b: label "Subtext · Small" at 0 0 560 28
+      font
+        size 12
+      textAlign "left"
+      color @ink-2
+    c: label "Body Label · Medium" at 0 0 560 28
+      font
+        size 14
+        weight 500
+      textAlign "left"
+      color @ink
+    d: label "Section Title · Large" at 0 0 560 28
+      font
+        size 18
+        weight 600
+      textAlign "left"
+      color @ink
+    e: label "Display · Extra Large" at 0 0 560 28
+      font
+        family "'Playfair Display', serif"
+        size 24
+        weight 700
+      textAlign "left"
+      color @ink
+  subTag: label "Status Tags" at 0 0 560 28
+    font
+      size 10
+      weight 600
+    textAlign "left"
+  tagRow: panel at 0 0 560 32
+    border
+      visible true
+      width 1
+      color @border
+      radius 8
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding "4px 0"
+      direction "row"
+    t1: label "New" at 0 0 560 28
+      font
+        size 11
+        weight 600
+      textAlign "left"
+      backgroundColor @blue-lt
+      color @blue
+      labelPadding "3px 10px"
+      border
+        visible true
+        width 1px
+        color "rgba(43,95,160,0.2)"
+        radius 4px
+      prefixDot "true"
+      al
+        alignSelf "flex-start"
+        width "auto"
+    t2: label "Sale" at 0 0 560 28
+      font
+        size 11
+        weight 600
+      textAlign "left"
+      backgroundColor @red-lt
+      color @red
+      labelPadding "3px 10px"
+      border
+        visible true
+        width 1px
+        color "rgba(192,58,43,0.2)"
+        radius 4px
+      prefixDot "true"
+      al
+        alignSelf "flex-start"
+        width "auto"
+    t3: label "Live" at 0 0 560 28
+      font
+        size 11
+        weight 600
+      textAlign "left"
+      backgroundColor @green-lt
+      color @green
+      labelPadding "3px 10px"
+      border
+        visible true
+        width 1px
+        color "rgba(45,125,79,0.2)"
+        radius 4px
+      prefixDot "true"
+      al
+        alignSelf "flex-start"
+        width "auto"
+    t4: label "Draft" at 0 0 560 28
+      font
+        size 11
+        weight 600
+      textAlign "left"
+      backgroundColor @yellow-lt
+      color @yellow
+      labelPadding "3px 10px"
+      border
+        visible true
+        width 1px
+        color "rgba(176,125,18,0.2)"
+        radius 4px
+      prefixDot "true"
+      al
+        alignSelf "flex-start"
+        width "auto"
+    t5: label "Featured" at 0 0 560 28
+      font
+        size 11
+        weight 600
+      textAlign "left"
+      backgroundColor @accent-lt
+      color @accent
+      labelPadding "3px 10px"
+      border
+        visible true
+        width 1px
+        color @border2
+        radius 4px
+      al
+        alignSelf "flex-start"
+        width "auto"
+  formBlock: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 0
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 6px
+      padding 0
+    hdr: label "Form Field Labels" at 0 0 560 28
+      font
+        size 11
+        weight "bold"
+      textAlign "left"
+    em: label "Email Address" at 0 0 560 28
+      font
+        size 12
+        weight 600
+      textAlign "left"
+      color @ink-2
+      suffixTextColor @red
+      suffix
+        text "*"
+    mock: label " " at 0 0 280 36
+      textAlign "left"
+      backgroundColor @bg2
+      labelPadding "8px 10px"
+      border
+        visible true
+        width 1px
+        color @border2
+        radius 6px
+    hint: label "We'll never share your email with anyone." at 0 0 560 28
+      font
+        size 11
+      textAlign "left"
+      color @ink-3
+  edBlock: label "Editor's Pick" at 0 0 560 28
+    font
+      family "'Playfair Display', serif"
+      size 13
+      italic "true"
+    textAlign "left"
+    color @accent
+    editorialBar "true"
+  tipNote: panel at 0 0 560 32
+    border
+      visible true
+      width 1
+      color @border
+      radius 8
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding "4px 0"
+      direction "row"
+      alignItems "center"
+    hov: label "Hover for info" at 0 0 560 28
+      font
+        size 12
+      textAlign "left"
+      color @ink-2
+    api: label "API Rate Limit — tooltip UI in HTML demo · AL expresses it with label + text" at 0 0 560 28
+      font
+        size 12
+        weight 600
+      textAlign "left"
+      color @accent
+  ctx: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 0
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 10px
+      padding 0
+    hdr: label "label · contextual (#01-B)" at 0 0 560 28
+      font
+        size 11
+        weight "bold"
+      textAlign "left"
+    hCtx: label "Data Display Labels" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+    grid2: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 0
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 12px
+        padding 0
+        direction "row"
+        alignItems "flex-start"
+      colL: panel at 0 0 560 32
+        border
+          visible false
+          width 1
+          color @border
+          radius 0
+        shadow
+          visible false
+        al
+          autoHeight true
+          gap 4px
+          padding 0
+          flex "1 1 0"
+        hdr: label " " at 0 0 560 28
+          font
+            size 11
+            weight "bold"
+          textAlign "left"
+        r1: label "Revenue" at 0 0 560 28
+          font
+            size 10
+            weight 600
+          textAlign "left"
+          color @ink-3
+        r2: label "₩12.4M" at 0 0 560 28
+          font
+            family "'Playfair Display', serif"
+            size 26
+            weight 700
+          textAlign "left"
+          color @ink
+        r3: label "▲ +18.2% vs last month" at 0 0 560 28
+          font
+            size 11
+            weight 600
+          textAlign "left"
+          color @green
+      colR: panel at 0 0 560 32
+        border
+          visible false
+          width 1
+          color @border
+          radius 0
+        shadow
+          visible false
+        al
+          autoHeight true
+          gap 4px
+          padding 0
+          flex "1 1 0"
+        hdr: label " " at 0 0 560 28
+          font
+            size 11
+            weight "bold"
+          textAlign "left"
+        u1: label "Users" at 0 0 560 28
+          font
+            size 10
+            weight 600
+          textAlign "left"
+          color @ink-3
+        u2: label "84,310" at 0 0 560 28
+          font
+            family "'Playfair Display', serif"
+            size 26
+            weight 700
+          textAlign "left"
+          color @ink
+        u3: label "▼ -3.1% vs last month" at 0 0 560 28
+          font
+            size 11
+            weight 600
+          textAlign "left"
+          color @red
+    hBread: label "Navigation Breadcrumb" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+    breadRow: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 0
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 6px
+        padding "4px 0"
+        direction "row"
+        alignItems "center"
+      p1: label "Home" at 0 0 560 28
+        font
+          size 12
+        textAlign "left"
+        color @accent
+      p2: label "/" at 0 0 560 28
+        font
+          size 12
+        textAlign "left"
+        color @ink-3
+      p3: label "Products" at 0 0 560 28
+        font
+          size 12
+        textAlign "left"
+        color @accent
+      p4: label "/" at 0 0 560 28
+        font
+          size 12
+        textAlign "left"
+        color @ink-3
+      p5: label "Components" at 0 0 560 28
+        font
+          size 12
+        textAlign "left"
+        color @accent
+      p6: label "/" at 0 0 560 28
+        font
+          size 12
+        textAlign "left"
+        color @ink-3
+      p7: label "Label" at 0 0 560 28
+        font
+          size 12
+          weight 600
+        textAlign "left"
+        color @ink
+    kbdLine: label "Press ⌘K to open search. Use data-id attribute for targeting (replacement sentence for HTML #01-B inline code/kbd)." at 0 0 560 28
+      font
+        size 13
+      textAlign "left"
+      color @ink-2
+    hProg: label "Progress label" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+    progRow: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 0
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 8px
+        padding 0
+        direction "row"
+        alignItems "center"
+        justifyContent "space-between"
+      pl: label "Profile Completion" at 0 0 560 28
+        font
+          size 12
+          weight 600
+        textAlign "left"
+        color @ink-2
+      pr: label "72%" at 0 0 560 28
+        font
+          size 12
+          weight 700
+        textAlign "left"
+        color @accent
+    progTrack: panel at 0 0 560 10
+      border
+        visible false
+        radius 4
+      backgroundColor "239, 231, 220, 255"
+      al
+        autoHeight true
+        gap 0
+        padding 0
+        direction "row"
+        alignItems "stretch"
+      bar: label " " at 0 0 400 10
+        backgroundColor @accent
+        al
+          width 72%
+          alignSelf "stretch"
+        border
+          radius 4

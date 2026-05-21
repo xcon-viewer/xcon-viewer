@@ -1,0 +1,248 @@
+screen 560x1140
+  border
+    visible true
+    width 1
+    color @border
+    radius 10
+  shadow
+    visible true
+    opacity 0.08
+    blur 6
+  al
+    autoHeight true
+    gap 18px
+    padding "14px 16px"
+  hdr: label "Extended · switch" at 0 0 560 28
+    font
+      size 11
+      weight "bold"
+    textAlign "left"
+  ex1: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    cap: label "Full showcase" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+      color @ink-3
+      labelPadding "0 0 10px 0"
+      style "letter-spacing:0.4px;text-transform:uppercase;"
+    c: switch at 0 0 560 280
+      extVariant "showcase"
+      checked true
+      size "medium"
+      al
+        width 100%
+        alignSelf "stretch"
+      labels
+        on "On"
+        off "Off"
+  ex2: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    cap: label "Dark Mode (single row)" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+      color @ink-3
+      labelPadding "16px 0 10px 0"
+      style "letter-spacing:0.4px;text-transform:uppercase;"
+    c: switch at 0 0 560 56
+      checked true
+      size "medium"
+      al
+        width 100%
+        alignSelf "stretch"
+      title "Dark Mode"
+      subtitle "Use dark color scheme"
+      labels
+        on "On"
+        off "Off"
+  ex3: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    cap: label "Notifications (off)" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+      color @ink-3
+      labelPadding "16px 0 10px 0"
+      style "letter-spacing:0.4px;text-transform:uppercase;"
+    c: switch at 0 0 560 56
+      checked false
+      size "medium"
+      al
+        width 100%
+        alignSelf "stretch"
+      title "Notifications"
+      subtitle "Receive push notifications"
+  ex4: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    cap: label "Size · small" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+      color @ink-3
+      labelPadding "16px 0 10px 0"
+      style "letter-spacing:0.4px;text-transform:uppercase;"
+    c: switch at 0 0 560 56
+      checked true
+      size "small"
+      al
+        width 100%
+        alignSelf "stretch"
+      title "Compact"
+      subtitle "Small track"
+  ex5: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    cap: label "Size · medium" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+      color @ink-3
+      labelPadding "16px 0 10px 0"
+      style "letter-spacing:0.4px;text-transform:uppercase;"
+    c: switch at 0 0 560 56
+      checked true
+      size "medium"
+      al
+        width 100%
+        alignSelf "stretch"
+      title "Standard"
+      subtitle "Default size"
+  ex6: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    cap: label "Size · large" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+      color @ink-3
+      labelPadding "16px 0 10px 0"
+      style "letter-spacing:0.4px;text-transform:uppercase;"
+    c: switch at 0 0 560 56
+      checked true
+      size "large"
+      al
+        width 100%
+        alignSelf "stretch"
+      title "Prominent"
+      subtitle "Large track"
+  ex7: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    cap: label "Title only (no subtitle)" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+      color @ink-3
+      labelPadding "16px 0 10px 0"
+      style "letter-spacing:0.4px;text-transform:uppercase;"
+    c: switch at 0 0 560 48
+      checked false
+      size "medium"
+      al
+        width 100%
+        alignSelf "stretch"
+      title "Wi‑Fi only"
+  ex8: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    cap: label "No label (control only)" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+      color @ink-3
+      labelPadding "16px 0 10px 0"
+      style "letter-spacing:0.4px;text-transform:uppercase;"
+    c: switch at 0 0 560 44
+      checked true
+      size "medium"
+      al
+        width 100%
+        alignSelf "stretch"
+      labels
+        on "On"
+        off "Off"

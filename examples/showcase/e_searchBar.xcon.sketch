@@ -1,0 +1,95 @@
+screen 560x622
+  border
+    visible true
+    width 1
+    color @border
+    radius 10
+  shadow
+    visible true
+    opacity 0.08
+    blur 6
+  al
+    autoHeight true
+    gap 18px
+    padding "14px 16px"
+  hdr: label "Extended · searchBar" at 0 0 560 28
+    font
+      size 11
+      weight "bold"
+    textAlign "left"
+  ex1: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    cap: label "Full showcase" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+      color @ink-3
+      labelPadding "0 0 10px 0"
+      style "letter-spacing:0.4px;text-transform:uppercase;"
+    c: searchBar at 0 0 560 300
+      extVariant "showcase"
+      al
+        width 100%
+        alignSelf "stretch"
+  ex2: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    cap: label "Single input" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+      color @ink-3
+      labelPadding "16px 0 10px 0"
+      style "letter-spacing:0.4px;text-transform:uppercase;"
+    c: searchBar "Search keywords..." at 0 0 560 56
+      showSearchButton true
+      showClearButton true
+      al
+        width 100%
+        alignSelf "stretch"
+  ex3: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 8px
+      padding 0
+    cap: label "Button only" at 0 0 560 28
+      font
+        size 10
+        weight 600
+      textAlign "left"
+      color @ink-3
+      labelPadding "16px 0 10px 0"
+      style "letter-spacing:0.4px;text-transform:uppercase;"
+    c: searchBar "Search…" at 0 0 560 48
+      showClearButton false
+      al
+        width 100%
+        alignSelf "stretch"

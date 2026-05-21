@@ -1,0 +1,81 @@
+{
+  "type": "form",
+  "pos": [
+    0,
+    0,
+    800,
+    600
+  ],
+  "backgroundColor": "#F8FAFC",
+  "components": {
+    "heading": {
+      "type": "label",
+      "pos": [
+        32,
+        24,
+        400,
+        36
+      ],
+      "text": "Operations",
+      "font": {
+        "size": 28,
+        "weight": 800
+      }
+    },
+    "grid": {
+      "type": "grid",
+      "pos": [
+        32,
+        84,
+        736,
+        220
+      ],
+      "columns": 3,
+      "gap": 16,
+      "items": [
+        {
+          "type": "card",
+          "title": "Orders",
+          "subtitle": "1,248",
+          "text": "+12% today"
+        },
+        {
+          "type": "card",
+          "title": "Revenue",
+          "subtitle": "$84k",
+          "text": "+8% today"
+        },
+        {
+          "type": "card",
+          "title": "SLA",
+          "subtitle": "98%",
+          "text": "Healthy"
+        }
+      ]
+    },
+    "progress": {
+      "type": "progressBar",
+      "pos": [
+        32,
+        332,
+        420,
+        24
+      ],
+      "label": "Monthly target",
+      "value": 82,
+      "max": 100
+    },
+    "alert": {
+      "type": "alert",
+      "pos": [
+        32,
+        388,
+        520,
+        72
+      ],
+      "severity": "warning",
+      "title": "Inventory",
+      "message": "Three SKUs need restocking."
+    }
+  }
+}

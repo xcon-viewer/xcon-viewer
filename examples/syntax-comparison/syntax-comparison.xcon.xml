@@ -1,0 +1,4 @@
+<Form pos="[0,0,402,300]">
+  <Label name="title" pos="[24,40,354,34]" text="One screen. Three syntaxes." font="{&quot;size&quot;:22,&quot;weight&quot;:800}" />
+  <TextView name="body" pos="[24,92,354,96]" text="JSON, XML, and TAGLESS parse into the same XCON Object Model." />
+</Form>

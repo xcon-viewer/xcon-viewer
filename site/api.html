@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>API - XCON Viewer</title>
+  <meta name="description" content="XCON Viewer public API and package index.">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/"><span class="mark">X</span><span>XCON Viewer</span></a>
+    <nav class="nav" aria-label="Primary">
+      <a href="/docs">Docs</a>
+      <a href="/spec">Spec</a>
+      <a href="/examples">Examples</a>
+      <a href="/play">Play</a>
+      <a href="/api" aria-current="page">API</a>
+      <a href="/security">Security</a>
+      <a href="/history">History</a>
+      <a href="/faq">FAQ</a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <section class="section">
+      <p class="eyebrow">Public API</p>
+      <h1>API</h1>
+      <p class="lead">The public API is split by use case: core data operations, secure rendering, CLI usage, framework wrappers, Markdown plugins, Vite imports, and CI rendering.</p>
+    </section>
+
+    <section class="section">
+      <div class="grid">
+        <article class="card"><h3>@xcon-viewer/core</h3><p>Parse, serialize, convert, normalize, and validate XCON documents.</p></article>
+        <article class="card"><h3>@xcon-viewer/viewer</h3><p>Render XCON documents to DOM or HTML and register the Web Component.</p></article>
+        <article class="card"><h3>@xcon-viewer/cli</h3><p>Use <code>xcon validate</code>, <code>xcon convert</code>, <code>xcon format</code>, and <code>xcon render</code>.</p></article>
+        <article class="card"><h3>@xcon-viewer/react</h3><p>React wrapper for the <code>&lt;xcon-viewer&gt;</code> Web Component.</p></article>
+        <article class="card"><h3>@xcon-viewer/vue</h3><p>Vue wrapper for the <code>&lt;xcon-viewer&gt;</code> Web Component.</p></article>
+        <article class="card"><h3>Markdown and CI</h3><p>Use markdown-it, remark, Vite, and GitHub Action packages.</p></article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>HTML</h2>
+      <pre><code>&lt;script type="module" src="https://unpkg.com/@xcon-viewer/viewer@0.1.0/dist/web-component.js"&gt;&lt;/script&gt;
+&lt;xcon-viewer src="./home.xcon.json"&gt;&lt;/xcon-viewer&gt;</code></pre>
+    </section>
+
+    <section class="section">
+      <h2>JavaScript</h2>
+      <pre><code>import { render, renderToHtml } from '@xcon-viewer/viewer';
+
+render({ type: 'form' }, document.getElementById('root'));
+console.log(renderToHtml({ type: 'form' }));</code></pre>
+      <p><code>render()</code> and <code>&lt;xcon-viewer&gt;</code> create a positioned viewer host automatically. Use <code>renderToHtml()</code> for raw fragments only; if you insert that fragment yourself, wrap it in a <code>position: relative</code> frame or use <code>renderDocument()</code>.</p>
+    </section>
+
+    <section class="section">
+      <h2>More API References</h2>
+      <ul class="list">
+        <li><a href="/docs/integrations.md">Framework, Markdown, Vite, and GitHub integrations</a></li>
+        <li><a href="/docs/xcon-component-specs.en.md">Component properties and examples</a></li>
+        <li><a href="/docs/deployment.md">Package publishing and static deployment</a></li>
+        <li><a href="/xcon.schema.json">JSON Schema</a></li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="page footer">Canonical domain: https://xconviewer.dev/api</footer>
+</body>
+</html>

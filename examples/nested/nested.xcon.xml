@@ -1,0 +1,8 @@
+<Form pos="[0,0,402,520]" backgroundColor="#F8FAFC">
+  <Panel name="panel" pos="[20,40,362,300]" backgroundColor="#FFFFFF" border="{&quot;width&quot;:1,&quot;color&quot;:&quot;#E5E7EB&quot;,&quot;radius&quot;:16}" padding="20">
+    <Label name="title" pos="[20,20,300,28]" text="Project Health" font="{&quot;size&quot;:20,&quot;weight&quot;:800}" />
+    <ProgressBar name="status" pos="[20,72,300,24]" label="Progress" value="68" max="100" color="#22C55E" />
+    <Alert name="alert" pos="[20,120,300,68]" severity="warning" message="Two tasks need review." showIcon="true" />
+    <Button name="action" pos="[20,216,160,44]" label="Open" backgroundColor="#2563EB" color="#FFFFFF" />
+  </Panel>
+</Form>

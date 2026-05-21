@@ -1,0 +1,7 @@
+<Form pos="[0,0,402,560]">
+  <Label name="title" pos="[24,32,354,34]" text="Support ticket" font="{&quot;size&quot;:24,&quot;weight&quot;:800}" />
+  <Select name="severity" pos="[24,92,354,44]" placeholder="Severity" options="[{&quot;value&quot;:&quot;low&quot;,&quot;label&quot;:&quot;Low&quot;},{&quot;value&quot;:&quot;high&quot;,&quot;label&quot;:&quot;High&quot;}]" />
+  <TextField name="subject" pos="[24,152,354,44]" placeholder="Subject" />
+  <Textarea name="details" pos="[24,212,354,140]" placeholder="Describe the issue" rows="null" />
+  <Button name="submit" pos="[24,384,354,48]" label="Create ticket" backgroundColor="#DC2626" color="#FFFFFF" />
+</Form>

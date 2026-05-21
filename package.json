@@ -1,0 +1,32 @@
+{
+  "name": "xcon-viewer",
+  "version": "0.1.2",
+  "private": true,
+  "description": "Monorepo for XCON Viewer — a public viewer for XCON UI documents",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace @xcon-viewer/core && npm run build --workspace @xcon-viewer/viewer && npm run build --workspace @xcon-viewer/cli && npm run build --workspace @xcon-viewer/react && npm run build --workspace @xcon-viewer/vue && npm run build --workspace @xcon-viewer/markdown-it && npm run build --workspace @xcon-viewer/remark && npm run build --workspace @xcon-viewer/vite-plugin && npm run build --workspace @xcon-viewer/github-action",
+    "test": "npm run test:public",
+    "test:public": "npm run test:site && vitest run scripts/xcon-schema.test.mjs && vitest run scripts/package-publish.test.mjs && npm run test --workspaces",
+    "test:site": "vitest run scripts/site-structure.test.mjs",
+    "site:build": "node scripts/build-public-site.mjs",
+    "clean": "npm run clean --workspaces",
+    "typecheck": "tsc --build --pretty false",
+    "playground": "node scripts/serve-static.mjs",
+    "format": "prettier --write .",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

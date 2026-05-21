@@ -1,0 +1,5 @@
+<Form pos="[0,0,402]" onClick="runRuntimeAction" actions="{&quot;save&quot;:{&quot;type&quot;:&quot;httpRequest&quot;,&quot;url&quot;:&quot;/api/save&quot;}}" database="{&quot;Product&quot;:{&quot;fields&quot;:{&quot;id&quot;:&quot;string&quot;}}}">
+  <Image name="unsafe" src="javascript:alert(1)" />
+  <List name="list" actionRef="loadRows" backend="{&quot;method&quot;:&quot;GET&quot;,&quot;path&quot;:&quot;/api/products&quot;}" />
+  <Button name="cta" label="Save" onClick_ref="save" />
+</Form>

@@ -1,0 +1,7 @@
+<Stack pos="[0,0,402,360]" direction="column" gap="12" padding="[24,16]">
+  <Items>
+    <Label text="Stack Layout" font="{&quot;size&quot;:22,&quot;weight&quot;:800}" />
+    <Badge text="PUBLIC API" backgroundColor="#DBEAFE" color="#1D4ED8" />
+    <Button label="Continue" backgroundColor="#111827" color="#FFFFFF" border="{&quot;radius&quot;:8}" />
+  </Items>
+</Stack>

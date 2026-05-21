@@ -1,0 +1,17 @@
+<Form pos="[0,0,402,900]">
+  <Image name="image" pos="[24,24,354,160]" src="assets/photo.jpg" alt="Photo" objectFit="cover" />
+  <VideoView name="video" pos="[24,204,354,180]" src="assets/demo.mp4" controls="true" poster="assets/poster.jpg" />
+  <Banner name="banner" pos="[24,404,354,140]" indicator="{&quot;show&quot;:true}">
+    <Slides>
+      <Image src="assets/slide-1.jpg" />
+      <Image src="assets/slide-2.jpg" />
+    </Slides>
+  </Banner>
+  <Carousel name="carousel" pos="[24,564,354,140]" showDots="true">
+    <Items>
+      <Card title="First" />
+      <Card title="Second" />
+    </Items>
+  </Carousel>
+  <Gallery name="gallery" pos="[24,724,354,140]" columns="3" images="[{&quot;src&quot;:&quot;assets/a.jpg&quot;},{&quot;src&quot;:&quot;assets/b.jpg&quot;}]" />
+</Form>

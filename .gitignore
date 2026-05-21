@@ -6,6 +6,25 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+# Build outputs
+dist/
+dist-site/
+*.tsbuildinfo
+!packages/github-action/dist/
+packages/github-action/dist/*
+!packages/github-action/dist/index.js
+!packages/github-action/dist/index.js.map
+
+# TypeScript declaration cache
+*.d.ts.map
+
+# Local npm cache used for dry-run packaging in restricted environments
+.npm-cache/
+
+# Internal / work-in-progress (not for public release)
+drafts/
+.temp/
+
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
@@ -82,6 +101,10 @@ out
 .nuxt
 dist
 .output
+!packages/github-action/dist/
+packages/github-action/dist/*
+!packages/github-action/dist/index.js
+!packages/github-action/dist/index.js.map
 
 # Gatsby files
 .cache/

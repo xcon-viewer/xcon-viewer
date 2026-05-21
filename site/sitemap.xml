@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://xconviewer.dev/</loc></url>
+  <url><loc>https://xconviewer.dev/docs</loc></url>
+  <url><loc>https://xconviewer.dev/spec</loc></url>
+  <url><loc>https://xconviewer.dev/examples</loc></url>
+  <url><loc>https://xconviewer.dev/play</loc></url>
+  <url><loc>https://xconviewer.dev/play/markdown</loc></url>
+  <url><loc>https://xconviewer.dev/play/sketch</loc></url>
+  <url><loc>https://xconviewer.dev/api</loc></url>
+  <url><loc>https://xconviewer.dev/security</loc></url>
+  <url><loc>https://xconviewer.dev/history</loc></url>
+  <url><loc>https://xconviewer.dev/faq</loc></url>
+  <url><loc>https://xconviewer.dev/llms.txt</loc></url>
+  <url><loc>https://xconviewer.dev/llms-full.txt</loc></url>
+  <url><loc>https://xconviewer.dev/sitemap.xml</loc></url>
+  <url><loc>https://xconviewer.dev/xcon.schema.json</loc></url>
+</urlset>

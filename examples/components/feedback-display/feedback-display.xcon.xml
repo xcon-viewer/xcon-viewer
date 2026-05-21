@@ -1,0 +1,8 @@
+<Form pos="[0,0,402,620]">
+  <Alert name="alert" pos="[24,32,354,72]" severity="success" title="Saved" message="The document was saved." />
+  <ProgressBar name="progress" pos="[24,124,300,24]" label="Progress" value="72" max="100" />
+  <Spinner name="spinner" pos="[340,116,32,32]" variant="border" color="#2563EB" />
+  <Rating name="rating" pos="[24,176,180,32]" value="4" max="5" icons="{&quot;filled&quot;:&quot;★&quot;,&quot;empty&quot;:&quot;☆&quot;}" />
+  <Tooltip name="tooltip" pos="[24,228,160,32]" text="Helpful hint" position="top" trigger="hover" />
+  <Modal name="modal" pos="[24,288,354,180]" title="Confirm" text="Continue with this action?" backdropClose="true" />
+</Form>

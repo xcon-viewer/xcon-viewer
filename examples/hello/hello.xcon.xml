@@ -1,0 +1,3 @@
+<Form pos="[0,0,320,180]" backgroundColor="#FFFFFF">
+  <Label name="hello" pos="[24,64,272,40]" text="Hello XCON" font="{&quot;size&quot;:24,&quot;weight&quot;:800}" color="#111827" textAlign="center" />
+</Form>

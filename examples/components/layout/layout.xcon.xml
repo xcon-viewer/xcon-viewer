@@ -1,0 +1,40 @@
+<Form pos="[0,0,402,960]">
+  <Stack name="stack" pos="[24,24,354,120]" direction="column" gap="8">
+    <Items>
+      <Label text="Stack item A" />
+      <Spacer size="8" />
+      <Label text="Stack item B" />
+    </Items>
+  </Stack>
+  <Grid name="grid" pos="[24,164,354,120]" columns="3" gap="8">
+    <Items>
+      <Badge text="A" />
+      <Badge text="B" />
+      <Badge text="C" />
+    </Items>
+  </Grid>
+  <FlexBox name="flex" pos="[24,304,354,80]" direction="row" justify="space-between">
+    <Items>
+      <Button label="Back" />
+      <Button label="Next" />
+    </Items>
+  </FlexBox>
+  <Tabs name="tabs" pos="[24,404,354,160]" activeId="one">
+    <Items>
+      <Value json="{&quot;id&quot;:&quot;one&quot;,&quot;label&quot;:&quot;One&quot;,&quot;content&quot;:{&quot;type&quot;:&quot;label&quot;,&quot;text&quot;:&quot;First tab&quot;}}" />
+      <Value json="{&quot;id&quot;:&quot;two&quot;,&quot;label&quot;:&quot;Two&quot;,&quot;content&quot;:{&quot;type&quot;:&quot;label&quot;,&quot;text&quot;:&quot;Second tab&quot;}}" />
+    </Items>
+  </Tabs>
+  <Accordion name="accordion" pos="[24,584,354,160]" defaultOpen="[&quot;a&quot;]">
+    <Items>
+      <Value json="{&quot;id&quot;:&quot;a&quot;,&quot;title&quot;:&quot;Section A&quot;,&quot;content&quot;:&quot;Alpha&quot;}" />
+      <Value json="{&quot;id&quot;:&quot;b&quot;,&quot;title&quot;:&quot;Section B&quot;,&quot;content&quot;:&quot;Beta&quot;}" />
+    </Items>
+  </Accordion>
+  <List name="list" pos="[24,764,354,160]" itemSize="{&quot;height&quot;:48,&quot;width&quot;:354}">
+    <Items>
+      <Label text="Row 1" />
+      <Label text="Row 2" />
+    </Items>
+  </List>
+</Form>

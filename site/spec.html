@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Spec - XCON Viewer</title>
+  <meta name="description" content="XCON Object Model and syntax specification.">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/"><span class="mark">X</span><span>XCON Viewer</span></a>
+    <nav class="nav" aria-label="Primary">
+      <a href="/docs">Docs</a>
+      <a href="/spec" aria-current="page">Spec</a>
+      <a href="/examples">Examples</a>
+      <a href="/play">Play</a>
+      <a href="/api">API</a>
+      <a href="/security">Security</a>
+      <a href="/history">History</a>
+      <a href="/faq">FAQ</a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <section class="section">
+      <p class="eyebrow">Specification</p>
+      <h1>Spec</h1>
+      <p class="lead">The public XCON spec defines one viewer-only Object Model and four syntax forms: JSON, XML, TAGLESS, and SKETCH.</p>
+    </section>
+
+    <section class="section">
+      <div class="grid">
+        <a class="card" href="/spec/xcon-object-model.md"><h3>Object Model</h3><p>Ordered name/value dictionaries, arrays, primitives, and components.</p></a>
+        <a class="card" href="/spec/xcon-json-syntax.md"><h3>XCON/JSON</h3><p>Canonical syntax for APIs, LLM generation, and schema validation.</p></a>
+        <a class="card" href="/spec/xcon-xml-syntax.md"><h3>XCON/XML</h3><p>Semantic XML authoring syntax and round-trip rules.</p></a>
+        <a class="card" href="/spec/xcon-tagless-syntax.md"><h3>XCON/TAGLESS</h3><p>Symbolic serialization syntax.</p></a>
+        <a class="card" href="/spec/xcon-sketch-syntax.md"><h3>XCON/SKETCH</h3><p>Compact Markdown authoring syntax for examples and LLM drafts.</p></a>
+        <a class="card" href="/spec/xcon-tagless-markers.md"><h3>Marker Rules</h3><p>Custom marker selection and escaping guidance.</p></a>
+        <a class="card" href="/spec/security-model.md"><h3>Security Model</h3><p>Viewer-only public boundary.</p></a>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Schema</h2>
+      <p>The JSON Schema is published at <a href="/xcon.schema.json">/xcon.schema.json</a> and uses the canonical id <code>https://xconviewer.dev/xcon.schema.json</code>.</p>
+    </section>
+  </main>
+
+  <footer class="page footer">Canonical domain: https://xconviewer.dev/spec</footer>
+</body>
+</html>

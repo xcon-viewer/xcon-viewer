@@ -1,0 +1,228 @@
+screen 560x996
+  border
+    visible true
+    width 1
+    color @border
+    radius 10
+  shadow
+    opacity 0.08
+    blur 6
+  al
+    autoHeight true
+    gap 10px
+    padding "14px 16px"
+  hdr: label "07 · RadioButton" at 0 0 560 28
+    font
+      size 11
+      weight "bold"
+    textAlign "left"
+  h07a: label "radioButton · list & button group (#07-A)" at 0 0 560 28
+    font
+      size 10
+      weight 600
+    textAlign "left"
+  a07: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 14px
+      padding 0
+    hdr: label " " at 0 0 560 28
+      font
+        size 11
+        weight "bold"
+      textAlign "left"
+    subN: label "Notification Preference" at 0 0 560 28
+      font
+        size 10
+        weight 500
+      textAlign "left"
+      color @ink-3
+      style "letter-spacing:2px;text-transform:uppercase;line-height:1.4;margin-top:0;margin-bottom:12px;"
+    n1: radioButton at 0 0 520 56
+      checked true
+      value "all"
+      group "showcase_notif_al"
+      label "All notifications · Receive every update and alert"
+    n2: radioButton at 0 0 520 56
+      checked false
+      value "important"
+      group "showcase_notif_al"
+      label "Important only · Critical alerts and mentions only"
+    n3: radioButton at 0 0 520 56
+      checked false
+      value "none"
+      group "showcase_notif_al"
+      label "No notifications · Fully silent mode"
+    n4: radioButton at 0 0 520 56
+      checked false
+      enabled false
+      value "custom"
+      group "showcase_notif_al"
+      label "Custom schedule · Pro plan required"
+    div: label " " at 0 0 560 28
+      font
+        size 1
+      textAlign "left"
+      color "transparent"
+      labelPadding "0"
+      style "height:1px;min-height:1px;background:var(--border);width:100%;display:block;margin:12px 0;"
+    subV: label "View Mode" at 0 0 560 28
+      font
+        size 10
+        weight 500
+      textAlign "left"
+      color @ink-3
+      style "letter-spacing:2px;text-transform:uppercase;line-height:1.4;margin-top:18px;margin-bottom:12px;"
+    vw: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 8
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 0
+        padding 0
+        direction "row"
+        alignItems "stretch"
+        stackClass "xa-al-rb-btn-group"
+      v1: radioButton at 0 0 72 40
+        checked true
+        value "grid"
+        al
+          flex "1 1 0"
+          minWidth 0
+        group "showcase_view_al"
+        label "Grid"
+        variant "segment"
+      v2: radioButton at 0 0 72 40
+        checked false
+        value "list"
+        al
+          flex "1 1 0"
+          minWidth 0
+        group "showcase_view_al"
+        label "List"
+        variant "segment"
+      v3: radioButton at 0 0 72 40
+        checked false
+        value "map"
+        al
+          flex "1 1 0"
+          minWidth 0
+        group "showcase_view_al"
+        label "Map"
+        variant "segment"
+      v4: radioButton at 0 0 72 40
+        checked false
+        value "timeline"
+        al
+          flex "1 1 0"
+          minWidth 0
+        group "showcase_view_al"
+        label "Timeline"
+        variant "segment"
+    subS: label "Star Rating" at 0 0 560 28
+      font
+        size 10
+        weight 500
+      textAlign "left"
+      color @ink-3
+      style "letter-spacing:2px;text-transform:uppercase;line-height:1.4;margin-top:18px;margin-bottom:12px;"
+    rate: radioButton at 0 0 520 52
+      checked false
+      ratingValue "4"
+      al
+        width 100%
+      group "showcase_star_al"
+      label ""
+      variant "rating"
+  h07b: label "radioButton · plan selection (#07-B)" at 0 0 560 28
+    font
+      size 10
+      weight 600
+    textAlign "left"
+  b07: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 0
+      padding 0
+      direction "column"
+      alignItems "stretch"
+      stackClass "xa-al-rb-plan-section"
+    subP: label "Subscription Plan" at 0 0 560 28
+      font
+        size 10
+        weight 500
+      textAlign "left"
+      color @ink-3
+      style "letter-spacing:2px;text-transform:uppercase;line-height:1.4;margin-top:0;margin-bottom:12px;"
+    plans: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 10
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 8px
+        padding 0
+        direction "row"
+        alignItems "stretch"
+        stackClass "xa-al-rb-plan-grid xa-al-rb-plan-grid--cards"
+      p1: radioButton at 0 0 180 220
+        checked false
+        value "starter"
+        planName "Starter"
+        planPriceMain "Free"
+        planFeatures "1 project|5GB storage|Community support"
+        al
+          flex "1 1 0"
+          minWidth 0
+        group "showcase_plan_al"
+        label "Starter"
+        variant "plan"
+      p2: radioButton at 0 0 180 220
+        checked true
+        value "pro"
+        planName "Pro"
+        planPriceMain "₩29K"
+        planPricePer "/mo"
+        planFeatures "10 projects|50GB storage|Priority support"
+        al
+          flex "1 1 0"
+          minWidth 0
+        group "showcase_plan_al"
+        label "Pro"
+        variant "plan"
+      p3: radioButton at 0 0 180 220
+        checked false
+        value "team"
+        planName "Team"
+        planPriceMain "₩89K"
+        planPricePer "/mo"
+        planFeatures "Unlimited projects|500GB storage|Dedicated support"
+        al
+          flex "1 1 0"
+          minWidth 0
+        group "showcase_plan_al"
+        label "Team"
+        variant "plan"

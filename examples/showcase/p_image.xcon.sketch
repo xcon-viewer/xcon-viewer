@@ -1,0 +1,356 @@
+screen 560x1246
+  border
+    visible true
+    width 1
+    color @border
+    radius 10
+  shadow
+    opacity 0.08
+    blur 6
+  al
+    autoHeight true
+    gap 10px
+    padding "14px 16px"
+  hdr: label "04 · Image" at 0 0 560 28
+    font
+      size 11
+      weight "bold"
+    textAlign "left"
+  h04a: label "image · shapes & overlays (#04-A)" at 0 0 560 28
+    font
+      size 10
+      weight 600
+    textAlign "left"
+  a04: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 16px
+      padding 0
+    hdr: label " " at 0 0 560 28
+      font
+        size 11
+        weight "bold"
+      textAlign "left"
+    rad: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 10
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 8px
+        padding 0
+        direction "row"
+        alignItems "stretch"
+        justifyContent "flex-start"
+      r1: image at 0 0 170 90
+        src "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&q=80"
+        border
+          visible false
+          radius 6px
+        objectFit "fill"
+      r2: image at 0 0 170 90
+        src "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=80"
+        border
+          visible false
+          radius 12px
+        objectFit "fill"
+      r3: image at 0 0 170 90
+        src "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80"
+        border
+          visible false
+          radius 16px
+        objectFit "fill"
+    ov: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 10
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 0
+        padding 0
+      hdr: label "Overlay with Caption" at 0 0 560 28
+        font
+          size 11
+          weight "bold"
+        textAlign "left"
+      im: image at 0 0 560 200
+        src "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80"
+        alt "mountain"
+        border
+          visible false
+          radius 12px
+        objectFit "fill"
+        overlayTag "Photography"
+        overlayTitle "Into the Wild Night"
+        overlaySub "Shot in the Dolomites · March 2026"
+    av: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 10
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 10px
+        padding "4px 0"
+        direction "row"
+        alignItems "center"
+        justifyContent "flex-start"
+      a1: image at 0 0 72 72
+        src "https://i.pravatar.cc/72?img=47"
+        border
+          visible false
+          radius 50%
+        objectFit "fill"
+      a2: image at 0 0 56 56
+        src "https://i.pravatar.cc/56?img=12"
+        border
+          visible false
+          radius 50%
+        objectFit "fill"
+      a3: image at 0 0 44 44
+        src "https://i.pravatar.cc/44?img=32"
+        border
+          visible false
+          radius 50%
+        objectFit "fill"
+      a4: image at 0 0 32 32
+        src "https://i.pravatar.cc/32?img=5"
+        border
+          visible false
+          radius 50%
+        objectFit "fill"
+      a5: image at 0 0 72 72
+        src "https://i.pravatar.cc/72?img=60"
+        border
+          visible false
+          radius 12px
+        objectFit "fill"
+  h04b: label "image · states & captions (#04-B)" at 0 0 560 28
+    font
+      size 10
+      weight 600
+    textAlign "left"
+  b04: panel at 0 0 560 32
+    border
+      visible false
+      width 1
+      color @border
+      radius 10
+    shadow
+      visible false
+    al
+      autoHeight true
+      gap 14px
+      padding 0
+    hdr: label " " at 0 0 560 28
+      font
+        size 11
+        weight "bold"
+      textAlign "left"
+    fig: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 10
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 8px
+        padding 0
+      hdr: label "With Caption" at 0 0 560 28
+        font
+          size 11
+          weight "bold"
+        textAlign "left"
+      fi: image at 0 0 560 160
+        src "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80"
+        border
+          visible false
+          radius 12px
+        objectFit "fill"
+      fc: label "Fig. 1 — Summit of Dachstein, Austria · 2,995m altitude · ISO 200" at 0 0 560 28
+        font
+          size 11
+          italic "true"
+        textAlign "center"
+        color @ink-3
+        al
+          width 100%
+    sk: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 10
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 10px
+        padding 0
+      hdr: label "Skeleton / Loading State" at 0 0 560 28
+        font
+          size 11
+          weight "bold"
+        textAlign "left"
+      row: panel at 0 0 560 32
+        border
+          visible false
+          width 1
+          color @border
+          radius 10
+        shadow
+          visible false
+        al
+          autoHeight true
+          gap 10px
+          padding 0
+          direction "row"
+          alignItems "center"
+        c: label " " at 0 0 56 56
+          font
+            size 1
+          textAlign "left"
+          color "transparent"
+          labelPadding "0"
+          border
+            visible false
+            radius 50%
+          style "border: 1px solid var(--border); box-sizing: border-box; overflow: hidden;"
+          shimmer "true"
+          shimmerDirection "rtl"
+          al
+            flex "0 0 auto"
+        lines: panel at 0 0 560 32
+          style "min-width: 0;"
+          border
+            visible false
+            width 1
+            color @border
+            radius 10
+          shadow
+            visible false
+          al
+            autoHeight true
+            gap 8px
+            padding 0
+            flex "1 1 auto"
+          l1: label " " at 0 0 560 12
+            font
+              size 1
+            textAlign "left"
+            color "transparent"
+            labelPadding "0"
+            style "border-radius: 6px; min-height: 12px; display: block;"
+            shimmer "true"
+            shimmerDirection "rtl"
+            al
+              width 100%
+          l2: label " " at 0 0 560 10
+            font
+              size 1
+            textAlign "left"
+            color "transparent"
+            labelPadding "0"
+            style "border-radius: 6px; min-height: 10px; width: 70%; max-width: 100%; display: block;"
+            shimmer "true"
+            shimmerDirection "rtl"
+            al
+              alignSelf "flex-start"
+      blk: label " " at 0 0 560 100
+        font
+          size 1
+        textAlign "left"
+        color "transparent"
+        labelPadding "0"
+        style "border-radius: var(--r-sm); min-height: 100px; display: block; border: 1px solid var(--border); box-sizing: border-box;"
+        shimmer "true"
+        shimmerDirection "rtl"
+        al
+          width 100%
+    fit: panel at 0 0 560 32
+      border
+        visible false
+        width 1
+        color @border
+        radius 10
+      shadow
+        visible false
+      al
+        autoHeight true
+        gap 10px
+        padding 0
+        direction "row"
+        alignItems "flex-start"
+        justifyContent "flex-start"
+      hdr: label "Object-fit Comparison" at 0 0 560 28
+        font
+          size 11
+          weight "bold"
+        textAlign "left"
+      c1: panel at 0 0 560 32
+        border
+          visible false
+          width 1
+          color @border
+          radius 10
+        shadow
+          visible false
+        al
+          autoHeight true
+          gap 6px
+          padding 0
+        hdr: label "cover" at 0 0 560 28
+          font
+            size 11
+            weight "bold"
+          textAlign "left"
+        i: image at 0 0 268 80
+          src "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=400&q=80"
+          border
+            visible false
+            radius 8px
+          objectFit "fill"
+      c2: panel at 0 0 560 32
+        border
+          visible false
+          width 1
+          color @border
+          radius 10
+        shadow
+          visible false
+        al
+          autoHeight true
+          gap 6px
+          padding 0
+        hdr: label "contain" at 0 0 560 28
+          font
+            size 11
+            weight "bold"
+          textAlign "left"
+        j: image at 0 0 268 80
+          src "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=400&q=80"
+          border
+            visible false
+            radius 8px
+          objectFit "contain"

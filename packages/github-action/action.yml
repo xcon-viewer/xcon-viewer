@@ -1,0 +1,19 @@
+name: XCON Viewer
+description: Validate and render XCON code blocks from Markdown files.
+author: XCON Viewer
+inputs:
+  files:
+    description: Markdown files or directories to scan, separated by commas or newlines.
+    required: false
+    default: README.md
+  out-dir:
+    description: Directory where rendered HTML artifacts are written.
+    required: false
+    default: xcon-rendered
+  fail-on-invalid:
+    description: Fail the action when a XCON block cannot be parsed or rendered.
+    required: false
+    default: "true"
+runs:
+  using: node20
+  main: dist/index.js

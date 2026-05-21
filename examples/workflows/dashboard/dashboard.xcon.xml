@@ -1,0 +1,12 @@
+<Form pos="[0,0,800,600]" backgroundColor="#F8FAFC">
+  <Label name="heading" pos="[32,24,400,36]" text="Operations" font="{&quot;size&quot;:28,&quot;weight&quot;:800}" />
+  <Grid name="grid" pos="[32,84,736,220]" columns="3" gap="16">
+    <Items>
+      <Card title="Orders" subtitle="1,248" text="+12% today" />
+      <Card title="Revenue" subtitle="$84k" text="+8% today" />
+      <Card title="SLA" subtitle="98%" text="Healthy" />
+    </Items>
+  </Grid>
+  <ProgressBar name="progress" pos="[32,332,420,24]" label="Monthly target" value="82" max="100" />
+  <Alert name="alert" pos="[32,388,520,72]" severity="warning" title="Inventory" message="Three SKUs need restocking." />
+</Form>

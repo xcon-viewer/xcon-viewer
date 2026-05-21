@@ -1,0 +1,38 @@
+{
+  "type": "form",
+  "pos": [
+    0,
+    0,
+    320,
+    180
+  ],
+  "backgroundColor": "#F8FAFC",
+  "components": {
+    "start": {
+      "type": "button",
+      "pos": [
+        40,
+        68,
+        240,
+        48
+      ],
+      "label": "Start",
+      "backgroundColor": "#2563EB",
+      "color": "#FFFFFF",
+      "border": {
+        "radius": 10
+      },
+      "font": {
+        "weight": 700
+      },
+      "states": {
+        "hover": {
+          "backgroundColor": "#1D4ED8"
+        },
+        "disabled": {
+          "backgroundColor": "#9CA3AF"
+        }
+      }
+    }
+  }
+}

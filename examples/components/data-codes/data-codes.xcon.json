@@ -1,0 +1,64 @@
+{
+  "type": "form",
+  "pos": [
+    0,
+    0,
+    402,
+    620
+  ],
+  "components": {
+    "tree": {
+      "type": "treeView",
+      "pos": [
+        24,
+        24,
+        354,
+        180
+      ],
+      "data": [
+        {
+          "id": "docs",
+          "label": "docs",
+          "children": [
+            {
+              "id": "spec",
+              "label": "spec.md"
+            }
+          ]
+        }
+      ],
+      "expandedNodes": [
+        "docs"
+      ]
+    },
+    "qr": {
+      "type": "qrCode",
+      "pos": [
+        24,
+        228,
+        180,
+        210
+      ],
+      "text": "https://xconviewer.dev",
+      "size": 160,
+      "errorCorrectionLevel": "M"
+    },
+    "barcode": {
+      "type": "barcode",
+      "pos": [
+        24,
+        456,
+        300,
+        120
+      ],
+      "text": "1234567890",
+      "format": "CODE128",
+      "width": 2,
+      "height": 80,
+      "displayValue": true,
+      "font": {
+        "size": 14
+      }
+    }
+  }
+}

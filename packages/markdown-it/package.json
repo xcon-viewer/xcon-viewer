@@ -1,0 +1,66 @@
+{
+  "name": "@xcon-viewer/markdown-it",
+  "version": "0.1.2",
+  "type": "module",
+  "description": "markdown-it plugin for rendering XCON code fences.",
+  "keywords": [
+    "xcon",
+    "xcon-viewer",
+    "markdown-it",
+    "markdown",
+    "viewer"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xcon-viewer/xcon-viewer.git",
+    "directory": "packages/markdown-it"
+  },
+  "homepage": "https://xconviewer.dev",
+  "bugs": {
+    "url": "https://github.com/xcon-viewer/xcon-viewer/issues"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup && tsc -b tsconfig.json --force --emitDeclarationOnly",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run test && npm run build"
+  },
+  "dependencies": {
+    "@xcon-viewer/core": "0.1.2",
+    "@xcon-viewer/viewer": "0.1.2"
+  },
+  "peerDependencies": {
+    "markdown-it": ">=13"
+  },
+  "peerDependenciesMeta": {
+    "markdown-it": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "markdown-it": "^14.1.1",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^3.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
+

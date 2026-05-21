@@ -1,0 +1,3 @@
+<Form pos="[0,0,402,420]" backgroundColor="#F8FAFC">
+  <Shape name="card" pos="[24,48,354,220]" text="Styled Shape" font="{&quot;family&quot;:&quot;Inter, Arial, sans-serif&quot;,&quot;size&quot;:28,&quot;weight&quot;:800}" color="#FFFFFF" textAlign="center" textVerticalAlign="middle" background="{&quot;gradient&quot;:&quot;linear-gradient(135deg, #0F172A, #2563EB)&quot;}" border="{&quot;radius&quot;:18}" effects="{&quot;boxShadow&quot;:&quot;0 16px 40px rgba(15,23,42,.22)&quot;}" />
+</Form>

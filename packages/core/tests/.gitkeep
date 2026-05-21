@@ -1,0 +1,9 @@
+// @xcon-viewer/core tests
+// Tests are organized to mirror the src/ structure.
+//
+// parser/json/  — XCON/JSON parsing tests
+// parser/xml/   — XCON/XML parsing tests
+// parser/tagless/ — XCON/TAGLESS parsing tests
+// model/        — object model integrity tests
+// validator/    — validation tests
+// converter/    — round-trip conversion tests

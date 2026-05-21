@@ -1,0 +1,11 @@
+<Form pos="[0,0,402,680]">
+  <TextField name="text" pos="[24,32,354,44]" placeholder="Text field" suffix="{&quot;clear&quot;:true}" />
+  <PasswordField name="password" pos="[24,92,354,44]" placeholder="Password" showToggle="true" />
+  <Textarea name="textarea" pos="[24,152,354,96]" placeholder="Textarea" rows="null" />
+  <Select name="select" pos="[24,268,354,44]" value="pro" options="[{&quot;value&quot;:&quot;free&quot;,&quot;label&quot;:&quot;Free&quot;},{&quot;value&quot;:&quot;pro&quot;,&quot;label&quot;:&quot;Pro&quot;}]" />
+  <Slider name="slider" pos="[24,332,300,48]" label="Volume" value="70" min="0" max="100" ticks="true" />
+  <Switch name="switcher" pos="[24,396,260,44]" title="Notifications" checked="true" labels="{&quot;on&quot;:&quot;On&quot;,&quot;off&quot;:&quot;Off&quot;}" />
+  <ColorPicker name="color" pos="[24,460,220,40]" value="#2563EB" alpha="true" />
+  <DatePicker name="date" pos="[24,520,220,40]" value="2026-05-12" />
+  <TimePicker name="time" pos="[24,580,220,40]" value="09:30" />
+</Form>

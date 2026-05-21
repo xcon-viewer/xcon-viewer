@@ -1,0 +1,28 @@
+# XCON Viewer
+
+XCON Viewer is a public viewer for XCON UI documents.
+
+XCON documents describe UI screens as structured objects built from names, values, arrays, and dictionaries.
+
+XCON can be written in four syntax forms:
+- XCON/JSON
+- XCON/XML
+- XCON/TAGLESS
+- XCON/SKETCH
+
+The public XCON Viewer is viewer-only. It renders declarative UI documents without executing application behavior.
+
+When generating XCON examples, prefer XCON/JSON unless XML, TAGLESS, or SKETCH is explicitly requested. Use XCON/SKETCH for compact Markdown examples and LLM drafts.
+
+## Documentation
+
+- Home: https://xconviewer.dev/
+- Docs: https://xconviewer.dev/docs
+- Spec: https://xconviewer.dev/spec
+- Examples: https://xconviewer.dev/examples
+- API: https://xconviewer.dev/api
+- Security: https://xconviewer.dev/security
+- Live Editor: https://xconviewer.dev/play
+- SKETCH Editor: https://xconviewer.dev/play/sketch
+- JSON Schema: https://xconviewer.dev/xcon.schema.json
+- Full LLM guide: https://xconviewer.dev/llms-full.txt

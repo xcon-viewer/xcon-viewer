@@ -1,0 +1,9 @@
+<Form pos="[0,0,402,700]" backgroundColor="#F8FAFC">
+  <List name="list" pos="[16,24,370,620]" direction="vertical" itemSize="{&quot;height&quot;:120,&quot;width&quot;:370}" separator="{&quot;style&quot;:&quot;none&quot;,&quot;size&quot;:0}">
+    <Items>
+      <Card title="Design Review" subtitle="Today 10:00" text="Confirm public API naming and examples." padding="16" />
+      <Card title="Security Pass" subtitle="Today 14:00" text="Review viewer-only restrictions." padding="16" />
+      <Card title="Docs Update" subtitle="Tomorrow" text="Publish component reference." padding="16" />
+    </Items>
+  </List>
+</Form>

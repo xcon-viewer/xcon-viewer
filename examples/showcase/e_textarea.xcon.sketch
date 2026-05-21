@@ -1,0 +1,28 @@
+screen 560x228
+  border
+    visible true
+    width 1
+    color @border
+    radius 10
+  shadow
+    visible true
+    opacity 0.08
+    blur 6
+  al
+    autoHeight true
+    gap 12px
+    padding "14px 16px"
+  hdr: label "Extended · textarea" at 0 0 560 28
+    font
+      size 11
+      weight "bold"
+    textAlign "left"
+  c: textarea at 0 0 560 160
+    label "Description"
+    placeholder "Write something…"
+    maxLength 200
+    showCharCount true
+    resize "vertical"
+    al
+      width 100%
+      alignSelf "stretch"

@@ -1,0 +1,10 @@
+{
+  "type": "form",
+  "title": "Custom Markers",
+  "components": {
+    "label": {
+      "type": "label",
+      "text": "TAGLESS can choose markers per document."
+    }
+  }
+}

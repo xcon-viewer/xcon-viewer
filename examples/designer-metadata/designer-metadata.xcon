@@ -1,0 +1,39 @@
+♤♡◇♧
+♤
+  ♧type♣◇form◆
+  ♧pos♣
+  ♡
+    ◇0◆
+    ◇0◆
+    ◇402◆
+    ◇360◆
+  ♥
+  ♧metadata♣
+  ♤
+    ♧designer:note♣◇Hero screen draft◆
+    ♧designer:locked♣◇true◆
+  ♠
+  ♧components♣
+  ♤
+    ♧title♣
+    ♤
+      ♧type♣◇label◆
+      ♧id♣◇title◆
+      ♧text♣◇Designer Metadata◆
+      ♧font♣
+      ♤
+        ♧size♣◇22◆
+        ♧weight♣◇800◆
+      ♠
+    ♠
+    ♧cta♣
+    ♤
+      ♧type♣◇button◆
+      ♧id♣◇cta◆
+      ♧label♣◇Preview◆
+      ♧backgroundColor♣◇#2563EB◆
+      ♧color♣◇#FFFFFF◆
+    ♠
+  ♠
+♠
+♠♥◆♣
