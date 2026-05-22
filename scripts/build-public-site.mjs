@@ -43,6 +43,7 @@ const fileCopies = [
 
 const dirCopies = [
   ['examples', 'examples'],
+  ['images', 'images'],  
   ['packages/core/dist', 'packages/core/dist'],
   ['packages/viewer/dist', 'packages/viewer/dist'],
   ['packages/markdown-it/dist', 'packages/markdown-it/dist'],
