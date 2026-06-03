@@ -1,19 +1,21 @@
 {
   "name": "xcon-viewer",
-  "version": "0.1.2",
+  "version": "0.1.6",
   "private": true,
   "description": "Monorepo for XCON Viewer — a public viewer for XCON UI documents",
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspace @xcon-viewer/core && npm run build --workspace @xcon-viewer/viewer && npm run build --workspace @xcon-viewer/cli && npm run build --workspace @xcon-viewer/react && npm run build --workspace @xcon-viewer/vue && npm run build --workspace @xcon-viewer/markdown-it && npm run build --workspace @xcon-viewer/remark && npm run build --workspace @xcon-viewer/vite-plugin && npm run build --workspace @xcon-viewer/github-action",
+    "build": "npm run build --workspace @xcon-viewer/core && npm run build --workspace @xcon-viewer/viewer && npm run build --workspace @xcon-viewer/document-importer && npm run build --workspace @xcon-viewer/cli && npm run build --workspace @xcon-viewer/react && npm run build --workspace @xcon-viewer/vue && npm run build --workspace @xcon-viewer/markdown-it && npm run build --workspace @xcon-viewer/remark && npm run build --workspace @xcon-viewer/vite-plugin && npm run build --workspace @xcon-viewer/github-action",
     "test": "npm run test:public",
     "test:public": "npm run test:site && vitest run scripts/xcon-schema.test.mjs && vitest run scripts/package-publish.test.mjs && npm run test --workspaces",
-    "test:site": "vitest run scripts/site-structure.test.mjs",
+    "test:site": "vitest run scripts/site-structure.test.mjs scripts/template-export-api.test.mjs scripts/template-import-api.test.mjs scripts/template-lab-local-runner.test.mjs",
     "site:build": "node scripts/build-public-site.mjs",
     "clean": "npm run clean --workspaces",
     "typecheck": "tsc --build --pretty false",
+    "local": "node scripts/serve-template-lab-local.mjs",
+    "local:template-lab": "node scripts/serve-template-lab-local.mjs",
     "playground": "node scripts/serve-static.mjs",
     "format": "prettier --write .",
     "lint": "eslint ."
@@ -28,5 +30,11 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "jszip": "^3.10.1",
+    "kordoc": "^2.9.0",
+    "pdfjs-dist": "^4.10.38",
+    "puppeteer-core": "^25.1.0"
   }
 }

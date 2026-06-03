@@ -1,0 +1,37 @@
+<Panel border="visible:true; width:1; color:var(--border); radius:10" shadow="opacity:0.08; blur:6" pos="0,0,560,32" al="autoHeight:true; gap:10px; padding:14px 16px" componentsOrder="hdr,h06a,a06,h06b,b06">
+  <Label name="hdr" text="06 · Checkbox" pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+  <Label name="h06a" text="checkbox · list &amp; states (#06-A)" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" />
+  <Panel name="a06" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:10px; padding:0" componentsOrder="hdr,perm,sa,c1,c2,c3,c4,termsH,terms">
+    <Label name="hdr" text=" " pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+    <Label name="perm" text="Permissions" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" />
+    <Checkbox name="sa" pos="0,0,520,28" indeterminate="true" label="Select All · Toggle all permissions" value="unchecked" />
+    <Checkbox name="c1" pos="0,0,520,28" label="Read access · View all records and reports" value="checked" />
+    <Checkbox name="c2" pos="0,0,520,28" label="Write access · Create and modify records" value="unchecked" appearance="green" />
+    <Checkbox name="c3" pos="0,0,520,28" label="Admin access · Full administrative control" value="unchecked" appearance="blue" />
+    <Checkbox name="c4" pos="0,0,520,28" enabled="false" label="Billing access · Requires admin approval" value="unchecked" />
+    <Label name="termsH" text="Terms &amp; Agreement" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" />
+    <Checkbox name="terms" pos="0,0,520,88" labelHtml="I agree to the &lt;a href=&quot;#&quot;&gt;Terms of Service&lt;/a&gt; and &lt;a href=&quot;#&quot;&gt;Privacy Policy&lt;/a&gt;. I confirm that I am at least 16 years of age." label="" value="unchecked" variant="terms" />
+  </Panel>
+  <Label name="h06b" text="checkbox · card selection (#06-B)" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" />
+  <Panel name="b06" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:18px; padding:0" componentsOrder="hdr,feat,grid,pillH,pills">
+    <Label name="hdr" text=" " pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+    <Label name="feat" text="Feature Selection" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" />
+    <Panel name="grid" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="r1,r2">
+      <Panel name="r1" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0; direction:row; alignItems:stretch" componentsOrder="f1,f2">
+        <Checkbox name="f1" pos="0,0,200,140" al="flex:1 1 0; minWidth:0" label="📊 Analytics · Track user behavior" value="checked" variant="card" />
+        <Checkbox name="f2" pos="0,0,200,140" al="flex:1 1 0; minWidth:0" label="🔔 Notifications · Push &amp; email alerts" value="unchecked" variant="card" />
+      </Panel>
+      <Panel name="r2" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0; direction:row; alignItems:stretch" componentsOrder="f3,f4">
+        <Checkbox name="f3" pos="0,0,200,140" al="flex:1 1 0; minWidth:0" label="🔐 2FA Security · Extra protection" value="checked" variant="card" />
+        <Checkbox name="f4" pos="0,0,200,140" al="flex:1 1 0; minWidth:0" label="🌐 CDN · Global edge network" value="unchecked" variant="card" />
+      </Panel>
+    </Panel>
+    <Label name="pillH" text="Filter Checkboxes" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" />
+    <Panel name="pills" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0; direction:row; alignItems:center; justifyContent:flex-start" componentsOrder="p1,p2,p3,p4">
+      <Checkbox name="p1" pos="0,0,96,36" al="flex:0 0 auto; width:auto; alignSelf:flex-start" label="Design" value="checked" variant="pill" />
+      <Checkbox name="p2" pos="0,0,96,36" al="flex:0 0 auto; width:auto; alignSelf:flex-start" label="Development" value="unchecked" variant="pill" />
+      <Checkbox name="p3" pos="0,0,96,36" al="flex:0 0 auto; width:auto; alignSelf:flex-start" label="Marketing" value="unchecked" variant="pill" />
+      <Checkbox name="p4" pos="0,0,96,36" al="flex:0 0 auto; width:auto; alignSelf:flex-start" label="Strategy" value="checked" variant="pill" />
+    </Panel>
+  </Panel>
+</Panel>

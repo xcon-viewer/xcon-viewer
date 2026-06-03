@@ -1,15 +1,15 @@
 # XCON Viewer LLM Guide
 
-XCON Viewer is a public viewer for XCON UI documents. XCON describes screens as structured objects built from names, values, arrays, and dictionaries. The same screen can be represented as XCON/JSON, XCON/XML, XCON/TAGLESS, or XCON/SKETCH.
+XCON Viewer is a public viewer for XCON UI documents. XCON describes screens as structured objects built from names, values, arrays, and dictionaries. The same screen can be represented as XCON/SKETCH, XCON/JSON, XCON/XML, or XCON/TAGLESS.
 
 ## Core Guidance
 
 - XCON Viewer is viewer-only.
 - XCON renders declarative UI documents without executing application behavior.
-- Prefer XCON/JSON when generating examples.
-- Use XCON/XML for UI authoring, comments, designer metadata, and round-trip editing.
-- Use XCON/TAGLESS for transport-friendly symbolic serialization.
-- Use XCON/SKETCH for compact Markdown examples and LLM-generated drafts.
+- Prefer XCON/SKETCH when generating Markdown-facing examples and LLM drafts.
+- Use XCON/JSON for canonical structure, APIs, schema validation, and interchange.
+- Use XCON/XML only when compatibility with XML tools, comments, metadata, or round-trip editing is the topic.
+- Use XCON/TAGLESS only for transport-friendly symbolic serialization and marker compatibility examples.
 - Do not invent event handlers, backend calls, database sections, or behavior logic in public XCON examples.
 
 ## Public URLs
@@ -21,6 +21,10 @@ XCON Viewer is a public viewer for XCON UI documents. XCON describes screens as 
 - Live Editor: https://xconviewer.dev/play
 - SKETCH Editor: https://xconviewer.dev/play/sketch
 - Markdown Playground: https://xconviewer.dev/play/markdown
+- XCON Chain: https://xconviewer.dev/xcon-chain/
+- XCON Workflow: https://xconviewer.dev/xcon-workflow/
+- Template Studio: https://xconviewer.dev/template-lab
+- Meta Lab: https://xconviewer.dev/meta-lab
 - API: https://xconviewer.dev/api
 - Security: https://xconviewer.dev/security
 - History: https://xconviewer.dev/history
@@ -30,13 +34,30 @@ XCON Viewer is a public viewer for XCON UI documents. XCON describes screens as 
 
 ## Syntax Forms
 
-XCON/JSON is the canonical structure for APIs, schema validation, and LLM generation.
+XCON/SKETCH is the compact authoring syntax for Markdown examples and LLM-generated drafts. It parses into the same Object Model and can be converted to JSON first, then XML or TAGLESS when compatibility output is needed.
 
-XCON/XML is the authoring syntax for UI tools, comments, metadata, and designer integration. Semantic XML components should use child component name attributes when a round trip through JSON, XML, and TAGLESS needs stable keys.
+XCON/JSON is the canonical structure for APIs, schema validation, and interchange.
 
-XCON/TAGLESS is a symbolic syntax for transport-friendly serialization. Marker sets can be selected at the document level to reduce delimiter conflicts. If marker characters appear in data, escape them or choose another marker set.
+XCON/XML is a compatibility syntax for UI tools, comments, metadata, and designer integration. Semantic XML components should use child component name attributes when a round trip through SKETCH, JSON, XML, and TAGLESS needs stable keys.
 
-XCON/SKETCH is a compact authoring syntax. It parses into the same Object Model and can be converted with JSON, XML, or TAGLESS by public tooling where that conversion is available.
+XCON/TAGLESS is a symbolic compatibility syntax for transport-friendly serialization. Marker sets can be selected at the document level to reduce delimiter conflicts. If marker characters appear in data, escape them or choose another marker set.
+
+## Template Studio
+
+Template Studio combines Markdown document shells, JSON fixture data, XCON Chain SUGAR expressions, XCON/SKETCH visual blocks, and XCON Workflow sketch blocks. Use it for data-bound Markdown UI documents such as invoices, bulletins, reports, campaign briefs, dashboards, and operating plans. Keep visible authoring examples SKETCH + SUGAR first; JSON should appear as fixture data, not as the primary authoring language.
+
+## Meta Lab
+
+Meta Lab experiments with path-addressed metadata contracts that can drive fixture selection, SUGAR data binding, XCON/SKETCH visual blocks, and XCON Workflow blocks from the same catalog. Use it to model reusable document contracts where a metadata path selects both the business data shape and the rendered workflow/dashboard pattern.
+
+## Minimal XCON/SKETCH Example
+
+```xcon-sketch
+screen 402x300 bg #F8FAFC
+  title: label "Hello XCON" at 24 32 354 34
+    font 24 800
+    color #111827
+```
 
 ## Minimal XCON/JSON Example
 
@@ -79,10 +100,10 @@ Blocked: JavaScript execution, event handlers, backend/database sections, unsafe
 
 Use https://xconviewer.dev/examples as the public entry point. The repository also contains generated examples under examples/*. Each example normally includes:
 
+- *.xcon.sketch
 - *.xcon.json
 - *.xcon.xml
 - *.xcon
-- optional *.xcon.sketch or *.xcons
 - README.md
 
 ## Component Guidance

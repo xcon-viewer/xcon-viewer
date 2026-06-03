@@ -1,0 +1,16 @@
+screen 402x720
+  avatar: avatar at 24 32 72 72
+    initials "HK"
+    backgroundColor "#0F172A"
+    color "#FFFFFF"
+  name: textField "Display name" at 24 132 354 44
+    value "Hong Kim"
+  language: select at 24 192 354 44
+    value "ko"
+    options [{"value":"ko","label":"Korean"},{"value":"en","label":"English"}]
+  marketing: switch at 24 260 300 44
+    title "Marketing emails"
+    checked false
+  save: button "Save profile" at 24 336 354 48
+    backgroundColor "#2563EB"
+    color "#FFFFFF"

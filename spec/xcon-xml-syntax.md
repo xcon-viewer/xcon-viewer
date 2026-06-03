@@ -1,6 +1,6 @@
 # XCON/XML Syntax
 
-XCON/XML is the authoring syntax for UI documents, designer metadata, comments, and tool-specific hints. It parses into the same XCON Object Model as JSON and TAGLESS.
+XCON/XML is a compatibility syntax for UI documents, designer metadata, comments, and tool-specific hints. It parses into the same XCON Object Model as SKETCH, JSON, and TAGLESS.
 
 ## Semantic XML
 
@@ -22,7 +22,7 @@ Semantic XML uses component tags and attributes.
 </Form>
 ```
 
-Child component tags use `name` as the dictionary key under `components`. This preserves JSON → XML → TAGLESS conversion cycles. If a component also has a public prop named `name`, semantic XML writes that prop as `xcon-prop-name` so the structural key and the component prop do not collide.
+Child component tags use `name` as the dictionary key under `components`. This preserves SKETCH → JSON → XML → TAGLESS conversion cycles. If a component also has a public prop named `name`, semantic XML writes that prop as `xcon-prop-name` so the structural key and the component prop do not collide.
 
 Array component props use wrapper tags:
 

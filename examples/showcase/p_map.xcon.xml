@@ -1,0 +1,5 @@
+<Form name="Map Sample" pos="0,0,560,360" backgroundColor="@surface" componentsOrder="title,subtitle,map">
+  <Label name="title" text="Map" pos="24,20,300,32" color="@ink" font="size:24; weight:800" />
+  <Label name="subtitle" text="A read-only static map preview with multiple markers." pos="24,54,430,22" color="@ink-2" font="size:13; weight:500" />
+  <Map name="map" pos="24,88,512,244" latitude="37.5665" longitude="126.978" zoom="12" tileLayer="CartoDB" snapshotUrl="https://staticmap.openstreetmap.de/staticmap.php?center=37.5665,126.978&amp;zoom=13&amp;size=512x244&amp;markers=37.5665,126.978,red-pushpin" snapshotAlt="Static map snapshot centered on Seoul City Hall" attribution="(C) OpenStreetMap contributors" showControls="true" enableZoom="false" enablePan="false" markers="[{&quot;lat&quot;:37.5665,&quot;lng&quot;:126.978,&quot;title&quot;:&quot;City Hall&quot;},{&quot;lat&quot;:37.5704,&quot;lng&quot;:126.983,&quot;title&quot;:&quot;Design Studio&quot;},{&quot;lat&quot;:37.5512,&quot;lng&quot;:126.9882,&quot;title&quot;:&quot;N Tower&quot;},{&quot;lat&quot;:37.5796,&quot;lng&quot;:126.977,&quot;title&quot;:&quot;Palace&quot;}]" />
+</Form>

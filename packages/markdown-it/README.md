@@ -22,4 +22,4 @@ screen 320x140 bg @surface
 `);
 ````
 
-Supported fences: `xcon`, `xcon-json`, `xconj`, `xcon-xml`, `xconx`, `xcon-tagless`, `xconl`, `xcont`, `xcon-sketch`, and `xcons`.
+Supported fences: `xcon-sketch`, `xcons`, `xcon`, `xcon-json`, `xconj`, `xcon-xml`, `xconx`, `xcon-tagless`, `xconl`, and `xcont`.

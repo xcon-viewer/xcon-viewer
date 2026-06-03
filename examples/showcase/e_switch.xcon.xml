@@ -1,0 +1,35 @@
+<Panel border="visible:true; width:1; color:var(--border); radius:10" shadow="visible:true; opacity:0.08; blur:6" pos="0,0,560,32" al="autoHeight:true; gap:18px; padding:14px 16px" componentsOrder="hdr,ex1,ex2,ex3,ex4,ex5,ex6,ex7,ex8">
+  <Label name="hdr" text="Extended · switch" pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+  <Panel name="ex1" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="cap,c">
+    <Label name="cap" text="Full showcase" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" labelPadding="0 0 10px 0" style="letter-spacing:0.4px;text-transform:uppercase;" />
+    <Switch name="c" pos="0,0,560,280" extVariant="showcase" checked="true" size="medium" al="width:100%; alignSelf:stretch" labels="on:On; off:Off" />
+  </Panel>
+  <Panel name="ex2" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="cap,c">
+    <Label name="cap" text="Dark Mode (single row)" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" labelPadding="16px 0 10px 0" style="letter-spacing:0.4px;text-transform:uppercase;" />
+    <Switch name="c" pos="0,0,560,56" checked="true" size="medium" al="width:100%; alignSelf:stretch" title="Dark Mode" subtitle="Use dark color scheme" labels="on:On; off:Off" />
+  </Panel>
+  <Panel name="ex3" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="cap,c">
+    <Label name="cap" text="Notifications (off)" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" labelPadding="16px 0 10px 0" style="letter-spacing:0.4px;text-transform:uppercase;" />
+    <Switch name="c" pos="0,0,560,56" checked="false" size="medium" al="width:100%; alignSelf:stretch" title="Notifications" subtitle="Receive push notifications" />
+  </Panel>
+  <Panel name="ex4" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="cap,c">
+    <Label name="cap" text="Size · small" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" labelPadding="16px 0 10px 0" style="letter-spacing:0.4px;text-transform:uppercase;" />
+    <Switch name="c" pos="0,0,560,56" checked="true" size="small" al="width:100%; alignSelf:stretch" title="Compact" subtitle="Small track" />
+  </Panel>
+  <Panel name="ex5" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="cap,c">
+    <Label name="cap" text="Size · medium" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" labelPadding="16px 0 10px 0" style="letter-spacing:0.4px;text-transform:uppercase;" />
+    <Switch name="c" pos="0,0,560,56" checked="true" size="medium" al="width:100%; alignSelf:stretch" title="Standard" subtitle="Default size" />
+  </Panel>
+  <Panel name="ex6" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="cap,c">
+    <Label name="cap" text="Size · large" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" labelPadding="16px 0 10px 0" style="letter-spacing:0.4px;text-transform:uppercase;" />
+    <Switch name="c" pos="0,0,560,56" checked="true" size="large" al="width:100%; alignSelf:stretch" title="Prominent" subtitle="Large track" />
+  </Panel>
+  <Panel name="ex7" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="cap,c">
+    <Label name="cap" text="Title only (no subtitle)" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" labelPadding="16px 0 10px 0" style="letter-spacing:0.4px;text-transform:uppercase;" />
+    <Switch name="c" pos="0,0,560,48" checked="false" size="medium" al="width:100%; alignSelf:stretch" title="Wi‑Fi only" />
+  </Panel>
+  <Panel name="ex8" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="cap,c">
+    <Label name="cap" text="No label (control only)" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" labelPadding="16px 0 10px 0" style="letter-spacing:0.4px;text-transform:uppercase;" />
+    <Switch name="c" pos="0,0,560,44" checked="true" size="medium" al="width:100%; alignSelf:stretch" labels="on:On; off:Off" />
+  </Panel>
+</Panel>

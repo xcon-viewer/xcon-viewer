@@ -1,0 +1,82 @@
+♤♡◇♧
+♤
+  ♧type♣◇panel◆
+  ♧border♣
+  ♤
+    ♧visible♣◇true◆
+    ♧width♣◇1◆
+    ♧color♣◇var(--border)◆
+    ♧radius♣◇10◆
+  ♠
+  ♧shadow♣
+  ♤
+    ♧opacity♣◇0.08◆
+    ♧blur♣◇6◆
+  ♠
+  ♧pos♣
+  ♡
+    ◇0◆
+    ◇0◆
+    ◇560◆
+    ◇32◆
+  ♥
+  ♧al♣
+  ♤
+    ♧autoHeight♣◇true◆
+    ♧gap♣◇0◆
+    ♧padding♣◇14px 16px◆
+  ♠
+  ♧components♣
+  ♤
+    ♧componentsOrder♣◇hdr,vv◆
+    ♧hdr♣
+    ♤
+      ♧type♣◇label◆
+      ♧text♣◇videoView · custom player◆
+      ♧pos♣
+      ♡
+        ◇0◆
+        ◇0◆
+        ◇560◆
+        ◇28◆
+      ♥
+      ♧font♣
+      ♤
+        ♧family♣◇JetBrains Mono◆
+        ♧size♣◇10◆
+        ♧weight♣◇normal◆
+      ♠
+      ♧textAlign♣◇left◆
+      ♧color♣◇var(--ink-3)◆
+      ♧labelPadding♣◇0 0 16px 0◆
+      ♧suffixTextColor♣◇var(--accent)◆
+      ♧cssClass♣◇xa-al-vv-card-cap◆
+      ♧al♣
+      ♤
+        ♧width♣◇100%25◆
+      ♠
+      ♧suffix♣
+      ♤
+        ♧text♣◇#09◆
+      ♠
+    ♠
+    ♧vv♣
+    ♤
+      ♧type♣◇videoView◆
+      ♧videoViewMode♣◇showcase◆
+      ♧pos♣
+      ♡
+        ◇0◆
+        ◇0◆
+        ◇560◆
+        ◇520◆
+      ♥
+      ♧al♣
+      ♤
+        ♧width♣◇100%25◆
+        ♧alignSelf♣◇stretch◆
+      ♠
+    ♠
+  ♠
+♠
+♠♥◆♣

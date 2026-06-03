@@ -1,0 +1,13 @@
+screen 402x360
+  metadata
+    designer:note "Hero screen draft"
+    designer:locked true
+  title: label "Designer Metadata" at 0 0 0 0
+    id "title"
+    font
+      size 22
+      weight 800
+  cta: button "Preview" at 0 0 0 0
+    id "cta"
+    backgroundColor "#2563EB"
+    color "#FFFFFF"

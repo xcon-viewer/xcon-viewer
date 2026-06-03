@@ -2,12 +2,12 @@
 
 [English](./xcon-sketch-syntax.md)
 
-XCON/SKETCH는 Markdown, 예제, LLM 생성 초안에서 쓰기 좋은 간결한 작성 문법입니다. 별도의 런타임 모델은 아닙니다. SKETCH는 XCON/JSON, XCON/XML, XCON/TAGLESS와 같은 XCON Object Model로 파싱되며, 변환기는 기존 XCON 문서를 다시 SKETCH로 직렬화할 수 있습니다.
+XCON/SKETCH는 Markdown, 예제, LLM 생성 초안에서 가장 먼저 권장되는 간결한 작성 문법입니다. 별도의 런타임 모델은 아닙니다. SKETCH는 XCON/JSON, XCON/XML, XCON/TAGLESS와 같은 XCON Object Model로 파싱되며, 변환기는 기존 XCON 문서를 다시 SKETCH로 직렬화할 수 있습니다.
 
 ## 목표
 
 - 일반적인 UI 스케치를 사람이 직접 작성할 수 있을 만큼 짧게 유지합니다.
-- JSON/XML/TAGLESS 왕복 변환을 위해 이름이 있는 컴포넌트 구조를 보존합니다.
+- SKETCH/JSON/XML/TAGLESS 왕복 변환을 위해 이름이 있는 컴포넌트 구조를 보존합니다.
 - 장황한 JSON보다 읽기 쉬운 primitive, block, shorthand를 우선합니다.
 - SKETCH가 축약하지 않는 세부 표현은 전체 XCON public property로 작성할 수 있게 합니다.
 
@@ -309,7 +309,7 @@ screen 402x800
 SKETCH는 같은 normalized conversion pipeline에 참여합니다.
 
 ```text
-XCON/JSON -> XCON/XML -> XCON/TAGLESS -> XCON/SKETCH -> XCON Object Model
+XCON/SKETCH -> XCON/JSON -> XCON/XML -> XCON/TAGLESS -> XCON Object Model
 ```
 
-정확한 machine-level 보존이 가독성보다 중요하면 XCON/JSON 또는 machine XCON/XML을 사용하세요. SKETCH는 읽기 쉬운 작성과 리뷰에 최적화된 문법입니다.
+정확한 machine-level 보존이 가독성보다 중요하면 XCON/JSON을 사용하세요. XML과 TAGLESS는 도구/전송 호환성을 위한 대상입니다. SKETCH는 읽기 쉬운 작성과 리뷰에 최적화된 문법입니다.

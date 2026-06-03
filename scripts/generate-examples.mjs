@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { fromJSONObject, toSketch } from '../packages/core/dist/index.js';
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const examplesDir = join(rootDir, 'examples');
@@ -162,7 +163,7 @@ const examples = [
   {
     path: 'designer-metadata',
     title: 'Designer Metadata',
-    description: 'Semantic XML can preserve designer namespaced attributes.',
+    description: 'Designer metadata preserved across compatible syntax forms.',
     document: {
       type: 'form',
       pos: [0, 0, 402, 360],
@@ -189,13 +190,13 @@ const examples = [
   {
     path: 'syntax-comparison',
     title: 'Syntax Comparison',
-    description: 'One screen represented as JSON, XML, and TAGLESS.',
+    description: 'One screen represented as SKETCH, JSON, XML, and TAGLESS.',
     document: {
       type: 'form',
       pos: [0, 0, 402, 300],
       components: {
-        title: { type: 'label', pos: [24, 40, 354, 34], text: 'One screen. Three syntaxes.', font: { size: 22, weight: 800 } },
-        body: { type: 'textView', pos: [24, 92, 354, 96], text: 'JSON, XML, and TAGLESS parse into the same XCON Object Model.' }
+        title: { type: 'label', pos: [24, 40, 354, 34], text: 'One screen. Four syntaxes.', font: { size: 22, weight: 800 } },
+        body: { type: 'textView', pos: [24, 92, 354, 96], text: 'SKETCH, JSON, XML, and TAGLESS parse into the same XCON Object Model.' }
       }
     }
   },
@@ -458,6 +459,7 @@ for (const example of examples) {
   const dir = join(examplesDir, example.path);
   const base = example.path.split('/').at(-1);
   await mkdir(dir, { recursive: true });
+  await writeFile(join(dir, `${base}.xcon.sketch`), `${toSketch(fromJSONObject(example.document), { pretty: true })}\n`, 'utf8');
   await writeFile(join(dir, `${base}.xcon.json`), `${JSON.stringify(example.document, null, 2)}\n`, 'utf8');
   await writeFile(join(dir, `${base}.xcon.xml`), `${toSemanticXml(example.document)}\n`, 'utf8');
   await writeFile(
@@ -467,7 +469,7 @@ for (const example of examples) {
   );
   await writeFile(
     join(dir, 'README.md'),
-    `# ${example.title}\n\n${example.description}\n\n- JSON: [${base}.xcon.json](${playgroundLink(example.path, `${base}.xcon.json`)})\n- XML: [${base}.xcon.xml](${playgroundLink(example.path, `${base}.xcon.xml`)})\n- TAGLESS: [${base}.xcon](${playgroundLink(example.path, `${base}.xcon`)})\n`,
+    `# ${example.title}\n\n${example.description}\n\n- SKETCH: [${base}.xcon.sketch](${playgroundLink(example.path, `${base}.xcon.sketch`)})\n- JSON: [${base}.xcon.json](${playgroundLink(example.path, `${base}.xcon.json`)})\n- XML: [${base}.xcon.xml](${playgroundLink(example.path, `${base}.xcon.xml`)})\n- TAGLESS: [${base}.xcon](${playgroundLink(example.path, `${base}.xcon`)})\n`,
     'utf8'
   );
 }
@@ -475,7 +477,7 @@ for (const example of examples) {
 await mkdir(join(examplesDir, 'sketch'), { recursive: true });
 await writeFile(
   join(examplesDir, 'sketch', 'README.md'),
-  `# XCON/SKETCH\n\nCompact authoring syntax for Markdown and LLM-generated examples.\n\n- SKETCH: [hello.xcon.sketch](${playgroundLink('sketch', 'hello.xcon.sketch')})\n`,
+  `# XCON/SKETCH\n\nCompact authoring syntax for Markdown and LLM-generated examples.\n\n- SKETCH: [hello.xcon.sketch](${playgroundLink('sketch', 'hello.xcon.sketch')})\n- JSON: [hello.xcon.json](${playgroundLink('sketch', 'hello.xcon.json')})\n- XML: [hello.xcon.xml](${playgroundLink('sketch', 'hello.xcon.xml')})\n- TAGLESS: [hello.xcon](${playgroundLink('sketch', 'hello.xcon')})\n`,
   'utf8'
 );
 
@@ -487,7 +489,7 @@ function renderExamplesReadme() {
     .join('\n');
   const sketchRow = '| [sketch](./sketch/README.md) | XCON/SKETCH | Compact authoring syntax for Markdown and LLM-generated examples. |';
   const showcaseRow = '| [showcase](./showcase/README.md) | Public Showcase Fixtures | Public component and screen fixtures copied from the viewer compatibility suite. |';
-  return `# XCON Examples\n\nThese examples are generated from public XCON/JSON source objects. Each generated example provides JSON, semantic XML, and TAGLESS forms for the same screen. The \`sketch\` example shows the compact XCON/SKETCH authoring syntax.\n\n## Example Index\n\n| Path | Title | Description |\n|---|---|---|\n${rows}\n${sketchRow}\n${showcaseRow}\n\n## Groups\n\n- Root examples: smallest examples and syntax comparisons.\n- \`components/*\`: component-oriented catalogs grouped by UI type.\n- \`workflows/*\`: business workflow examples for common product screens.\n\nRegenerate with:\n\n\`\`\`bash\nnode scripts/generate-examples.mjs\n\`\`\`\n`;
+  return `# XCON Examples\n\nThese examples are generated from public XCON source objects. Each generated example provides SKETCH, JSON, XML, and TAGLESS forms for the same screen. Use SKETCH for compact Markdown/LLM authoring, JSON for canonical API and schema work, and XML/TAGLESS for compatibility and round-trip checks.\n\n## Example Index\n\n| Path | Title | Description |\n|---|---|---|\n${rows}\n${sketchRow}\n${showcaseRow}\n\n## Groups\n\n- Root examples: smallest examples and syntax comparisons.\n- \`components/*\`: component-oriented catalogs grouped by UI type.\n- \`workflows/*\`: business workflow examples for common product screens.\n\nRegenerate with:\n\n\`\`\`bash\nnode scripts/generate-examples.mjs\n\`\`\`\n`;
 }
 
 function playgroundLink(examplePath, filename) {

@@ -509,8 +509,12 @@
           <select class="preset-select" id="presetSelect" aria-label="Showcase sketch preset"></select>
         </section>
         <section class="section">
-          <p class="section-title">Screen</p>
+          <p class="section-title">Screen examples</p>
           <button class="snippet" type="button" data-snippet="screen"><strong>Phone screen</strong><span>Root form declaration</span></button>
+          <button class="snippet" type="button" data-snippet="spanGridMergeScreen"><strong>SpanGrid merge screen</strong><span>Full screen merge demo</span></button>
+        </section>
+        <section class="section">
+          <p class="section-title">Component snippets</p>
           <button class="snippet" type="button" data-snippet="stack"><strong>Panel stack</strong><span>Auto-layout container</span></button>
           <button class="snippet" type="button" data-snippet="label"><strong>Label title</strong><span>Aligned text block</span></button>
         </section>
@@ -524,6 +528,10 @@
           <button class="snippet" type="button" data-snippet="image"><strong>Image overlay</strong><span>Tag, title, subtitle, CTA</span></button>
           <button class="snippet" type="button" data-snippet="banner"><strong>Banner slides</strong><span>Carousel slide array</span></button>
           <button class="snippet" type="button" data-snippet="list"><strong>List cards</strong><span>Template-backed list</span></button>
+          <button class="snippet" type="button" data-snippet="spanGrid"><strong>SpanGrid</strong><span>Read-only table data</span></button>
+          <button class="snippet" type="button" data-snippet="spanGridMerge"><strong>SpanGrid merge</strong><span>Cell merge test</span></button>
+          <button class="snippet" type="button" data-snippet="spanGridScroll"><strong>SpanGrid scroll</strong><span>Fixed row/column and overflow</span></button>
+          <button class="snippet" type="button" data-snippet="spanGridSnapshot"><strong>SpanGrid snapshot</strong><span>Styled cells from toJSON</span></button>
         </section>
       </div>
     </aside>
@@ -533,10 +541,11 @@
         <div class="file-label"><span class="pill">Sketch</span><span id="fileName">untitled.xcon.sketch</span></div>
         <div class="toolbar" style="padding:0;border:0">
           <button class="btn" id="copySketchBtn" type="button">Copy</button>
+          <button class="btn" id="wrapBtn" type="button" aria-pressed="false">Wrap</button>
         </div>
       </div>
       <div id="editorHost"></div>
-      <textarea id="fallbackEditor" spellcheck="false"></textarea>
+      <textarea id="fallbackEditor" spellcheck="false" wrap="off"></textarea>
       <div id="editorStatus" class="status-line">Ready.</div>
     </section>
 
@@ -634,7 +643,7 @@
     indicator
       show true
       color "255,255,255,255"
-    slides [{"type":"image","src":"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80","objectFit":"fill","overlayTag":"LIVE","overlayTitle":"anywhere","overlaySub":"Structured UI documents\\nrender everywhere.","overlayCta":"Open","pos":[0,0,362,228]},{"type":"image","src":"https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200&q=80","objectFit":"fill","overlayTag":"XML","overlayTitle":"portable","overlaySub":"JSON, XML, TAGLESS,\\nand SKETCH.","overlayCta":"Read spec","pos":[0,0,362,228]}]
+    slides [{"type":"image","src":"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80","objectFit":"fill","overlayTag":"LIVE","overlayTitle":"anywhere","overlaySub":"Structured UI documents\\nrender everywhere.","overlayCta":"Open","pos":[0,0,362,228]},{"type":"image","src":"https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200&q=80","objectFit":"fill","overlayTag":"SKETCH","overlayTitle":"portable","overlaySub":"SKETCH, JSON, XML,\\nand TAGLESS.","overlayCta":"Read spec","pos":[0,0,362,228]}]
 
   cta: panel at 20 392 362 46
     al
@@ -669,6 +678,8 @@
       ['Banner catalog', '../examples/showcase/p_banner.xcon.sketch'],
       ['Image catalog', '../examples/showcase/p_image.xcon.sketch'],
       ['List catalog', '../examples/showcase/p_xList.xcon.sketch'],
+      ['SpanGrid merge', '../examples/showcase/e_spanGrid.xcon.sketch'],
+      ['SpanGrid scroll', '../examples/showcase/e_spanGrid_scroll.xcon.sketch'],
       ['Panel catalog', '../examples/showcase/p_panel.xcon.sketch'],
       ['Shape catalog', '../examples/showcase/p_shape.xcon.sketch'],
       ['Text view catalog', '../examples/showcase/p_textView.xcon.sketch']
@@ -740,7 +751,7 @@
     radius 20
   indicator
     show true
-  slides [{"type":"image","src":"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80","overlayTag":"LIVE","overlayTitle":"anywhere","pos":[0,0,362,228]},{"type":"image","src":"https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200&q=80","overlayTag":"XML","overlayTitle":"portable","pos":[0,0,362,228]}]`,
+  slides [{"type":"image","src":"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80","overlayTag":"LIVE","overlayTitle":"anywhere","pos":[0,0,362,228]},{"type":"image","src":"https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200&q=80","overlayTag":"SKETCH","overlayTitle":"portable","pos":[0,0,362,228]}]`,
       list: `cards: list at 20 470 362 180
   direction "horizontal"
   itemSize
@@ -750,19 +761,126 @@
     size 12
     color "0,0,0,0"
   dataTemplate {"type":"template","template":{"tabledata":[{"title":"JSON","line":"Object model"},{"title":"XML","line":"Portable markup"},{"title":"SKETCH","line":"Compact authoring"}]}}
-  templates {"cell":{"title":{"type":"label","pos":[12,18,116,24],"text":"{{item.title}}","font":{"size":14,"weight":800}},"line":{"type":"label","pos":[12,48,116,48],"text":"{{item.line}}","font":{"size":12},"color":"@ink-2"},"itemSize":{"width":140,"height":160}}}`
+  templates {"cell":{"title":{"type":"label","pos":[12,18,116,24],"text":"{{item.title}}","font":{"size":14,"weight":800}},"line":{"type":"label","pos":[12,48,116,48],"text":"{{item.line}}","font":{"size":12},"color":"@ink-2"},"itemSize":{"width":140,"height":160}}}`,
+      spanGrid: `sheet: spanGrid at 20 470 362 220
+  backgroundColor @surface
+  border
+    visible true
+    width 1
+    color @border
+    radius 12
+  readonly true
+  data [["Name","Status","Owner"],["XCON","Ready","Viewer"],["SKETCH","Public","Playground"],["SpanGrid","Readonly","Docs"]]
+  columns [{"id":"name","title":"Name","width":120},{"id":"status","title":"Status","width":96},{"id":"owner","title":"Owner","width":120}]`,
+      spanGridMerge: `sheet: spanGrid at 20 470 362 260
+  backgroundColor @surface
+  border
+    visible true
+    width 1
+    color @border
+    radius 12
+  readonly true
+  data [["Quarterly Plan","",""],["Area","Metric","Owner"],["Product","Launch","Mina"],["Product","Retention","Mina"],["Platform","Reliability","Jun"],["Platform","Cost","Jun"]]
+  columns [{"id":"area","title":"Area","width":120},{"id":"metric","title":"Metric","width":120},{"id":"owner","title":"Owner","width":96}]
+  merges [{"start":{"row":0,"col":0},"end":{"row":0,"col":2}},{"start":{"row":2,"col":0},"end":{"row":3,"col":0}},{"start":{"row":4,"col":0},"end":{"row":5,"col":0}}]`,
+      spanGridScroll: `sheet: spanGrid at 20 470 362 220
+  backgroundColor @surface
+  border
+    visible true
+    width 1
+    color @border
+    radius 12
+  readonly true
+  fixedRows 1
+  fixedColumns 1
+  data [["Metric","Jan","Feb","Mar","Apr","May"],["Bookings","128","141","160","172","188"],["Revenue","42K","48K","53K","61K","70K"],["Refunds","4","3","5","2","4"],["NPS","71","73","76","78","81"],["Ops","Stable","Stable","Watch","Stable","Stable"],["Owner","Mina","Jun","Mina","Soo","Jun"]]
+  columns [{"id":"metric","title":"Metric","width":128},{"id":"jan","title":"Jan","width":92},{"id":"feb","title":"Feb","width":92},{"id":"mar","title":"Mar","width":92},{"id":"apr","title":"Apr","width":92},{"id":"may","title":"May","width":92}]
+  rows [{"height":32},{"height":40},{"height":40},{"height":40},{"height":40},{"height":40},{"height":40}]`,
+      spanGridSnapshot: `sheet: spanGrid at 20 470 362 220
+  backgroundColor @surface
+  border
+    visible true
+    width 1
+    color @border
+    radius 12
+  readonly true
+  snapshot {
+    "width": 362,
+    "height": 220,
+    "gridBorder": {
+      "borderDirection": "All",
+      "lineStyle": "Solid",
+      "lineWidth": 1,
+      "topColor": "#d0d7e0",
+      "leftColor": "#d0d7e0",
+      "rightColor": "#d0d7e0",
+      "bottomColor": "#d0d7e0"
+    },
+    "fixed": { "row": 0, "col": 0 },
+    "cols": [{ "width": 120 }, { "width": 96 }, { "width": 120 }],
+    "rows": [
+      {
+        "height": 38,
+        "cells": [
+          { "text": "Project Status", "backColor": "#1a2744", "foreColor": "#ffffff", "font": "bold 10pt sans-serif", "textAlign": "MiddleCenter" },
+          { "text": "", "backColor": "#1a2744", "foreColor": "#ffffff" },
+          { "text": "", "backColor": "#1a2744", "foreColor": "#ffffff" }
+        ]
+      },
+      {
+        "height": 30,
+        "cells": [
+          { "text": "Name", "backColor": "#f1f5f9", "foreColor": "#111827", "font": "bold 9pt sans-serif", "textAlign": "MiddleCenter" },
+          { "text": "Status", "backColor": "#f1f5f9", "foreColor": "#111827", "font": "bold 9pt sans-serif", "textAlign": "MiddleCenter" },
+          { "text": "Owner", "backColor": "#f1f5f9", "foreColor": "#111827", "font": "bold 9pt sans-serif", "textAlign": "MiddleCenter" }
+        ]
+      },
+      {
+        "height": 32,
+        "cells": [
+          { "text": "XCON", "backColor": "#ffffff", "foreColor": "#1f2937", "textAlign": "MiddleLeft" },
+          { "text": "Ready", "backColor": "#dcfce7", "foreColor": "#166534", "font": "bold 9pt sans-serif", "textAlign": "MiddleCenter" },
+          { "text": "Viewer", "backColor": "#ffffff", "foreColor": "#1f2937", "textAlign": "MiddleCenter" }
+        ]
+      }
+    ],
+    "merges": [
+      { "start": { "row": 0, "col": 0 }, "end": { "row": 0, "col": 2 } }
+    ]
+  }`,
+      spanGridMergeScreen: `screen "SpanGrid Merge Demo" 402x800 bg @surface
+  title: label "Cell merge sample" at 20 40 320 36
+    color @ink
+    font
+      size 24
+      weight 800
+
+  sheet: spanGrid at 20 110 362 260
+    backgroundColor @surface
+    border
+      visible true
+      width 1
+      color @border
+      radius 12
+    readonly true
+    data [["Quarterly Plan","",""],["Area","Metric","Owner"],["Product","Launch","Mina"],["Product","Retention","Mina"],["Platform","Reliability","Jun"],["Platform","Cost","Jun"]]
+    columns [{"id":"area","title":"Area","width":120},{"id":"metric","title":"Metric","width":120},{"id":"owner","title":"Owner","width":96}]
+    merges [{"start":{"row":0,"col":0},"end":{"row":0,"col":2}},{"start":{"row":2,"col":0},"end":{"row":3,"col":0}},{"start":{"row":4,"col":0},"end":{"row":5,"col":0}}]`
     };
 
     const COMPONENTS = [
       'form', 'panel', 'label', 'button', 'textField', 'textView', 'image', 'banner', 'list',
       'shape', 'checkbox', 'radioButton', 'select', 'slider', 'switch', 'datePicker', 'timePicker',
-      'progressBar', 'spinner', 'badge', 'avatar', 'divider', 'tabs', 'accordion', 'grid'
+      'progressBar', 'spinner', 'badge', 'avatar', 'divider', 'tabs', 'accordion', 'grid', 'spanGrid'
     ];
     const ROOT_PROPS = ['bg', 'backgroundColor', 'title', 'name', 'border', 'shadow', 'scroll', 'style', 'al'];
     const COMPONENT_PROPS = [
       'backgroundColor', 'color', 'font', 'align', 'valign', 'border', 'shadow', 'radius', 'style',
       'al', 'src', 'objectFit', 'placeholder', 'label', 'text', 'icon', 'prefix', 'suffix',
-      'indicator', 'slides', 'templates', 'dataTemplate', 'itemSize', 'separator', 'direction',
+      'indicator', 'slides', 'templates', 'dataTemplate', 'itemSize', 'separator',
+      'data', 'cells', 'tabledata', 'snapshot', 'grid', 'columns', 'cols', 'rows',
+      'merges', 'mergeCells', 'fixed', 'fixedRows', 'fixedColumns', 'gridBorder',
+      'backColor', 'foreColor', 'textAlign', 'readonly', 'readOnly', 'config', 'options', 'direction',
       'layout', 'scroll', 'visible', 'enabled', 'renderHtml', 'html'
     ];
     const BLOCK_PROPS = {
@@ -800,6 +918,7 @@
     let latestTree = null;
     let latestPlain = null;
     let fitMode = true;
+    let wordWrapMode = false;
     let renderTimer = 0;
 
     styleEl.id = 'xcon-viewer-style';
@@ -870,6 +989,7 @@
       document.getElementById('formatBtn').addEventListener('click', formatSketch);
       document.getElementById('saveBtn').addEventListener('click', saveSketch);
       document.getElementById('copySketchBtn').addEventListener('click', () => copyText(getCode(), 'SKETCH copied.'));
+      document.getElementById('wrapBtn').addEventListener('click', toggleWordWrap);
       document.getElementById('copyJsonBtn').addEventListener('click', () => copyText(jsonBox.value, 'JSON copied.'));
       document.getElementById('copyXmlBtn').addEventListener('click', () => latestTree && copyText(serializeBySyntax(latestTree, 'xml', true), 'XML copied.'));
       fitBtn.addEventListener('click', () => setFitMode(true));
@@ -886,6 +1006,7 @@
       if (!window.require) {
         fallbackEditor.style.display = 'block';
         editorHost.style.display = 'none';
+        setWordWrap(wordWrapMode);
         return;
       }
       window.require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
@@ -960,7 +1081,7 @@
           tabSize: 2,
           insertSpaces: true,
           scrollBeyondLastLine: false,
-          wordWrap: 'off',
+          wordWrap: wordWrapMode ? 'on' : 'off',
           suggest: { showWords: false, localityBonus: true }
         });
         editor.onDidChangeModelContent(scheduleRender);
@@ -1083,6 +1204,20 @@
       fitCanvas();
     }
 
+    function toggleWordWrap() {
+      setWordWrap(!wordWrapMode);
+    }
+
+    function setWordWrap(next) {
+      wordWrapMode = Boolean(next);
+      const wrapBtn = document.getElementById('wrapBtn');
+      wrapBtn.classList.toggle('active', wordWrapMode);
+      wrapBtn.setAttribute('aria-pressed', String(wordWrapMode));
+      fallbackEditor.setAttribute('wrap', wordWrapMode ? 'soft' : 'off');
+      fallbackEditor.style.whiteSpace = wordWrapMode ? 'pre-wrap' : 'pre';
+      if (editor) editor.updateOptions({ wordWrap: wordWrapMode ? 'on' : 'off' });
+    }
+
     function getDocumentSize(plain) {
       const pos = Array.isArray(plain?.pos) ? plain.pos : [0, 0, 360, 640];
       return {
@@ -1113,7 +1248,7 @@
     function formatSketch() {
       try {
         const tree = fromSketch(getCode());
-        setCode(serializeBySyntax(tree, 'sketch', true));
+        setCode(ensureTrailingNewline(serializeBySyntax(tree, 'sketch', true)));
         renderNow();
       } catch (error) {
         writeDiagnostics('error', error.message || String(error));
@@ -1148,14 +1283,20 @@
     function insertSnippet(key) {
       const snippet = SNIPPETS[key];
       if (!snippet) return;
+      const text = ensureTrailingNewline(snippet);
       if (editor) {
         const selection = editor.getSelection();
-        editor.executeEdits('snippet', [{ range: selection, text: snippet, forceMoveMarkers: true }]);
+        editor.executeEdits('snippet', [{ range: selection, text, forceMoveMarkers: true }]);
         editor.focus();
       } else {
-        fallbackEditor.setRangeText(snippet, fallbackEditor.selectionStart, fallbackEditor.selectionEnd, 'end');
+        fallbackEditor.setRangeText(text, fallbackEditor.selectionStart, fallbackEditor.selectionEnd, 'end');
       }
       renderNow();
+    }
+
+    function ensureTrailingNewline(value) {
+      const text = String(value ?? '');
+      return text.endsWith('\n') ? text : `${text}\n`;
     }
 
     function initSplitter() {

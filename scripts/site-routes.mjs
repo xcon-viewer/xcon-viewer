@@ -11,6 +11,11 @@ export const publicRoutes = [
   { path: '/spec', file: 'site/spec.html' },
   { path: '/examples', file: 'site/examples.html' },
   { path: '/play', file: 'playground/index.html' },
+  { path: '/template-lab', file: 'site/template-lab.html' },
+  { path: '/meta-lab', file: 'site/meta-lab.html' },
+  { path: '/chatgpt-simulation', file: 'site/chatgpt-simulation.html' },
+  { path: '/chatgpt-markdown-sketch-simulation', file: 'site/chatgpt-markdown-sketch-simulation.html' },
+  { path: '/html-css-simulation', file: 'site/html-css-simulation.html' },
   { path: '/api', file: 'site/api.html' },
   { path: '/security', file: 'site/security.html' },
   { path: '/history', file: 'site/history.html' },
@@ -27,6 +32,9 @@ const extraRoutes = [
   { path: '/robots.txt', file: 'site/robots.txt' },
   { path: '/styles.css', file: 'site/styles.css' },
   { path: '/vendor/markdown-it/markdown-it.min.js', file: 'node_modules/markdown-it/dist/markdown-it.min.js' },
+  { path: '/xcon-viewer-viral-demo-no-site-header.html', file: 'site/xcon-viewer-viral-demo-no-site-header.html' },
+  { path: '/chatgpt-viral-demo-v2.html', file: 'site/chatgpt-viral-demo-v2.html' },
+  { path: '/claude-markdown-sketch-demo.html', file: 'site/claude-markdown-sketch-demo.html' },
 ];
 
 const routeByPath = new Map([...publicRoutes, ...extraRoutes].map((route) => [route.path, route]));

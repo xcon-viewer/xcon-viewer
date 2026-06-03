@@ -1,0 +1,1122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ChatGPT Markdown + SKETCH Simulation - XCON Viewer</title>
+  <meta name="description" content="A ChatGPT-style demo where Markdown plus XCON/SKETCH streams as raw source while the chat renders the document inline." />
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    :root {
+      --sim-bg: #f7f3ee;
+      --sim-panel: rgba(255, 255, 255, 0.94);
+      --sim-line: #d8e0ea;
+      --sim-muted: #64748b;
+      --sim-ink: #111827;
+      --sim-blue: #2563eb;
+      --sim-orange: #c4622d;
+      --sim-grid: rgba(58, 107, 170, 0.14);
+      --sim-shadow: 0 24px 70px rgba(17, 24, 39, 0.14);
+    }
+
+    body {
+      min-height: 100vh;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 16% 20%, rgba(37, 99, 235, 0.10), transparent 32%),
+        radial-gradient(circle at 86% 8%, rgba(196, 98, 45, 0.12), transparent 28%),
+        var(--sim-bg);
+    }
+
+    .site-header {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(18px);
+    }
+
+    .simulation-shell {
+      height: calc(100vh - 64px);
+      padding: 14px;
+      box-sizing: border-box;
+      display: grid;
+      grid-template-columns: minmax(520px, 0.92fr) minmax(500px, 0.78fr);
+      gap: 14px;
+    }
+
+    .chat-panel,
+    .source-panel {
+      min-width: 0;
+      min-height: 0;
+      border: 1px solid var(--sim-line);
+      border-radius: 18px;
+      background: var(--sim-panel);
+      box-shadow: var(--sim-shadow);
+      overflow: hidden;
+      display: grid;
+    }
+
+    .chat-panel {
+      grid-template-rows: auto minmax(0, 1fr) auto;
+    }
+
+    .source-panel {
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    .panel-toolbar {
+      min-height: 60px;
+      padding: 12px 16px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--sim-line);
+      background: rgba(255, 255, 255, 0.76);
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .panel-title strong {
+      color: var(--sim-ink);
+      font-size: 16px;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .panel-title span {
+      color: var(--sim-muted);
+      font-size: 12px;
+      line-height: 1.2;
+    }
+
+    .sim-actions {
+      display: flex;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    .sim-button {
+      border: 1px solid var(--sim-line);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--sim-ink);
+      font-size: 13px;
+      font-weight: 700;
+      height: 36px;
+      padding: 0 14px;
+      cursor: pointer;
+    }
+
+    .sim-button.primary {
+      border-color: transparent;
+      background: var(--sim-blue);
+      color: #fff;
+    }
+
+    .chat-scroll {
+      min-height: 0;
+      overflow: auto;
+      padding: 18px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(17, 24, 39, 0.28) transparent;
+    }
+
+    .chat-messages {
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      justify-content: flex-end;
+    }
+
+    .chat-composer {
+      border-top: 1px solid var(--sim-line);
+      padding: 12px 16px 16px;
+      background: rgba(255, 255, 255, 0.82);
+    }
+
+    .composer-box {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 42px;
+      gap: 10px;
+      align-items: end;
+      border: 1px solid var(--sim-line);
+      border-radius: 18px;
+      background: #fff;
+      padding: 10px;
+      box-shadow: 0 14px 36px rgba(17, 24, 39, 0.08);
+    }
+
+    .composer-input {
+      min-height: 42px;
+      max-height: 110px;
+      resize: none;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--sim-ink);
+      font: 14px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 10px 4px;
+      box-sizing: border-box;
+    }
+
+    .composer-send {
+      width: 42px;
+      height: 42px;
+      border: 0;
+      border-radius: 14px;
+      background: var(--sim-blue);
+      color: #fff;
+      font-size: 18px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 10px 22px rgba(37, 99, 235, 0.24);
+    }
+
+    .composer-send.is-sending {
+      transform: translateY(1px);
+      opacity: 0.82;
+    }
+
+    .message {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: var(--sim-orange);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .message.assistant .avatar {
+      background: #f4dccf;
+      color: var(--sim-orange);
+    }
+
+    .avatar.is-thinking {
+      animation: avatarPulse 1.15s ease-in-out infinite;
+    }
+
+    .bubble {
+      border: 1px solid var(--sim-line);
+      border-radius: 16px;
+      padding: 14px 16px;
+      background: #fff;
+      color: var(--sim-ink);
+      line-height: 1.55;
+      font-size: 14px;
+      box-shadow: 0 12px 28px rgba(17, 24, 39, 0.05);
+    }
+
+    .message.user .bubble {
+      background: #fff7ed;
+      border-color: #fed7aa;
+      font-weight: 650;
+    }
+
+    .message.user .bubble,
+    .rendered-chat {
+      min-height: 48px;
+    }
+
+    .rendered-chat h2,
+    .rendered-chat h3 {
+      margin: 0.42em 0 0.4em;
+      line-height: 1.18;
+    }
+
+    .rendered-chat h2 {
+      font-size: 20px;
+    }
+
+    .rendered-chat h3 {
+      font-size: 17px;
+    }
+
+    .rendered-chat p {
+      margin: 0.38em 0;
+    }
+
+    .rendered-chat ul {
+      margin: 8px 0 10px;
+      padding-left: 22px;
+    }
+
+    .rendered-chat li {
+      margin: 3px 0;
+    }
+
+    .inline-xcon-preview {
+      margin: 14px 0 8px;
+      border: 1px solid #cbd5e1;
+      border-radius: 14px;
+      overflow: auto;
+      background:
+        linear-gradient(rgba(58, 107, 170, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(58, 107, 170, 0.08) 1px, transparent 1px),
+        #fbfdff;
+      background-size: 20px 20px;
+      padding: 14px;
+      max-width: 100%;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(17, 24, 39, 0.32) transparent;
+    }
+
+    .inline-xcon-preview .xcon-render-root,
+    .inline-xcon-preview [data-xcon-type="form"] {
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.16);
+    }
+
+    .inline-xcon-waiting,
+    .inline-xcon-error {
+      min-height: 130px;
+      border: 1px dashed #b8c5d8;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: var(--sim-muted);
+      background: rgba(255, 255, 255, 0.78);
+      text-align: center;
+      padding: 18px;
+      box-sizing: border-box;
+    }
+
+    .inline-xcon-error {
+      color: #b91c1c;
+      background: #fef2f2;
+      border-color: #fecaca;
+    }
+
+    .inline-xcon-preview[data-streaming-preview="true"] {
+      border-style: dashed;
+      box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.08);
+    }
+
+    .streaming-preview-label {
+      margin: -2px 0 10px;
+      color: #2563eb;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .thinking-dots {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 22px;
+    }
+
+    .thinking-dots span {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--sim-muted);
+      animation: dotPulse 1.2s ease-in-out infinite;
+    }
+
+    .thinking-dots span:nth-child(2) {
+      animation-delay: 160ms;
+    }
+
+    .thinking-dots span:nth-child(3) {
+      animation-delay: 320ms;
+    }
+
+    .typing-caret {
+      display: inline-block;
+      width: 7px;
+      height: 1.1em;
+      margin-left: 2px;
+      vertical-align: -0.16em;
+      background: var(--sim-blue);
+      animation: blink 850ms steps(1) infinite;
+    }
+
+    .source-scroller {
+      min-height: 0;
+      overflow: auto;
+      background: #0f172a;
+      color: #dbeafe;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(226, 232, 240, 0.36) transparent;
+    }
+
+    .source-stream {
+      min-height: 100%;
+      margin: 0;
+      padding: 18px 20px;
+      box-sizing: border-box;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font: 12px/1.7 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    .source-status {
+      min-width: 84px;
+      height: 32px;
+      display: inline-grid;
+      place-items: center;
+      padding: 0 12px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #26437d;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    @keyframes avatarPulse {
+      50% {
+        transform: scale(1.04);
+        box-shadow: 0 0 0 8px rgba(196, 98, 45, 0.12);
+      }
+    }
+
+    @keyframes dotPulse {
+      0%, 80%, 100% {
+        opacity: 0.36;
+        transform: translateY(0);
+      }
+      40% {
+        opacity: 1;
+        transform: translateY(-3px);
+      }
+    }
+
+    @media (max-width: 1120px) {
+      body {
+        overflow: auto;
+      }
+
+      .simulation-shell {
+        height: auto;
+        min-height: calc(100vh - 64px);
+        grid-template-columns: 1fr;
+      }
+
+      .chat-panel,
+      .source-panel {
+        min-height: 640px;
+      }
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "@xcon-viewer/core": "/packages/core/dist/index.js",
+        "@xcon-viewer/viewer": "/packages/viewer/dist/index.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/">
+      <span class="brand-mark">X</span>
+      <span>XCON Viewer</span>
+    </a>
+    <nav>
+      <a href="/docs">Docs</a>
+      <a href="/spec">Spec</a>
+      <a href="/examples">Examples</a>
+      <a href="/play">Play</a>
+      <a href="/template-lab">Template Studio</a>
+    </nav>
+  </header>
+
+  <main class="simulation-shell">
+    <section class="chat-panel" aria-label="Rendered ChatGPT conversation">
+      <div class="panel-toolbar">
+        <div class="panel-title">
+          <strong>ChatGPT Markdown + SKETCH simulation</strong>
+          <span>ChatGPT-style prompt composer + rendered chat</span>
+        </div>
+        <div class="sim-actions">
+          <button id="clearButton" class="sim-button" type="button">Clear</button>
+          <button id="replayButton" class="sim-button primary" type="button">Replay</button>
+        </div>
+      </div>
+
+      <div id="chatScroll" class="chat-scroll" aria-live="polite">
+        <div id="chatMessages" class="chat-messages"></div>
+      </div>
+      <form id="chatComposer" class="chat-composer">
+        <div class="composer-box">
+          <textarea id="composerInput" class="composer-input" rows="1" aria-label="Message input" placeholder="Ask for a Markdown + SKETCH answer"></textarea>
+          <button id="sendButton" class="composer-send" type="submit" aria-label="Send message">↑</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="source-panel" aria-label="Raw Markdown and SKETCH source stream">
+      <div class="panel-toolbar">
+        <div class="panel-title">
+          <strong>Markdown + SKETCH source</strong>
+          <span>raw assistant response</span>
+        </div>
+        <span id="sourceStatus" class="source-status">waiting</span>
+      </div>
+      <div id="sourceScroller" class="source-scroller">
+        <pre id="sourceStream" class="source-stream"></pre>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { parseBySyntax } from '@xcon-viewer/core';
+    import { render, viewerCss } from '@xcon-viewer/viewer';
+
+    const style = document.createElement('style');
+    style.textContent = viewerCss;
+    document.head.appendChild(style);
+
+    const chatMessages = document.getElementById('chatMessages');
+    const chatComposer = document.getElementById('chatComposer');
+    const composerInput = document.getElementById('composerInput');
+    const sendButton = document.getElementById('sendButton');
+    const sourceStream = document.getElementById('sourceStream');
+    const sourceScroller = document.getElementById('sourceScroller');
+    const sourceStatus = document.getElementById('sourceStatus');
+    const chatScroll = document.getElementById('chatScroll');
+    const replayButton = document.getElementById('replayButton');
+    const clearButton = document.getElementById('clearButton');
+    const userTypingDelayMs = 42;
+    const thinkingDelayMs = 1250;
+    const assistantTextDelayMs = 48;
+    const sketchChunkDelayMs = 34;
+    let runToken = 0;
+    let lastStreamingSketchSource = '';
+    let renderedChat = null;
+    let assistantAvatar = null;
+
+    const conversationTurns = [
+      {
+        prompt: "What's the weather like in Seoul today?",
+        response: [
+          'Good morning. Seoul should feel comfortable through the day, with a cooler evening after sunset.',
+          '',
+          '## Seoul today',
+          '',
+          '- Around lunch it should be about **22°C**, then cooler in the evening',
+          '- Light clouds, low rain risk, and gentle wind',
+          '- The best walking window is **2 PM to 5 PM**',
+          '- Bring a light jacket if you will be out after sunset',
+          '',
+          '```xcon-sketch',
+          'screen "Seoul Weather Brief" 720x520 bg #f8fafc',
+          '  hero: panel at 24 24 672 154',
+          '    bg #111827',
+          '    radius 26',
+          '    city: label "Seoul today" at 30 26 220 30',
+          '      color white',
+          '      font',
+          '        size 24',
+          '        weight 800',
+          '    temp: label "22°C" at 30 66 140 54',
+          '      color #fbbf24',
+          '      font',
+          '        size 44',
+          '        weight 800',
+          '    condition: label "Partly cloudy · low rain risk" at 188 76 260 26',
+          '      color #a7f3d0',
+          '      font',
+          '        size 18',
+          '        weight 800',
+          '    note: label "Best window: PM 2-5, cooler after sunset" at 30 122 390 20',
+          '      color #cbd5e1',
+          '    badge: panel at 520 34 116 86',
+          '      bg #1f2937',
+          '      radius 22',
+          '      b1: label "PM 2-5" at 20 18 76 22',
+          '        color white',
+          '        align center',
+          '      b2: label "best window" at 18 48 80 18',
+          '        color #93c5fd',
+          '        align center',
+          '  hourly: panel at 24 202 672 112',
+          '    bg white',
+          '    radius 20',
+          '    border',
+          '      visible true',
+          '      color #d8e0ea',
+          '    title: label "Hourly outlook" at 22 18 160 22',
+          '      color #172033',
+          '      font',
+          '        size 18',
+          '        weight 800',
+          '    h1: panel at 22 52 142 40',
+          '      bg #eff6ff',
+          '      radius 14',
+          '      t: label "09:00  17°C" at 14 10 112 18',
+          '        color #1e3a8a',
+          '        align center',
+          '    h2: panel at 180 52 142 40',
+          '      bg #fff7ed',
+          '      radius 14',
+          '      t: label "12:00  22°C" at 14 10 112 18',
+          '        color #9a3412',
+          '        align center',
+          '    h3: panel at 338 52 142 40',
+          '      bg #ecfdf5',
+          '      radius 14',
+          '      t: label "15:00  24°C" at 14 10 112 18',
+          '        color #065f46',
+          '        align center',
+          '    h4: panel at 496 52 142 40',
+          '      bg #f8fafc',
+          '      radius 14',
+          '      t: label "19:00  18°C" at 14 10 112 18',
+          '        color #334155',
+          '        align center',
+          '  prep: panel at 24 338 322 138',
+          '    bg white',
+          '    radius 20',
+          '    border',
+          '      visible true',
+          '      color #d8e0ea',
+          '    title: label "Before leaving" at 20 18 210 24',
+          '      color #172033',
+          '      font',
+          '        size 18',
+          '        weight 800',
+          '    item1: label "✓ light jacket" at 24 58 160 20',
+          '      color #2563eb',
+          '    item2: label "✓ sunglasses" at 24 86 160 20',
+          '      color #2563eb',
+          '    item3: label "• umbrella optional" at 174 58 130 20',
+          '      color #64748b',
+          '  plan: panel at 374 338 322 138',
+          '    bg white',
+          '    radius 20',
+          '    border',
+          '      visible true',
+          '      color #d8e0ea',
+          '    title: label "Simple day plan" at 20 18 190 24',
+          '      color #172033',
+          '      font',
+          '        size 18',
+          '        weight 800',
+          '    morning: label "Morning  coffee + commute" at 20 56 210 20',
+          '      color #475569',
+          '    afternoon: label "Afternoon  walk or errands" at 20 82 220 20',
+          '      color #475569',
+          '    share: button "Save brief" at 202 84 92 34',
+          '      bg #2563eb',
+          '      color white',
+          '      radius 12',
+          '```'
+        ].join('\n')
+      },
+      {
+        prompt: 'Where should I take a walk before lunch?',
+        response: [
+          'Before lunch, pick a central route that is easy to reach and has shade nearby. Cheonggyecheon toward the Deoksugung stone-wall road is a safe choice.',
+          '',
+          '## Before-lunch walk',
+          '',
+          '- **Cheonggyecheon Gwanggyo → Deoksugung stone-wall road** is the most reliable route',
+          '- 35-45 minutes is enough, and coffee stops are easy to find',
+          '- Shade and indoor fallback spots make it resilient if the weather shifts',
+          '',
+          '```xcon-sketch',
+          'screen "Seoul Walk Window" 720x460 bg #f8fafc',
+          '  route: panel at 24 24 672 122',
+          '    bg #0f172a',
+          '    radius 24',
+          '    title: label "Lunch-before walk" at 28 24 250 30',
+          '      color white',
+          '      font',
+          '        size 24',
+          '        weight 800',
+          '    path: label "Cheonggyecheon → Deoksugung stone-wall road" at 28 66 430 24',
+          '      color #bfdbfe',
+          '      font',
+          '        size 16',
+          '        weight 700',
+          '    time: label "35-45 min" at 522 38 100 28',
+          '      color #fbbf24',
+          '      align center',
+          '      font',
+          '        size 22',
+          '        weight 800',
+          '  map: panel at 24 170 316 236',
+          '    bg #ecfdf5',
+          '    radius 22',
+          '    border',
+          '      visible true',
+          '      color #bbf7d0',
+          '    a: label "Start" at 34 36 80 26',
+          '      bg #22c55e',
+          '      color white',
+          '      radius 13',
+          '      align center',
+          '    line: shape at 74 94 180 8',
+          '      bg #16a34a',
+          '      radius 4',
+          '    b: label "Cafe stop" at 184 74 88 26',
+          '      bg white',
+          '      color #166534',
+          '      radius 13',
+          '      align center',
+          '    c: label "Finish" at 196 144 84 26',
+          '      bg #2563eb',
+          '      color white',
+          '      radius 13',
+          '      align center',
+          '  tips: panel at 370 170 326 236',
+          '    bg white',
+          '    radius 22',
+          '    border',
+          '      visible true',
+          '      color #d8e0ea',
+          '    title: label "Why this route" at 22 20 180 24',
+          '      color #172033',
+          '      font',
+          '        size 18',
+          '        weight 800',
+          '    t1: label "• shaded path before noon" at 24 62 220 20',
+          '      color #475569',
+          '    t2: label "• quick coffee stops nearby" at 24 94 230 20',
+          '      color #475569',
+          '    t3: label "• easy subway return" at 24 126 210 20',
+          '      color #475569',
+          '    cta: button "Open route" at 196 174 98 36',
+          '      bg #2563eb',
+          '      color white',
+          '      radius 12',
+          '```'
+        ].join('\n')
+      },
+      {
+        prompt: 'Can you summarize my afternoon in one card?',
+        response: [
+          'Yes. If we plan around weather and walking fatigue, this is the cleanest afternoon sequence.',
+          '',
+          '## Afternoon plan summary',
+          '',
+          '- Start with an indoor lunch or cafe at 13:00',
+          '- Put the outdoor walk around 15:00, when conditions are best',
+          '- After 18:30, move indoors for dinner because it gets cooler',
+          '',
+          '```xcon-sketch',
+          'screen "Afternoon Plan Card" 720x500 bg #f8fafc',
+          '  header: panel at 24 24 672 96',
+          '    bg #111827',
+          '    radius 24',
+          '    title: label "Afternoon plan" at 28 24 260 30',
+          '      color white',
+          '      font',
+          '        size 24',
+          '        weight 800',
+          '    subtitle: label "Weather-aware schedule for Seoul" at 28 60 300 20',
+          '      color #cbd5e1',
+          '    badge: label "light jacket after 18:30" at 474 34 160 28',
+          '      bg #1f2937',
+          '      color #fbbf24',
+          '      radius 14',
+          '      align center',
+          '  timeline: panel at 24 150 672 156',
+          '    bg white',
+          '    radius 22',
+          '    border',
+          '      visible true',
+          '      color #d8e0ea',
+          '    s1: panel at 26 32 180 92',
+          '      bg #eff6ff',
+          '      radius 18',
+          '      t: label "13:00" at 18 14 70 22',
+          '        color #2563eb',
+          '        font',
+          '          size 18',
+          '          weight 800',
+          '      body: label "Lunch + cafe" at 18 48 120 20',
+          '        color #172033',
+          '    s2: panel at 246 32 180 92',
+          '      bg #ecfdf5',
+          '      radius 18',
+          '      t: label "15:00" at 18 14 70 22',
+          '        color #059669',
+          '        font',
+          '          size 18',
+          '          weight 800',
+          '      body: label "Walk window" at 18 48 130 20',
+          '        color #172033',
+          '    s3: panel at 466 32 180 92',
+          '      bg #fff7ed',
+          '      radius 18',
+          '      t: label "18:30" at 18 14 82 22',
+          '        color #c2410c',
+          '        font',
+          '          size 18',
+          '          weight 800',
+          '      body: label "Indoor dinner" at 18 48 132 20',
+          '        color #172033',
+          '  checklist: panel at 24 332 316 124',
+          '    bg white',
+          '    radius 22',
+          '    border',
+          '      visible true',
+          '      color #d8e0ea',
+          '    title: label "Bring" at 22 18 100 24',
+          '      color #172033',
+          '      font',
+          '        size 18',
+          '        weight 800',
+          '    i1: label "✓ light jacket" at 24 58 160 20',
+          '      color #2563eb',
+          '    i2: label "✓ transit card" at 24 86 160 20',
+          '      color #2563eb',
+          '  summary: panel at 372 332 324 124',
+          '    bg #0f172a',
+          '    radius 22',
+          '    title: label "Best move" at 22 18 120 24',
+          '      color white',
+          '      font',
+          '        size 18',
+          '        weight 800',
+          '    copy: label "Put outdoor plans in the mid-afternoon, then move indoors after sunset." at 22 54 250 42',
+          '      color #cbd5e1',
+          '    cta: button "Save plan" at 214 70 86 34',
+          '      bg #2563eb',
+          '      color white',
+          '      radius 12',
+          '```'
+        ].join('\n')
+      }
+    ];
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function renderInlineMarkdown(value) {
+      return escapeHtml(value)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>');
+    }
+
+    function renderMarkdownBlock(markdown) {
+      const blocks = markdown.split(/\n{2,}/).filter(Boolean);
+      return blocks.map((block) => {
+        const trimmed = block.trim();
+        if (!trimmed) return '';
+        if (trimmed.startsWith('## ')) return `<h2>${renderInlineMarkdown(trimmed.slice(3))}</h2>`;
+        if (trimmed.startsWith('### ')) return `<h3>${renderInlineMarkdown(trimmed.slice(4))}</h3>`;
+        if (trimmed.startsWith('- ')) {
+          const items = trimmed.split('\n').map((line) => line.replace(/^[-*]\s+/, '').trim());
+          return `<ul>${items.map((item) => `<li>${renderInlineMarkdown(item)}</li>`).join('')}</ul>`;
+        }
+        return `<p>${renderInlineMarkdown(trimmed).replace(/\n/g, '<br>')}</p>`;
+      }).join('');
+    }
+
+    function renderMarkdownWithInlineSketch(markdown, showCaret = false) {
+      const fencePattern = /```([^\n]*)\n([\s\S]*?)```/g;
+      let html = '';
+      let cursor = 0;
+      let previewIndex = 0;
+      let match;
+      while ((match = fencePattern.exec(markdown))) {
+        html += renderMarkdownBlock(markdown.slice(cursor, match.index));
+        const language = match[1].trim().toLowerCase();
+        if (language === 'xcon-sketch' || language === 'xcon') {
+          html += `<div class="inline-xcon-preview" data-preview-index="${previewIndex}"></div>`;
+          previewIndex += 1;
+        } else {
+          html += `<pre><code>${escapeHtml(match[2])}</code></pre>`;
+        }
+        cursor = match.index + match[0].length;
+      }
+
+      const tail = markdown.slice(cursor);
+      const openFenceMatch = tail.match(/```(?:xcon-sketch|xcon)\s*\n[\s\S]*$/i);
+      if (openFenceMatch && typeof openFenceMatch.index === 'number') {
+        html += renderMarkdownBlock(tail.slice(0, openFenceMatch.index));
+        html += '<div class="inline-xcon-preview" data-streaming-preview="true"><div class="inline-xcon-waiting">SKETCH block is streaming. Rendering the latest valid lines...</div></div>';
+      } else {
+        html += renderMarkdownBlock(tail);
+      }
+      if (showCaret) html += '<span class="typing-caret" aria-hidden="true"></span>';
+      return html;
+    }
+
+    function extractCompletedSketchSources(markdown) {
+      const sources = [];
+      const fencePattern = /```([^\n]*)\n([\s\S]*?)```/g;
+      let match;
+      while ((match = fencePattern.exec(markdown))) {
+        const language = match[1].trim().toLowerCase();
+        if (language === 'xcon-sketch' || language === 'xcon') sources.push(match[2].trim());
+      }
+      return sources;
+    }
+
+    function mountInlineSketchPreviews(root, markdown) {
+      const sources = extractCompletedSketchSources(markdown);
+      root.querySelectorAll('[data-preview-index]').forEach((node) => {
+        const source = sources[Number(node.dataset.previewIndex)];
+        if (!source) return;
+        try {
+          const documentModel = parseBySyntax(source, 'sketch');
+          node.innerHTML = '';
+          render(documentModel, node, {
+            allowExternalResources: true,
+            allowHtml: false,
+          });
+        } catch (error) {
+          node.innerHTML = `<div class="inline-xcon-error">SKETCH render error: ${escapeHtml(error.message || error)}</div>`;
+        }
+      });
+    }
+
+    function extractStreamingSketchSource(markdown) {
+      const marker = markdown.match(/```(?:xcon-sketch|xcon)\s*\n/i);
+      if (!marker || typeof marker.index !== 'number') return '';
+      const start = marker.index + marker[0].length;
+      const rest = markdown.slice(start);
+      const closeIndex = rest.indexOf('```');
+      return closeIndex >= 0 ? '' : rest;
+    }
+
+    function findBestEffortSketchSource(source) {
+      let lines = String(source || '').replace(/\r\n/g, '\n').split('\n');
+      const startIndex = lines.findIndex((line) => /^\s*screen\b/i.test(line));
+      if (startIndex < 0) return '';
+      lines = lines.slice(startIndex);
+      while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
+
+      for (let end = lines.length; end >= 1; end -= 1) {
+        const candidate = lines.slice(0, end).join('\n').trimEnd();
+        if (!candidate) continue;
+        try {
+          parseBySyntax(candidate, 'sketch');
+          return candidate;
+        } catch {
+          // Drop the newest incomplete line until the partial SKETCH parses.
+        }
+      }
+      return '';
+    }
+
+    function renderBestEffortSketchPreview(node, source) {
+      const sketchSource = findBestEffortSketchSource(source);
+      if (!sketchSource) {
+        node.innerHTML = '<div class="inline-xcon-waiting">Waiting for a valid screen line...</div>';
+        return;
+      }
+
+      try {
+        const documentModel = parseBySyntax(sketchSource, 'sketch');
+        node.innerHTML = '<div class="streaming-preview-label">Live partial SKETCH preview</div><div data-streaming-preview-body></div>';
+        const body = node.querySelector('[data-streaming-preview-body]');
+        render(documentModel, body, {
+          allowExternalResources: true,
+          allowHtml: false,
+        });
+        lastStreamingSketchSource = sketchSource;
+      } catch (error) {
+        node.innerHTML = `<div class="inline-xcon-error">Partial SKETCH render error: ${escapeHtml(error.message || error)}</div>`;
+      }
+    }
+
+    function mountStreamingSketchPreview(root, markdown) {
+      const node = root.querySelector('[data-streaming-preview="true"]');
+      if (!node) return;
+      const source = extractStreamingSketchSource(markdown);
+      if (!source.trim()) return;
+      renderBestEffortSketchPreview(node, source);
+    }
+
+    function appendUserMessage(content) {
+      const article = document.createElement('article');
+      article.className = 'message user';
+      article.innerHTML = `
+        <div class="avatar">YOU</div>
+        <div id="userPromptBubble" class="bubble">${renderInlineMarkdown(content)}</div>
+      `;
+      chatMessages.appendChild(article);
+      return article.querySelector('.bubble');
+    }
+
+    function appendAssistantMessage() {
+      const article = document.createElement('article');
+      article.className = 'message assistant';
+      article.innerHTML = `
+        <div id="assistantAvatar" class="avatar">AI</div>
+        <div id="renderedChat" class="bubble rendered-chat"></div>
+      `;
+      chatMessages.appendChild(article);
+      return {
+        article,
+        avatar: article.querySelector('#assistantAvatar'),
+        bubble: article.querySelector('#renderedChat'),
+      };
+    }
+
+    function scrollToBottom() {
+      sourceScroller.scrollTop = sourceScroller.scrollHeight;
+      chatScroll.scrollTop = chatScroll.scrollHeight;
+    }
+
+    function realisticTypingDelay(char, index, baseDelay) {
+      if (/[.!?]/.test(char)) return baseDelay + 240;
+      if (/[,;]/.test(char)) return baseDelay + 120;
+      if (char === ' ') return baseDelay + 10;
+      return baseDelay + ((index % 5) * 7);
+    }
+
+    function nextAssistantIndex(markdown, index) {
+      const rendered = markdown.slice(0, index);
+      const inFence = rendered.includes('```xcon-sketch') && !rendered.match(/```xcon-sketch[\s\S]*?```/);
+      if (inFence) {
+        const nextLineBreak = markdown.indexOf('\n', index + 1);
+        const lineEnd = nextLineBreak === -1 ? markdown.length : nextLineBreak + 1;
+        return Math.min(lineEnd, index + 26);
+      }
+      if (markdown[index] === '\n') return index + 1;
+      return Math.min(markdown.length, index + 3 + (index % 4));
+    }
+
+    async function streamComposerInput(token, prompt) {
+      composerInput.value = '';
+      composerInput.focus();
+      for (let index = 0; index <= prompt.length; index += 1) {
+        if (token !== runToken) return false;
+        composerInput.value = prompt.slice(0, index);
+        composerInput.scrollTop = composerInput.scrollHeight;
+        if (index < prompt.length) {
+          await sleep(realisticTypingDelay(prompt[index], index, userTypingDelayMs));
+        }
+      }
+      return true;
+    }
+
+    async function sendPromptFromComposer(token) {
+      if (token !== runToken) return false;
+      sendButton.classList.add('is-sending');
+      appendUserMessage(composerInput.value);
+      composerInput.value = '';
+      scrollToBottom();
+      await sleep(260);
+      sendButton.classList.remove('is-sending');
+      return true;
+    }
+
+    async function streamAssistantResponse(token, markdown) {
+      let index = 0;
+      while (index < markdown.length) {
+        if (token !== runToken) return false;
+        index = nextAssistantIndex(markdown, index);
+        const slice = markdown.slice(0, index);
+        sourceStream.textContent = slice;
+        renderedChat.innerHTML = renderMarkdownWithInlineSketch(slice, true);
+        mountInlineSketchPreviews(renderedChat, slice);
+        mountStreamingSketchPreview(renderedChat, slice);
+        scrollToBottom();
+
+        const streamingSource = extractStreamingSketchSource(slice);
+        sourceStatus.textContent = streamingSource ? 'streaming sketch' : 'responding';
+        await sleep(streamingSource ? sketchChunkDelayMs : realisticTypingDelay(slice.at(-1), index, assistantTextDelayMs));
+      }
+      return true;
+    }
+
+    async function runScenario() {
+      const token = ++runToken;
+      replayButton.disabled = true;
+      clearButton.disabled = true;
+      sendButton.disabled = true;
+      lastStreamingSketchSource = '';
+      chatMessages.innerHTML = '';
+      composerInput.value = '';
+      renderedChat = null;
+      assistantAvatar = null;
+      sourceStream.textContent = '';
+      sourceStatus.textContent = 'waiting';
+      await sleep(450);
+
+      for (const turn of conversationTurns) {
+        const userFinished = await streamComposerInput(token, turn.prompt);
+        if (!userFinished || token !== runToken) return;
+
+        const sent = await sendPromptFromComposer(token);
+        if (!sent || token !== runToken) return;
+
+        const assistant = appendAssistantMessage();
+        renderedChat = assistant.bubble;
+        assistantAvatar = assistant.avatar;
+        sourceStream.textContent = '';
+        sourceStatus.textContent = 'thinking';
+        assistantAvatar.classList.add('is-thinking');
+        renderedChat.innerHTML = '<div class="thinking-dots" aria-label="Assistant is thinking"><span></span><span></span><span></span></div>';
+        scrollToBottom();
+        await sleep(thinkingDelayMs);
+        if (token !== runToken) return;
+
+        assistantAvatar.classList.remove('is-thinking');
+        const assistantFinished = await streamAssistantResponse(token, turn.response);
+        if (!assistantFinished || token !== runToken) return;
+
+        sourceStream.textContent = turn.response;
+        renderedChat.innerHTML = renderMarkdownWithInlineSketch(turn.response, false);
+        mountInlineSketchPreviews(renderedChat, turn.response);
+        sourceStatus.textContent = 'rendered';
+        scrollToBottom();
+        await sleep(780);
+      }
+
+      replayButton.disabled = false;
+      clearButton.disabled = false;
+      sendButton.disabled = false;
+    }
+
+    function sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    replayButton.addEventListener('click', runScenario);
+    chatComposer.addEventListener('submit', (event) => {
+      event.preventDefault();
+    });
+    clearButton.addEventListener('click', () => {
+      runToken += 1;
+      chatMessages.innerHTML = '';
+      composerInput.value = '';
+      renderedChat = null;
+      assistantAvatar = null;
+      sourceStream.textContent = '';
+      sourceStatus.textContent = 'waiting';
+      replayButton.disabled = false;
+      clearButton.disabled = false;
+      sendButton.disabled = false;
+    });
+
+    window.addEventListener('load', runScenario);
+  </script>
+</body>
+</html>

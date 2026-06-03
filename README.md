@@ -5,7 +5,7 @@
 XCON lets you generate, embed, and share UI as structured documents —
 no scripts, no execution, safe by design.
 
-LLMs generate SKETCH. APIs consume JSON. Tools edit XML.
+LLMs generate SKETCH. APIs consume JSON. XML and TAGLESS stay available for compatibility.
 One screen, four syntaxes, one object model.
 
 ---
@@ -19,7 +19,7 @@ XCON was designed differently:
 
 - **LLMs generate it well** — SKETCH syntax is close to the YAML/Markdown patterns LLMs already know
 - **Safe to share** — the viewer boundary blocks all script execution by design
-- **Four syntaxes, one model** — switch freely between JSON, XML, TAGLESS, and SKETCH
+- **Four syntaxes, one model** — author in SKETCH, exchange JSON, and keep XML/TAGLESS for compatibility
 - **Embeds in Markdown** — drop a fenced `xcon` block anywhere
 
 ---
@@ -28,10 +28,10 @@ XCON was designed differently:
 
 | Syntax | Best for |
 |---|---|
-| XCON/JSON | Canonical structure, APIs, schema validation, LLM generation |
-| XCON/XML | UI authoring, comments, designer metadata, tooling integration |
-| XCON/TAGLESS | Transport-friendly serialization and delimiter-conflict reduction |
 | XCON/SKETCH | Compact Markdown authoring and LLM-generated drafts |
+| XCON/JSON | Canonical structure, APIs, schema validation, and interchange |
+| XCON/XML | Compatibility syntax for UI tooling, comments, and metadata |
+| XCON/TAGLESS | Compatibility serialization for transport and delimiter-conflict reduction |
 
 All four syntaxes parse into the same XCON Object Model —
 so examples, conversion, validation, and rendering share one public contract.
@@ -87,7 +87,7 @@ Write a screen in SKETCH:
 
 > [View this README with live XCON previews →](https://xconviewer.dev/README.md)
 
-```xcon
+```xcon-sketch
 screen 360x220 bg #f8fafc
   bg @surface
   title: label "Hello XCON" at 24 24 312 36
@@ -121,7 +121,7 @@ render(xconDocument, document.getElementById('root'));
 Embed it in HTML:
 
 ```html
-<script type="module" src="https://unpkg.com/@xcon-viewer/viewer@0.1.0/dist/web-component.js"></script>
+<script type="module" src="https://unpkg.com/@xcon-viewer/viewer@0.1.6/dist/web-component.js"></script>
 
 <xcon-viewer src="./home.xcon.json"></xcon-viewer>
 ```
@@ -134,10 +134,10 @@ Embed it in HTML:
 
 ## Embed in Markdown
 
-Drop any XCON syntax into a fenced code block:
+Drop XCON/SKETCH into a fenced code block:
 
 ````markdown
-```xcon
+```xcon-sketch
 screen 360x220 bg #f8fafc
   title: label "Sketch in Markdown" at 20 22 320 32
     font 22 800
@@ -157,11 +157,11 @@ inline with the rest of your Markdown content.
 
 ```bash
 xcon validate examples/hello/hello.xcon.json
+xcon convert examples/sketch/hello.xcon.sketch --to json
 xcon convert examples/hello/hello.xcon.json --to xml
 xcon convert examples/hello/hello.xcon.xml --to tagless
-xcon convert examples/sketch/hello.xcon.sketch --to json
 xcon render examples/hello/hello.xcon.json --out hello.html
-xcon format examples/hello/hello.xcon.json
+xcon format examples/hello/hello.xcon.sketch
 ```
 
 ---
@@ -184,7 +184,7 @@ npm run playground
 
 | Package | Description |
 |---|---|
-| `@xcon-viewer/core` | Object Model, JSON/XML/TAGLESS/SKETCH parser, serializer, converter, validator |
+| `@xcon-viewer/core` | Object Model plus SKETCH/JSON/XML/TAGLESS parser, serializer, converter, validator |
 | `@xcon-viewer/viewer` | Secure viewer-only renderer and Web Component |
 | `@xcon-viewer/cli` | `validate`, `convert`, `format`, and `render` commands |
 | `@xcon-viewer/react` | React wrapper for the `<xcon-viewer>` Web Component |
@@ -234,7 +234,7 @@ export default {
 **GitHub Actions:**
 
 ```yaml
-- uses: xcon-viewer/xcon-viewer/packages/github-action@v0.1.0
+- uses: xcon-viewer/xcon-viewer/packages/github-action@v0.1.6
   with:
     files: README.md,docs
     out-dir: xcon-rendered
@@ -294,10 +294,10 @@ export default {
 - [Component specs and examples](./docs/xcon-component-specs.en.md)
 - [Framework, Markdown, Vite, and GitHub integrations](./docs/integrations.md)
 - [Object Model](./spec/xcon-object-model.md)
+- [XCON/SKETCH syntax](./spec/xcon-sketch-syntax.md)
 - [XCON/JSON syntax](./spec/xcon-json-syntax.md)
 - [XCON/XML syntax](./spec/xcon-xml-syntax.md)
 - [XCON/TAGLESS syntax](./spec/xcon-tagless-syntax.md)
-- [XCON/SKETCH syntax](./spec/xcon-sketch-syntax.md)
 - [Examples](./examples/)
 - [Deployment guide](./docs/deployment.md)
 
@@ -312,7 +312,8 @@ npm run site:build
 ```
 
 The generated `dist-site/` directory is the recommended nginx document root.
-See [docs/deployment.md](./docs/deployment.md) for Ubuntu, nginx, TLS, and npm publishing steps.
+See [docs/deployment.md](./docs/deployment.md) for Ubuntu, nginx, TLS.
+See [docs/release-and-publishing.md](./docs/release-and-publishing.md) for GitHub/npm publish steps.
 
 ---
 
@@ -326,3 +327,4 @@ Feedback shapes the spec.
 ## License
 
 MIT
+

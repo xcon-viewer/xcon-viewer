@@ -1,0 +1,19 @@
+screen 402x900
+  image: image at 24 24 354 160
+    src "assets/photo.jpg"
+    alt "Photo"
+    objectFit "cover"
+  video: videoView at 24 204 354 180
+    src "assets/demo.mp4"
+    controls true
+    poster "assets/poster.jpg"
+  banner: banner at 24 404 354 140
+    slides [{"type":"image","src":"assets/slide-1.jpg"},{"type":"image","src":"assets/slide-2.jpg"}]
+    indicator
+      show true
+  carousel: carousel at 24 564 354 140
+    items [{"type":"card","title":"First"},{"type":"card","title":"Second"}]
+    showDots true
+  gallery: gallery at 24 724 354 140
+    columns 3
+    images [{"src":"assets/a.jpg"},{"src":"assets/b.jpg"}]

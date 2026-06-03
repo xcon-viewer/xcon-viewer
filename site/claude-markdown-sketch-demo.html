@@ -1,0 +1,966 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>XCON Viewer - Claude Artifact SKETCH Demo</title>
+  <style>
+    :root {
+      --bg: #f7f3ea;
+      --surface: #fffdf8;
+      --surface-soft: #f4eee4;
+      --surface-code: #0f172a;
+      --border: #ded5c8;
+      --border-strong: #cabca9;
+      --text: #1f1b16;
+      --muted: #6b6258;
+      --faint: #8b8175;
+      --accent: #cc6b2c;
+      --accent-soft: #fff2e8;
+      --blue: #2563eb;
+      --shadow: 0 22px 70px rgba(61, 45, 31, 0.12);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    }
+
+    body.theme-chatgpt {
+      --bg: #f7f7f5;
+      --surface: #ffffff;
+      --surface-soft: #f3f4f6;
+      --border: #e5e7eb;
+      --border-strong: #d1d5db;
+      --accent: #10a37f;
+      --accent-soft: #e9f7f3;
+      --shadow: 0 22px 70px rgba(15, 23, 42, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 0%, rgba(204, 107, 44, 0.10), transparent 34%),
+        linear-gradient(135deg, var(--bg), #fbfaf7);
+      overflow: hidden;
+    }
+
+    button { font: inherit; }
+    .top-navbar {
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      background: rgba(255, 253, 248, 0.82);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+    }
+    .brand-section { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .brand-logo {
+      width: 32px; height: 32px; border-radius: 9px;
+      display: grid; place-items: center;
+      background: var(--accent); color: white; font-weight: 900;
+    }
+    .brand-title { font-weight: 800; letter-spacing: -0.02em; }
+    .brand-subtitle { color: var(--muted); font-size: 12px; margin-top: 1px; }
+    .controls-group { display: flex; align-items: center; gap: 8px; }
+    .toggle-button {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 8px 13px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .toggle-button.active,
+    .toggle-button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+      box-shadow: 0 10px 24px rgba(204, 107, 44, 0.22);
+    }
+
+    .workspace-layout {
+      height: calc(100vh - 58px);
+      display: grid;
+      grid-template-columns: minmax(520px, 0.9fr) minmax(680px, 1.1fr);
+      gap: 14px;
+      padding: 14px;
+    }
+    .app-panel {
+      min-width: 0;
+      min-height: 0;
+      background: rgba(255, 253, 248, 0.94);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .chat-panel-container { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; }
+    .panel-header-bar {
+      min-height: 52px;
+      padding: 13px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .panel-title { font-size: 14px; font-weight: 900; }
+    .status-pill {
+      border: 1px solid var(--border);
+      background: var(--surface-soft);
+      border-radius: 999px;
+      padding: 5px 10px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .status-pill.streaming { color: var(--accent); background: var(--accent-soft); border-color: rgba(204, 107, 44, 0.28); }
+    .status-pill.rendered { color: #047857; background: #ecfdf5; border-color: #bbf7d0; }
+
+    .preset-prompts-container {
+      display: flex;
+      gap: 8px;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(244, 238, 228, 0.62);
+      overflow-x: auto;
+      scrollbar-width: thin;
+    }
+    .preset-pill {
+      flex: 0 0 auto;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .preset-pill:hover { color: var(--accent); border-color: rgba(204, 107, 44, 0.42); }
+
+    .chat-scroller-view { min-height: 0; overflow-y: auto; padding: 18px; }
+    .messages-wrapper { display: flex; flex-direction: column; gap: 18px; max-width: 880px; margin: 0 auto; }
+    .chat-message-row { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 12px; align-items: start; }
+    .chat-message-row.user-message {
+      grid-template-columns: minmax(0, 1fr) 34px;
+      margin-left: auto;
+      width: min(100%, 760px);
+    }
+    .chat-message-row.user-message .chat-avatar-circle { grid-column: 2; grid-row: 1; background: #4b5563; }
+    .chat-message-row.user-message .chat-bubble-content { grid-column: 1; grid-row: 1; background: #2b2926; color: white; border-color: transparent; }
+    .chat-avatar-circle {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: var(--accent);
+      color: white;
+      font-size: 11px;
+      font-weight: 900;
+      box-shadow: 0 10px 18px rgba(204, 107, 44, 0.18);
+    }
+    .chat-bubble-content {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px 16px;
+      font-size: 14px;
+      line-height: 1.58;
+      color: var(--text);
+    }
+    .chat-bubble-content h2 {
+      margin: 10px 0 8px;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+    }
+    .chat-bubble-content p { margin: 0 0 10px; }
+    .chat-bubble-content ul { margin: 8px 0 0 18px; padding: 0; }
+    .chat-bubble-content li { margin: 5px 0; color: #374151; }
+    .artifact-callout-card {
+      margin-top: 14px;
+      border: 1px solid rgba(204, 107, 44, 0.26);
+      background: linear-gradient(135deg, rgba(255, 242, 232, 0.9), rgba(255, 255, 255, 0.72));
+      border-radius: 14px;
+      padding: 11px 13px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .artifact-callout-card strong {
+      display: block;
+      color: var(--accent);
+      font-size: 13px;
+      margin-bottom: 2px;
+    }
+    .artifact-callout-pill {
+      flex: 0 0 auto;
+      border-radius: 999px;
+      background: var(--accent);
+      color: white;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .chat-footer-composer {
+      padding: 14px 18px 16px;
+      border-top: 1px solid var(--border);
+      background: rgba(255, 253, 248, 0.9);
+    }
+    .composer-input-wrapper {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 34px;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background: var(--surface);
+      padding: 6px 8px 6px 14px;
+    }
+    .text-input-field {
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+      font-size: 14px;
+      width: 100%;
+    }
+    .submit-send-button {
+      width: 34px; height: 34px;
+      border: 0; border-radius: 999px;
+      background: var(--accent); color: white;
+      font-weight: 900;
+      cursor: default;
+    }
+
+    .artifact-split-panel { display: grid; grid-template-rows: auto minmax(0, 1fr); }
+    .tab-navigation-bar {
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 253, 248, 0.9);
+    }
+    .tab-nav-btn {
+      height: 34px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface);
+      color: var(--muted);
+      padding: 0 12px;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .tab-nav-btn.active { color: white; background: var(--accent); border-color: var(--accent); }
+    .panel-metrics-indicator { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; }
+    .metric-item-badge {
+      display: inline-block;
+      min-width: 34px;
+      text-align: center;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--surface-soft);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+    .tab-panes-container { position: relative; min-height: 0; }
+    .tab-content-pane { position: absolute; inset: 0; display: none; min-height: 0; overflow: hidden; }
+    .tab-content-pane.active { display: block; }
+    .preview-canvas-container {
+      height: 100%;
+      padding: 18px;
+      overflow: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(100, 116, 139, 0.55) rgba(255, 255, 255, 0.42);
+      background-color: #f8fafc;
+      background-image:
+        linear-gradient(#e5edf8 1px, transparent 1px),
+        linear-gradient(90deg, #e5edf8 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    .responsive-selector-bar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      width: max-content;
+      margin: 0 auto 14px;
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.88);
+      backdrop-filter: blur(10px);
+    }
+    .responsive-size-btn {
+      border: 0;
+      border-radius: 7px;
+      padding: 5px 11px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .responsive-size-btn.active { background: white; color: var(--accent); box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08); }
+    .rendered-canvas-frame {
+      width: 100%;
+      max-width: 760px;
+      min-height: 420px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 24px 70px rgba(15, 23, 42, 0.12);
+      overflow: hidden;
+    }
+    .empty-preview {
+      min-height: 420px;
+      display: grid;
+      place-items: center;
+      padding: 42px;
+      color: #64748b;
+      text-align: center;
+    }
+    .empty-preview strong { color: #334155; }
+
+    .code-scroller-panel {
+      height: 100%;
+      overflow: auto;
+      margin: 0;
+      padding: 18px 20px;
+      background: var(--surface-code);
+      color: #dbeafe;
+      font: 12px/1.65 var(--mono);
+      white-space: pre;
+      tab-size: 2;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.7) rgba(15, 23, 42, 0.6);
+    }
+    .preview-canvas-container::-webkit-scrollbar,
+    .code-scroller-panel::-webkit-scrollbar,
+    .chat-scroller-view::-webkit-scrollbar { width: 10px; height: 10px; }
+    .preview-canvas-container::-webkit-scrollbar-thumb,
+    .code-scroller-panel::-webkit-scrollbar-thumb,
+    .chat-scroller-view::-webkit-scrollbar-thumb {
+      border-radius: 999px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      background-color: rgba(100, 116, 139, 0.55);
+    }
+    .code-scroller-panel::-webkit-scrollbar-thumb { background-color: rgba(148, 163, 184, 0.68); }
+    .token-keyword { color: #f472b6; font-weight: 900; }
+    .token-string { color: #86efac; }
+    .token-number { color: #c4b5fd; }
+    .token-property { color: #93c5fd; }
+
+    .typing-cursor-marker {
+      display: inline-block;
+      width: 7px;
+      height: 1.15em;
+      margin-left: 3px;
+      background: var(--accent);
+      vertical-align: -0.18em;
+      animation: flash 0.8s infinite;
+    }
+    @keyframes flash { 50% { opacity: 0; } }
+    .thinking-dots { display: flex; gap: 5px; padding: 4px 0; }
+    .thinking-dots span {
+      width: 7px; height: 7px; border-radius: 999px;
+      background: var(--faint);
+      animation: bounce 1.3s infinite ease-in-out both;
+    }
+    .thinking-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .thinking-dots span:nth-child(2) { animation-delay: -0.16s; }
+    @keyframes bounce { 0%, 80%, 100% { transform: scale(0.45); opacity: 0.35; } 40% { transform: scale(1); opacity: 1; } }
+
+    @media (max-width: 1180px) {
+      .workspace-layout { grid-template-columns: 1fr; overflow: auto; }
+      body { overflow: auto; }
+      .app-panel { min-height: 680px; }
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "@xcon-viewer/core": "/packages/core/dist/index.js",
+        "@xcon-viewer/viewer": "/packages/viewer/dist/index.js"
+      }
+    }
+  </script>
+</head>
+<body class="theme-claude">
+  <header class="top-navbar">
+    <div class="brand-section">
+      <div class="brand-logo">X</div>
+      <div>
+        <div class="brand-title">XCON Viewer</div>
+        <div class="brand-subtitle">Claude-style Markdown + SKETCH artifacts</div>
+      </div>
+    </div>
+    <div class="controls-group">
+      <button id="switchToClaudeBtn" class="toggle-button active">Claude style</button>
+      <button id="switchToChatGPTBtn" class="toggle-button">ChatGPT style</button>
+      <button id="masterReplayBtn" class="toggle-button primary">Replay demo</button>
+    </div>
+  </header>
+
+  <main class="workspace-layout">
+    <section class="app-panel chat-panel-container">
+      <div class="panel-header-bar">
+        <div>
+          <div class="panel-title">Interactive session</div>
+          <div class="brand-subtitle">The assistant answers in Markdown and streams an XCON/SKETCH artifact.</div>
+        </div>
+        <span id="globalEngineStatus" class="status-pill">Idle</span>
+      </div>
+      <div class="preset-prompts-container">
+        <button class="preset-pill" onclick="triggerPresetScenario(0)">Weather briefing</button>
+        <button class="preset-pill" onclick="triggerPresetScenario(1)">Launch dashboard</button>
+        <button class="preset-pill" onclick="triggerPresetScenario(2)">Travel itinerary</button>
+      </div>
+      <div id="chatScrollViewport" class="chat-scroller-view">
+        <div id="messagesDynamicContainer" class="messages-wrapper"></div>
+      </div>
+      <div class="chat-footer-composer">
+        <div class="composer-input-wrapper">
+          <input id="promptUserTextField" class="text-input-field" type="text" placeholder="Ask for a visual answer..." readonly />
+          <button class="submit-send-button" type="button">↑</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="app-panel artifact-split-panel">
+      <div class="tab-navigation-bar">
+        <div style="display:flex;gap:8px;">
+          <button id="tabButtonPreview" class="tab-nav-btn active" onclick="switchArtifactTab('preview')">Live render</button>
+          <button id="tabButtonSource" class="tab-nav-btn" onclick="switchArtifactTab('source')">Raw SKETCH</button>
+        </div>
+        <div class="panel-metrics-indicator">
+          <span>Tokens/s <strong id="tokenCounterLabel" class="metric-item-badge">0</strong></span>
+          <span>Status <strong id="latencyStatusBadge" class="metric-item-badge">waiting</strong></span>
+        </div>
+      </div>
+      <div class="tab-panes-container">
+        <div id="paneArtifactPreview" class="tab-content-pane active">
+          <div class="preview-canvas-container">
+            <div class="responsive-selector-bar">
+              <button class="responsive-size-btn active" onclick="adjustCanvasWidth('760px')">Artifact</button>
+              <button class="responsive-size-btn" onclick="adjustCanvasWidth('480px')">Mobile</button>
+              <button class="responsive-size-btn" onclick="adjustCanvasWidth('100%')">Fill</button>
+            </div>
+            <div id="renderedCanvasFrame" class="rendered-canvas-frame">
+              <div class="empty-preview"><div><strong>Waiting for a SKETCH artifact</strong><br />The preview updates while the code stream arrives.</div></div>
+            </div>
+          </div>
+        </div>
+        <div id="paneArtifactSource" class="tab-content-pane">
+          <pre id="codeScrollerPanel" class="code-scroller-panel">Awaiting incoming SKETCH stream...</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { parseBySyntax } from '@xcon-viewer/core';
+    import { render, viewerCss } from '@xcon-viewer/viewer';
+
+    const stylesheet = document.createElement('style');
+    stylesheet.textContent = viewerCss;
+    document.head.appendChild(stylesheet);
+
+    const messagesDynamicContainer = document.getElementById('messagesDynamicContainer');
+    const codeScrollerPanel = document.getElementById('codeScrollerPanel');
+    const tokenCounterLabel = document.getElementById('tokenCounterLabel');
+    const latencyStatusBadge = document.getElementById('latencyStatusBadge');
+    const globalEngineStatus = document.getElementById('globalEngineStatus');
+    const chatScrollViewport = document.getElementById('chatScrollViewport');
+    const renderedCanvasFrame = document.getElementById('renderedCanvasFrame');
+    const promptUserTextField = document.getElementById('promptUserTextField');
+
+    document.getElementById('switchToClaudeBtn').addEventListener('click', () => {
+      document.body.className = 'theme-claude';
+      document.getElementById('switchToClaudeBtn').classList.add('active');
+      document.getElementById('switchToChatGPTBtn').classList.remove('active');
+    });
+    document.getElementById('switchToChatGPTBtn').addEventListener('click', () => {
+      document.body.className = 'theme-chatgpt';
+      document.getElementById('switchToChatGPTBtn').classList.add('active');
+      document.getElementById('switchToClaudeBtn').classList.remove('active');
+    });
+    document.getElementById('masterReplayBtn').addEventListener('click', () => executeCompleteScenarioSequence());
+
+    const mockConversations = [
+      {
+        prompt: "What should I know about Seoul today?",
+        response: [
+          "Here is a compact city briefing with the answer readable in chat and the full visual card rendered as a live artifact.",
+          "",
+          "## Seoul today",
+          "",
+          "- **22°C** around lunch, with a cooler evening.",
+          "- Best outdoor window: **2 PM to 5 PM**.",
+          "- Pack a light jacket if you will be out after sunset.",
+          "",
+          "```xcon-sketch",
+          "screen \"Seoul Weather Brief\" 720x520 bg #f8fafc",
+          "  hero: panel at 24 24 672 154",
+          "    bg #111827",
+          "    radius 26",
+          "    city: label \"Seoul today\" at 30 26 220 30",
+          "      color white",
+          "      font 24 800",
+          "    temp: label \"22°C\" at 30 66 140 54",
+          "      color #fbbf24",
+          "      font 44 800",
+          "    condition: label \"Partly cloudy · low rain risk\" at 188 76 280 26",
+          "      color #a7f3d0",
+          "      font 18 800",
+          "    badge: panel at 528 34 116 86",
+          "      bg #1f2937",
+          "      radius 22",
+          "      b1: label \"PM 2-5\" at 20 18 76 22",
+          "        color white",
+          "        align center",
+          "      b2: label \"best window\" at 18 48 80 18",
+          "        color #93c5fd",
+          "        align center",
+          "  hourly: panel at 24 202 672 112",
+          "    bg white",
+          "    radius 20",
+          "    border",
+          "      visible true",
+          "      color #d8e0ea",
+          "    title: label \"Hourly comfort\" at 22 18 180 22",
+          "      color #172033",
+          "      font 16 800",
+          "    m1: panel at 22 54 138 38",
+          "      bg #eff6ff",
+          "      radius 12",
+          "      label: label \"9 AM  18°C\" at 12 10 110 18",
+          "        color #1d4ed8",
+          "        font 13 800",
+          "    m2: panel at 178 54 138 38",
+          "      bg #ecfdf5",
+          "      radius 12",
+          "      label: label \"Noon  22°C\" at 12 10 110 18",
+          "        color #047857",
+          "        font 13 800",
+          "    m3: panel at 334 54 138 38",
+          "      bg #fff7ed",
+          "      radius 12",
+          "      label: label \"5 PM  20°C\" at 12 10 110 18",
+          "        color #c2410c",
+          "        font 13 800",
+          "    m4: panel at 490 54 138 38",
+          "      bg #f1f5f9",
+          "      radius 12",
+          "      label: label \"9 PM  15°C\" at 12 10 110 18",
+          "        color #475569",
+          "        font 13 800",
+          "  outfit: panel at 24 344 672 128",
+          "    bg white",
+          "    radius 20",
+          "    border",
+          "      visible true",
+          "      color #d8e0ea",
+          "    title: label \"Recommended kit\" at 22 18 180 22",
+          "      color #172033",
+          "      font 16 800",
+          "    c1: label \"Light jacket\" at 22 58 138 34",
+          "      bg #111827",
+          "      color white",
+          "      radius 17",
+          "      align center",
+          "    c2: label \"Walking shoes\" at 180 58 142 34",
+          "      bg #2563eb",
+          "      color white",
+          "      radius 17",
+          "      align center",
+          "    c3: label \"No umbrella\" at 342 58 138 34",
+          "      bg #ecfdf5",
+          "      color #047857",
+          "      radius 17",
+          "      align center",
+          "```"
+        ].join("\n")
+      },
+      {
+        prompt: "Can you turn our launch plan into a dashboard?",
+        response: [
+          "Absolutely. I would show the leadership team one artifact with pipeline, owners, and dependencies instead of three separate documents.",
+          "",
+          "## Launch dashboard",
+          "",
+          "- **Pipeline:** $1.42M weighted.",
+          "- **Owners:** every launch lane has a named DRI.",
+          "- **Risk:** CRM enrichment is the critical dependency.",
+          "",
+          "```xcon-sketch",
+          "screen \"Launch Command Center\" 720x640 bg #f8fafc",
+          "  hero: panel at 24 24 672 112",
+          "    bg #111827",
+          "    radius 24",
+          "    title: label \"Launch command center\" at 28 22 340 30",
+          "      color white",
+          "      font 24 800",
+          "    pipeline: label \"$1.42M\" at 28 62 180 42",
+          "      color #fbbf24",
+          "      font 34 800",
+          "    label: label \"weighted pipeline\" at 194 78 160 20",
+          "      color #a7f3d0",
+          "      font 14 800",
+          "    status: label \"3 blockers / 1 critical path\" at 420 28 220 24",
+          "      color #fecaca",
+          "      align right",
+          "      font 15 800",
+          "    note: label \"Marketing, sales, and lifecycle ops in one shared view\" at 420 60 220 40",
+          "      color #cbd5e1",
+          "      align right",
+          "      font 13 600",
+          "  chartBlock: panel at 24 158 320 214",
+          "    bg white",
+          "    radius 18",
+          "    border",
+          "      visible true",
+          "      color #d8e0ea",
+          "    chartTitle: label \"Pipeline by motion\" at 20 18 220 24",
+          "      color #172033",
+          "      font 18 800",
+          "    motionChart: chart at 20 56 278 132",
+          "      chartType \"bar\"",
+          "      chartData {\"labels\":[\"Inbound\",\"Partners\",\"Expansion\",\"Events\"],\"datasets\":[{\"label\":\"Pipeline\",\"data\":[420,360,510,130],\"backgroundColor\":\"#c4622d\"}]}",
+          "  ownerBlock: panel at 368 158 328 214",
+          "    bg white",
+          "    radius 18",
+          "    border",
+          "      visible true",
+          "      color #d8e0ea",
+          "    ownerTitle: label \"Launch owners\" at 20 18 220 24",
+          "      color #172033",
+          "      font 18 800",
+          "    ownerGrid: spanGrid at 20 56 288 132",
+          "      backgroundColor white",
+          "      readonly true",
+          "      data [[\"Workstream\",\"Owner\",\"Status\"],[\"Data room\",\"Nia\",\"Ready\"],[\"Email ops\",\"Jules\",\"Blocked\"],[\"Sales routing\",\"Mika\",\"Review\"]]",
+          "      columns [{\"id\":\"workstream\",\"title\":\"Workstream\",\"width\":126},{\"id\":\"owner\",\"title\":\"Owner\",\"width\":74},{\"id\":\"status\",\"title\":\"Status\",\"width\":88}]",
+          "  networkBlock: panel at 24 396 672 210",
+          "    bg white",
+          "    radius 20",
+          "    border",
+          "      visible true",
+          "      color #d8e0ea",
+          "    networkTitle: label \"Dependency map\" at 20 18 220 24",
+          "      color #172033",
+          "      font 18 800",
+          "    network: networkDiagram at 20 52 632 138",
+          "      backgroundColor #eef6ff",
+          "      nodeRadius 24",
+          "      primaryColor #2563eb",
+          "      nodeColor #14b8a6",
+          "      accentColor #db2777",
+          "      linkColor #94a3b8",
+          "      refLinkColor #f59e0b",
+          "      textColor #0f172a",
+          "      showLabels true",
+          "      showArrows true",
+          "      nodes [{\"id\":\"capture\",\"label\":\"Lead capture\",\"x\":90,\"y\":280,\"color\":\"#2563eb\"},{\"id\":\"crm\",\"label\":\"CRM enrich\",\"x\":255,\"y\":280,\"color\":\"#14b8a6\"},{\"id\":\"score\",\"label\":\"Lead score\",\"x\":430,\"y\":165,\"color\":\"#8b5cf6\"},{\"id\":\"email\",\"label\":\"Lifecycle email\",\"x\":430,\"y\":395,\"color\":\"#db2777\"},{\"id\":\"sales\",\"label\":\"Sales route\",\"x\":610,\"y\":165,\"color\":\"#f59e0b\"},{\"id\":\"brief\",\"label\":\"Exec brief\",\"x\":610,\"y\":395,\"color\":\"#10b981\"}]",
+          "      links [{\"source\":\"capture\",\"target\":\"crm\"},{\"source\":\"crm\",\"target\":\"score\"},{\"source\":\"crm\",\"target\":\"email\"},{\"source\":\"score\",\"target\":\"sales\",\"type\":\"ref\"},{\"source\":\"email\",\"target\":\"brief\"},{\"source\":\"sales\",\"target\":\"brief\",\"type\":\"folder\"}]",
+          "```"
+        ].join("\n")
+      },
+      {
+        prompt: "Make a polished travel itinerary for a weekend in Jeju.",
+        response: [
+          "Here is a compact itinerary artifact: a hero plan, a daily schedule, and two high-confidence local picks.",
+          "",
+          "## Jeju weekend",
+          "",
+          "- **Theme:** coast road, quiet cafes, and one sunrise walk.",
+          "- **Best anchor:** Seongsan sunrise, then Woljeongri lunch.",
+          "",
+          "```xcon-sketch",
+          "screen \"Jeju Weekend Plan\" 720x520 bg #f8fafc",
+          "  hero: panel at 24 24 672 132",
+          "    bg #0f172a",
+          "    radius 24",
+          "    title: label \"Jeju weekend\" at 28 24 260 32",
+          "      color white",
+          "      font 26 800",
+          "    sub: label \"Sunrise walk · coast road · slow cafes\" at 28 66 360 24",
+          "      color #bae6fd",
+          "      font 16 700",
+          "    badge: label \"2 days / 1 night\" at 520 38 120 34",
+          "      bg #2563eb",
+          "      color white",
+          "      radius 17",
+          "      align center",
+          "  day1: panel at 24 184 320 248",
+          "    bg white",
+          "    radius 20",
+          "    border",
+          "      visible true",
+          "      color #d8e0ea",
+          "    title: label \"Day 1 · East coast\" at 20 18 220 24",
+          "      color #172033",
+          "      font 18 800",
+          "    a: label \"10:30  Woljeongri coffee\" at 20 62 240 22",
+          "      color #475569",
+          "    b: label \"13:00  Coastal noodle lunch\" at 20 98 240 22",
+          "      color #475569",
+          "    c: label \"16:30  Seopjikoji walk\" at 20 134 240 22",
+          "      color #475569",
+          "    d: label \"19:00  Seafood dinner\" at 20 170 240 22",
+          "      color #475569",
+          "  day2: panel at 376 184 320 248",
+          "    bg white",
+          "    radius 20",
+          "    border",
+          "      visible true",
+          "      color #d8e0ea",
+          "    title: label \"Day 2 · Sunrise\" at 20 18 220 24",
+          "      color #172033",
+          "      font 18 800",
+          "    a: label \"05:40  Seongsan sunrise\" at 20 62 240 22",
+          "      color #475569",
+          "    b: label \"08:30  Local breakfast\" at 20 98 240 22",
+          "      color #475569",
+          "    c: label \"11:00  Bookstore stop\" at 20 134 240 22",
+          "      color #475569",
+          "    d: label \"14:00  Airport route\" at 20 170 240 22",
+          "      color #475569",
+          "```"
+        ].join("\n")
+      }
+    ];
+
+    let currentExecutionNonce = 0;
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function renderInlineMarkdown(value) {
+      return escapeHtml(value).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/`([^`]+)`/g, '<code>$1</code>');
+    }
+
+    function renderMarkdown(md) {
+      const blocks = md.split(/\n{2,}/).filter(Boolean);
+      return blocks.map((block) => {
+        const trimmed = block.trim();
+        if (trimmed.startsWith('## ')) return `<h2>${renderInlineMarkdown(trimmed.slice(3))}</h2>`;
+        if (trimmed.startsWith('- ')) {
+          const items = trimmed.split('\n').map((line) => line.replace(/^[-*]\s+/, '').trim());
+          return `<ul>${items.map((item) => `<li>${renderInlineMarkdown(item)}</li>`).join('')}</ul>`;
+        }
+        return `<p>${renderInlineMarkdown(trimmed).replace(/\n/g, '<br>')}</p>`;
+      }).join('');
+    }
+
+    function stripSketchFences(md) {
+      return md.replace(/```(?:xcon-sketch|xcon)\s*\n[\s\S]*?```/gi, '').trim();
+    }
+
+    function extractSketchSource(md) {
+      const match = md.match(/```(?:xcon-sketch|xcon)\s*\n([\s\S]*?)```/i);
+      return match ? match[1].trim() : '';
+    }
+
+    function applySyntaxHighlighting(code) {
+      const componentWords = new Set(['screen', 'panel', 'label', 'shape', 'button', 'chart', 'spanGrid', 'networkDiagram', 'map', 'image']);
+      const propertyWords = new Set(['color', 'bg', 'backgroundColor', 'radius', 'at', 'font', 'size', 'weight', 'border', 'visible', 'chartData', 'chartType', 'nodes', 'links', 'data', 'columns', 'readonly', 'showLabels', 'showArrows', 'nodeRadius', 'primaryColor', 'nodeColor', 'accentColor', 'linkColor', 'refLinkColor', 'textColor']);
+      return String(code || '').split('\n').map((line) => {
+        const escaped = escapeHtml(line);
+        const pieces = escaped.split(/("[^"]*"|#[0-9a-fA-F]{3,8}|\b\d+(?:\.\d+)?\b|\b[A-Za-z_][\w-]*\b)/g);
+        return pieces.map((piece) => {
+          if (!piece) return '';
+          if (/^"[^"]*"$/.test(piece)) return `<span class="token-string">${piece}</span>`;
+          if (/^#[0-9a-fA-F]{3,8}$/.test(piece) || /^\d+(?:\.\d+)?$/.test(piece)) return `<span class="token-number">${piece}</span>`;
+          if (componentWords.has(piece)) return `<span class="token-keyword">${piece}</span>`;
+          if (propertyWords.has(piece)) return `<span class="token-property">${piece}</span>`;
+          return piece;
+        }).join('');
+      }).join('\n');
+    }
+
+    window.switchArtifactTab = function(tab) {
+      const preview = tab === 'preview';
+      document.getElementById('tabButtonPreview').classList.toggle('active', preview);
+      document.getElementById('tabButtonSource').classList.toggle('active', !preview);
+      document.getElementById('paneArtifactPreview').classList.toggle('active', preview);
+      document.getElementById('paneArtifactSource').classList.toggle('active', !preview);
+    };
+
+    window.adjustCanvasWidth = function(width) {
+      renderedCanvasFrame.style.maxWidth = width;
+      document.querySelectorAll('.responsive-size-btn').forEach((btn) => btn.classList.remove('active'));
+      window.event?.target?.classList?.add('active');
+    };
+
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    function findBestEffortSketchSource(src) {
+      const lines = String(src || '').replace(/\r\n/g, '\n').split('\n');
+      const start = lines.findIndex((line) => /^\s*screen\b/i.test(line));
+      if (start < 0) return '';
+      const usable = lines.slice(start);
+      while (usable.length) {
+        const candidate = usable.join('\n').trimEnd();
+        if (!candidate) return '';
+        try {
+          parseBySyntax(candidate, 'sketch');
+          return candidate;
+        } catch {
+          usable.pop();
+        }
+      }
+      return '';
+    }
+
+    function renderSketch(code) {
+      const bestEffort = findBestEffortSketchSource(code);
+      if (!bestEffort) return;
+      try {
+        const model = parseBySyntax(bestEffort, 'sketch');
+        renderedCanvasFrame.innerHTML = '';
+        render(model, renderedCanvasFrame, { allowExternalResources: true, allowHtml: false });
+      } catch {
+        // Keep the previous good render while streaming an incomplete line.
+      }
+    }
+
+    function setStatus(label, mode = '') {
+      globalEngineStatus.textContent = label;
+      latencyStatusBadge.textContent = label.toLowerCase();
+      globalEngineStatus.className = `status-pill ${mode}`;
+    }
+
+    function appendUserMessage(prompt) {
+      const row = document.createElement('div');
+      row.className = 'chat-message-row user-message';
+      row.innerHTML = `<div class="chat-avatar-circle">YOU</div><div class="chat-bubble-content">${renderInlineMarkdown(prompt)}</div>`;
+      messagesDynamicContainer.appendChild(row);
+      chatScrollViewport.scrollTop = chatScrollViewport.scrollHeight;
+    }
+
+    function appendAssistantMessage() {
+      const row = document.createElement('div');
+      row.className = 'chat-message-row';
+      const name = document.body.classList.contains('theme-chatgpt') ? 'GPT' : 'AI';
+      row.innerHTML = `<div class="chat-avatar-circle">${name}</div><div class="chat-bubble-content inner-root"><div class="thinking-dots"><span></span><span></span><span></span></div></div>`;
+      messagesDynamicContainer.appendChild(row);
+      chatScrollViewport.scrollTop = chatScrollViewport.scrollHeight;
+      return row.querySelector('.inner-root');
+    }
+
+    async function typePrompt(prompt, nonce) {
+      promptUserTextField.value = '';
+      for (let i = 0; i <= prompt.length; i++) {
+        if (nonce !== currentExecutionNonce) return false;
+        promptUserTextField.value = prompt.slice(0, i);
+        await sleep(/[.!?]/.test(prompt[i]) ? 150 : 28);
+      }
+      await sleep(280);
+      return true;
+    }
+
+    async function streamAssistant(turn, nonce, root) {
+      const visibleMarkdown = stripSketchFences(turn.response);
+      const sketch = extractSketchSource(turn.response);
+      let visible = '';
+      root.innerHTML = '<div></div><span class="typing-cursor-marker"></span>';
+      const textNode = root.querySelector('div');
+      codeScrollerPanel.textContent = 'Waiting for the assistant to open an xcon-sketch fence...';
+
+      for (let i = 0; i <= visibleMarkdown.length; i += 3) {
+        if (nonce !== currentExecutionNonce) return false;
+        visible = visibleMarkdown.slice(0, i);
+        textNode.innerHTML = renderMarkdown(visible);
+        tokenCounterLabel.textContent = String(52 + (i % 29));
+        setStatus('Responding', 'streaming');
+        chatScrollViewport.scrollTop = chatScrollViewport.scrollHeight;
+        await sleep(32);
+      }
+
+      root.innerHTML = `${renderMarkdown(visibleMarkdown)}<div class="artifact-callout-card"><div><strong>Artifact opened</strong>Raw SKETCH is streaming in the right pane.</div><span class="artifact-callout-pill">SKETCH</span></div>`;
+      chatScrollViewport.scrollTop = chatScrollViewport.scrollHeight;
+      const sketchLines = sketch.split('\n');
+      let streamed = sketchLines.length ? `${sketchLines[0]}\n` : '';
+      codeScrollerPanel.innerHTML = applySyntaxHighlighting(streamed);
+      switchArtifactTab('source');
+      await sleep(220);
+      for (const line of sketchLines.slice(1)) {
+        if (nonce !== currentExecutionNonce) return false;
+        streamed += line + '\n';
+        codeScrollerPanel.innerHTML = applySyntaxHighlighting(streamed);
+        codeScrollerPanel.scrollTop = codeScrollerPanel.scrollHeight;
+        tokenCounterLabel.textContent = String(88 + (streamed.length % 34));
+        setStatus('Streaming', 'streaming');
+        renderSketch(streamed);
+        await sleep(line.length > 120 ? 12 : 34);
+      }
+
+      root.innerHTML = `${renderMarkdown(visibleMarkdown)}<div class="artifact-callout-card"><div><strong>Artifact rendered</strong>The SKETCH block is now a live, inspectable UI document.</div><span class="artifact-callout-pill">Ready</span></div>`;
+      codeScrollerPanel.innerHTML = applySyntaxHighlighting(sketch);
+      renderSketch(sketch);
+      setStatus('Rendered', 'rendered');
+      tokenCounterLabel.textContent = '112';
+      await sleep(1500);
+      if (nonce === currentExecutionNonce) switchArtifactTab('preview');
+      return true;
+    }
+
+    async function executeSingleTurn(turn, nonce) {
+      if (!(await typePrompt(turn.prompt, nonce))) return;
+      appendUserMessage(turn.prompt);
+      promptUserTextField.value = '';
+
+      setStatus('Thinking', 'streaming');
+      const assistantRoot = appendAssistantMessage();
+      await sleep(900);
+      await streamAssistant(turn, nonce, assistantRoot);
+      await sleep(1200);
+    }
+
+    async function executeCompleteScenarioSequence() {
+      const nonce = ++currentExecutionNonce;
+      messagesDynamicContainer.innerHTML = '';
+      codeScrollerPanel.textContent = 'Awaiting incoming SKETCH stream...';
+      tokenCounterLabel.textContent = '0';
+      setStatus('Idle');
+      renderedCanvasFrame.innerHTML = '<div class="empty-preview"><div><strong>Waiting for a SKETCH artifact</strong><br />The preview updates while the code stream arrives.</div></div>';
+      for (const turn of mockConversations) {
+        if (nonce !== currentExecutionNonce) return;
+        await executeSingleTurn(turn, nonce);
+      }
+    }
+
+    window.triggerPresetScenario = function(index) {
+      const nonce = ++currentExecutionNonce;
+      messagesDynamicContainer.innerHTML = '';
+      codeScrollerPanel.textContent = 'Initializing selected stream...';
+      tokenCounterLabel.textContent = '0';
+      renderedCanvasFrame.innerHTML = '<div class="empty-preview"><div><strong>Waiting for a SKETCH artifact</strong><br />The preview updates while the code stream arrives.</div></div>';
+      executeSingleTurn(mockConversations[index], nonce);
+    };
+
+    window.addEventListener('load', () => executeCompleteScenarioSequence());
+  </script>
+</body>
+</html>

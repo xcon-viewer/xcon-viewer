@@ -17,6 +17,12 @@ The resulting `dist-site/` directory is the deployable artifact.
 | Source | Bundle path | Purpose |
 |---|---|---|
 | `site/index.html` | `index.html` | Home page |
+| `site/chatgpt-simulation.html` | `chatgpt-simulation.html` | ChatGPT-style Markdown + XCON artifact simulation |
+| `site/chatgpt-markdown-sketch-simulation.html` | `chatgpt-markdown-sketch-simulation.html` | ChatGPT-style rendered Markdown + SKETCH source-stream simulation |
+| `site/html-css-simulation.html` | `html-css-simulation.html` | ChatGPT-style Markdown + HTML/CSS artifact simulation |
+| `site/xcon-viewer-viral-demo-no-site-header.html` | `xcon-viewer-viral-demo-no-site-header.html` | Headerless XCON Viewer viral demo |
+| `site/chatgpt-viral-demo-v2.html` | `chatgpt-viral-demo-v2.html` | ChatGPT-style Markdown + SKETCH viral demo |
+| `site/claude-markdown-sketch-demo.html` | `claude-markdown-sketch-demo.html` | Claude-style Raw SKETCH and live render demo |
 | `site/docs.html` | `docs.html` | Documentation index |
 | `site/spec.html` | `spec.html` | Spec index |
 | `site/examples.html` | `examples.html` | Examples index |
@@ -36,7 +42,7 @@ The resulting `dist-site/` directory is the deployable artifact.
 
 | Source | Bundle path | Purpose |
 |---|---|---|
-| `playground/index.html` | `play/index.html` | JSON/XML/TAGLESS/SKETCH playground |
+| `playground/index.html` | `play/index.html` | SKETCH/JSON/XML/TAGLESS playground |
 | `playground/markdown.html` | `play/markdown.html` | Markdown + XCON playground |
 | `playground/sketch.html` | `play/sketch.html` | Dedicated XCON/SKETCH live editor with showcase presets |
 
@@ -59,11 +65,11 @@ The playground uses built ESM files from:
 | `docs/deployment-files.md` | This inventory |
 | `spec/README.md` | Format spec map |
 | `spec/xcon-object-model.md` | Object Model |
+| `spec/xcon-sketch-syntax.md` | XCON/SKETCH |
 | `spec/xcon-json-syntax.md` | XCON/JSON |
 | `spec/xcon-xml-syntax.md` | XCON/XML |
 | `spec/xcon-tagless-syntax.md` | XCON/TAGLESS |
 | `spec/xcon-tagless-markers.md` | Marker rules |
-| `spec/xcon-sketch-syntax.md` | XCON/SKETCH |
 | `spec/security-model.md` | Security boundary |
 
 ## Examples
@@ -72,13 +78,24 @@ The public bundle includes `examples/` so documentation links can open example R
 
 Expected example file families:
 
+- `*.xcon.sketch`
 - `*.xcon.json`
 - `*.xcon.xml`
 - `*.xcon`
-- optional `*.xcon.sketch`
 - `README.md`
 
 `examples/showcase/` contains public compatibility fixtures copied from the viewer showcase. User-defined component extension fixtures are intentionally excluded from the public bundle.
+
+## Optional Companion Tool Directories
+
+The following directories are not produced by `npm run site:build`, but can be deployed under the same domain as sibling static sites:
+
+| URL path | Source bundle | Purpose |
+|---|---|---|
+| `/xcon-chain/` | sibling `xcon-chain/dist-site/` | Public read-only XCON Chain expression playground |
+| `/xcon-workflow/` | sibling `xcon-workflow/dist-site/` | Public XCON Workflow playground |
+
+These directories must be routed before the global Markdown viewer rewrite so their own Markdown fixtures can be fetched as raw files.
 
 ## Explicit Exclusions
 

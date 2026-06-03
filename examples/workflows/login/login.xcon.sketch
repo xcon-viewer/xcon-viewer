@@ -1,0 +1,23 @@
+screen 402x700
+  backgroundColor "#F8FAFC"
+  title: label "Sign in" at 32 96 338 40
+    font
+      size 30
+      weight 800
+    textAlign "center"
+  email: textField "Email" at 32 176 338 44
+    inputType "email"
+    prefix
+      icon "mail"
+      library "lucide"
+  password: passwordField at 32 236 338 44
+    placeholder "Password"
+    showToggle true
+  remember: checkbox at 32 300 180 32
+    label "Remember me"
+    value "unchecked"
+  submit: button "Sign in" at 32 356 338 48
+    backgroundColor "#2563EB"
+    color "#FFFFFF"
+    border
+      radius 10

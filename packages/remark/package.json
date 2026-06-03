@@ -1,6 +1,6 @@
 {
   "name": "@xcon-viewer/remark",
-  "version": "0.1.2",
+  "version": "0.1.6",
   "type": "module",
   "description": "remark plugin for rendering XCON code nodes to HTML.",
   "keywords": [
@@ -42,8 +42,8 @@
     "prepublishOnly": "npm run test && npm run build"
   },
   "dependencies": {
-    "@xcon-viewer/core": "0.1.2",
-    "@xcon-viewer/viewer": "0.1.2"
+    "@xcon-viewer/core": "0.1.6",
+    "@xcon-viewer/viewer": "0.1.6"
   },
   "peerDependencies": {
     "remark": ">=14"
@@ -62,4 +62,3 @@
     "access": "public"
   }
 }
-

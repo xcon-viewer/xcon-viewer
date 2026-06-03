@@ -1,0 +1,1249 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI UI Answer Demo - XCON Viewer</title>
+  <meta name="description" content="A viral ChatGPT-style demo where AI-generated Markdown plus XCON/SKETCH becomes live UI inside the answer." />
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    :root {
+      --sim-bg: #f7f3ee;
+      --sim-panel: rgba(255, 255, 255, 0.94);
+      --sim-line: #d8e0ea;
+      --sim-muted: #64748b;
+      --sim-ink: #111827;
+      --sim-blue: #2563eb;
+      --sim-orange: #c4622d;
+      --sim-grid: rgba(58, 107, 170, 0.14);
+      --sim-shadow: 0 24px 70px rgba(17, 24, 39, 0.14);
+    }
+
+    body {
+      min-height: 100vh;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 16% 20%, rgba(37, 99, 235, 0.10), transparent 32%),
+        radial-gradient(circle at 86% 8%, rgba(196, 98, 45, 0.12), transparent 28%),
+        var(--sim-bg);
+    }
+
+
+    .simulation-shell {
+      height: calc(100vh - 104px);
+      padding: 14px;
+      box-sizing: border-box;
+      display: grid;
+      grid-template-columns: minmax(520px, 0.92fr) minmax(500px, 0.78fr);
+      gap: 14px;
+    }
+
+    .chat-panel,
+    .source-panel {
+      min-width: 0;
+      min-height: 0;
+      border: 1px solid var(--sim-line);
+      border-radius: 18px;
+      background: var(--sim-panel);
+      box-shadow: var(--sim-shadow);
+      overflow: hidden;
+      display: grid;
+    }
+
+    .chat-panel {
+      grid-template-rows: auto minmax(0, 1fr) auto;
+    }
+
+    .source-panel {
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    .panel-toolbar {
+      min-height: 60px;
+      padding: 12px 16px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--sim-line);
+      background: rgba(255, 255, 255, 0.76);
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .panel-title strong {
+      color: var(--sim-ink);
+      font-size: 16px;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .panel-title span {
+      color: var(--sim-muted);
+      font-size: 12px;
+      line-height: 1.2;
+    }
+
+    .sim-actions {
+      display: flex;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    .sim-button {
+      border: 1px solid var(--sim-line);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--sim-ink);
+      font-size: 13px;
+      font-weight: 700;
+      height: 36px;
+      padding: 0 14px;
+      cursor: pointer;
+    }
+
+    .sim-button.primary {
+      border-color: transparent;
+      background: var(--sim-blue);
+      color: #fff;
+    }
+
+    .chat-scroll {
+      min-height: 0;
+      overflow: auto;
+      padding: 18px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(17, 24, 39, 0.28) transparent;
+    }
+
+    .chat-messages {
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      justify-content: flex-end;
+    }
+
+    .chat-composer {
+      border-top: 1px solid var(--sim-line);
+      padding: 12px 16px 16px;
+      background: rgba(255, 255, 255, 0.82);
+    }
+
+    .composer-box {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 42px;
+      gap: 10px;
+      align-items: end;
+      border: 1px solid var(--sim-line);
+      border-radius: 18px;
+      background: #fff;
+      padding: 10px;
+      box-shadow: 0 14px 36px rgba(17, 24, 39, 0.08);
+    }
+
+    .composer-input {
+      min-height: 42px;
+      max-height: 110px;
+      resize: none;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--sim-ink);
+      font: 14px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 10px 4px;
+      box-sizing: border-box;
+    }
+
+    .composer-send {
+      width: 42px;
+      height: 42px;
+      border: 0;
+      border-radius: 14px;
+      background: var(--sim-blue);
+      color: #fff;
+      font-size: 18px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 10px 22px rgba(37, 99, 235, 0.24);
+    }
+
+    .composer-send.is-sending {
+      transform: translateY(1px);
+      opacity: 0.82;
+    }
+
+    .message {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: var(--sim-orange);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .message.assistant .avatar {
+      background: #f4dccf;
+      color: var(--sim-orange);
+    }
+
+    .avatar.is-thinking {
+      animation: avatarPulse 1.15s ease-in-out infinite;
+    }
+
+    .bubble {
+      border: 1px solid var(--sim-line);
+      border-radius: 16px;
+      padding: 14px 16px;
+      background: #fff;
+      color: var(--sim-ink);
+      line-height: 1.55;
+      font-size: 14px;
+      box-shadow: 0 12px 28px rgba(17, 24, 39, 0.05);
+    }
+
+    .message.user .bubble {
+      background: #fff7ed;
+      border-color: #fed7aa;
+      font-weight: 650;
+    }
+
+    .message.user .bubble,
+    .rendered-chat {
+      min-height: 48px;
+    }
+
+    .rendered-chat h2,
+    .rendered-chat h3 {
+      margin: 0.42em 0 0.4em;
+      line-height: 1.18;
+    }
+
+    .rendered-chat h2 {
+      font-size: 20px;
+    }
+
+    .rendered-chat h3 {
+      font-size: 17px;
+    }
+
+    .rendered-chat p {
+      margin: 0.38em 0;
+    }
+
+    .rendered-chat ul {
+      margin: 8px 0 10px;
+      padding-left: 22px;
+    }
+
+    .rendered-chat li {
+      margin: 3px 0;
+    }
+
+    .inline-xcon-preview {
+      margin: 14px 0 8px;
+      border: 1px solid #cbd5e1;
+      border-radius: 14px;
+      overflow: auto;
+      background:
+        linear-gradient(rgba(58, 107, 170, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(58, 107, 170, 0.08) 1px, transparent 1px),
+        #fbfdff;
+      background-size: 20px 20px;
+      padding: 14px;
+      max-width: 100%;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(17, 24, 39, 0.32) transparent;
+    }
+
+    .inline-xcon-preview .xcon-render-root,
+    .inline-xcon-preview [data-xcon-type="form"] {
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.16);
+    }
+
+    .inline-xcon-waiting,
+    .inline-xcon-error {
+      min-height: 130px;
+      border: 1px dashed #b8c5d8;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: var(--sim-muted);
+      background: rgba(255, 255, 255, 0.78);
+      text-align: center;
+      padding: 18px;
+      box-sizing: border-box;
+    }
+
+    .inline-xcon-error {
+      color: #b91c1c;
+      background: #fef2f2;
+      border-color: #fecaca;
+    }
+
+    .inline-xcon-preview[data-streaming-preview="true"] {
+      border-style: dashed;
+      box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.08);
+    }
+
+    .streaming-preview-label {
+      margin: -2px 0 10px;
+      color: #2563eb;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .thinking-dots {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 22px;
+    }
+
+    .thinking-dots span {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--sim-muted);
+      animation: dotPulse 1.2s ease-in-out infinite;
+    }
+
+    .thinking-dots span:nth-child(2) {
+      animation-delay: 160ms;
+    }
+
+    .thinking-dots span:nth-child(3) {
+      animation-delay: 320ms;
+    }
+
+    .typing-caret {
+      display: inline-block;
+      width: 7px;
+      height: 1.1em;
+      margin-left: 2px;
+      vertical-align: -0.16em;
+      background: var(--sim-blue);
+      animation: blink 850ms steps(1) infinite;
+    }
+
+    .source-scroller {
+      min-height: 0;
+      overflow: auto;
+      background: #0f172a;
+      color: #dbeafe;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(226, 232, 240, 0.36) transparent;
+    }
+
+    .source-stream {
+      min-height: 100%;
+      margin: 0;
+      padding: 18px 20px;
+      box-sizing: border-box;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font: 12px/1.7 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    .source-status {
+      min-width: 84px;
+      height: 32px;
+      display: inline-grid;
+      place-items: center;
+      padding: 0 12px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #26437d;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    @keyframes avatarPulse {
+      50% {
+        transform: scale(1.04);
+        box-shadow: 0 0 0 8px rgba(196, 98, 45, 0.12);
+      }
+    }
+
+    @keyframes dotPulse {
+      0%, 80%, 100% {
+        opacity: 0.36;
+        transform: translateY(0);
+      }
+      40% {
+        opacity: 1;
+        transform: translateY(-3px);
+      }
+    }
+
+
+    .demo-hero {
+      height: 92px;
+      margin: 12px 14px 0;
+      border: 1px solid rgba(216, 224, 234, 0.9);
+      border-radius: 22px;
+      background:
+        linear-gradient(135deg, rgba(17, 24, 39, 0.96), rgba(30, 41, 59, 0.94)),
+        #111827;
+      color: #fff;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 18px;
+      padding: 18px 22px;
+      box-sizing: border-box;
+      box-shadow: 0 22px 60px rgba(17, 24, 39, 0.20);
+    }
+
+    .hero-copy {
+      min-width: 0;
+    }
+
+    .hero-eyebrow {
+      color: #93c5fd;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .hero-title {
+      margin: 0;
+      color: #fff;
+      font-size: clamp(22px, 2.4vw, 34px);
+      line-height: 1.08;
+      letter-spacing: -0.04em;
+    }
+
+    .hero-subtitle {
+      margin: 6px 0 0;
+      color: #cbd5e1;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .hero-flow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .flow-pill {
+      height: 34px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 999px;
+      padding: 0 12px;
+      background: rgba(255, 255, 255, 0.10);
+      color: #e5e7eb;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .flow-arrow {
+      color: #fbbf24;
+      font-weight: 900;
+    }
+
+    .simulation-shell {
+      height: calc(100vh - 104px);
+    }
+
+    .chat-panel {
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
+    }
+
+    .prompt-strip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--sim-line);
+      background: rgba(248, 250, 252, 0.82);
+      overflow: auto;
+      scrollbar-width: none;
+    }
+
+    .prompt-strip::-webkit-scrollbar {
+      display: none;
+    }
+
+    .prompt-chip {
+      border: 1px solid #dbe4ef;
+      background: #fff;
+      color: #334155;
+      border-radius: 999px;
+      height: 32px;
+      padding: 0 12px;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .prompt-chip.active {
+      border-color: rgba(37, 99, 235, 0.3);
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .vendor-shell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      color: var(--sim-muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .model-pill {
+      border: 1px solid #dbe4ef;
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: #fff;
+      color: #172033;
+      white-space: nowrap;
+    }
+
+    .sim-link-button {
+      display: inline-grid;
+      place-items: center;
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 10px;
+      background: #111827;
+      color: #fff;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .end-card {
+      border: 1px solid #bfdbfe;
+      border-radius: 18px;
+      padding: 18px;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(37, 99, 235, 0.12), transparent 38%),
+        #f8fbff;
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+    }
+
+    .end-card h2 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      letter-spacing: -0.03em;
+      color: #0f172a;
+    }
+
+    .end-card p {
+      margin: 0 0 14px;
+      color: #475569;
+      font-size: 14px;
+    }
+
+    .end-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .end-actions a {
+      display: inline-grid;
+      place-items: center;
+      min-height: 38px;
+      padding: 0 14px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 900;
+      border: 1px solid #cbd5e1;
+      color: #0f172a;
+      background: #fff;
+    }
+
+    .end-actions a.primary {
+      border-color: transparent;
+      color: #fff;
+      background: #2563eb;
+    }
+
+    @media (max-width: 1120px) {
+      .demo-hero {
+        height: auto;
+        grid-template-columns: 1fr;
+      }
+
+      .hero-flow {
+        justify-content: flex-start;
+      }
+
+      .simulation-shell {
+        height: auto;
+      }
+    }
+
+    @media (max-width: 1120px) {
+      body {
+        overflow: auto;
+      }
+
+      .simulation-shell {
+        height: auto;
+        min-height: 100vh;
+        grid-template-columns: 1fr;
+      }
+
+      .chat-panel,
+      .source-panel {
+        min-height: 640px;
+      }
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "@xcon-viewer/core": "/packages/core/dist/index.js",
+        "@xcon-viewer/viewer": "/packages/viewer/dist/index.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <!-- Site header removed: no XCON Viewer nav bar. -->
+  <section class="demo-hero" aria-label="Demo headline">
+    <div class="hero-copy">
+      <div class="hero-eyebrow">AI UI Answer Demo</div>
+      <h1 class="hero-title">What if ChatGPT could answer with real UI?</h1>
+      <p class="hero-subtitle">Watch Markdown + XCON/SKETCH stream as source and render as a live interface inside the answer.</p>
+    </div>
+    <div class="hero-flow" aria-label="Prompt to live UI flow">
+      <span class="flow-pill">Prompt</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-pill">Markdown + SKETCH</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-pill">Live UI</span>
+    </div>
+  </section>
+
+  <main class="simulation-shell">
+    <section class="chat-panel" aria-label="Rendered ChatGPT conversation">
+      <div class="panel-toolbar">
+        <div class="panel-title">
+          <strong>AI answer</strong>
+          <span>Markdown text + live UI preview</span>
+        </div>
+        <div class="sim-actions">
+          <span class="model-pill">GPT-style UI Generator</span>
+          <button id="clearButton" class="sim-button" type="button">Clear</button>
+          <button id="replayButton" class="sim-button primary" type="button">Replay</button>
+          <a class="sim-link-button" href="/play">Try Playground</a>
+        </div>
+      </div>
+
+      <div class="prompt-strip" aria-label="Demo prompt presets">
+        <button class="prompt-chip active" type="button">SaaS pricing section</button>
+        <button class="prompt-chip" type="button">Revenue dashboard</button>
+        <button class="prompt-chip" type="button">Mobile onboarding</button>
+        <button class="prompt-chip" type="button">README live UI</button>
+      </div>
+
+      <div id="chatScroll" class="chat-scroll" aria-live="polite">
+        <div id="chatMessages" class="chat-messages"></div>
+      </div>
+      <form id="chatComposer" class="chat-composer">
+        <div class="composer-box">
+          <textarea id="composerInput" class="composer-input" rows="1" aria-label="Message input" placeholder="Ask the AI to generate UI, not just text"></textarea>
+          <button id="sendButton" class="composer-send" type="submit" aria-label="Send message">↑</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="source-panel" aria-label="Raw Markdown and SKETCH source stream">
+      <div class="panel-toolbar">
+        <div class="panel-title">
+          <strong>Live source</strong>
+          <span>raw Markdown + XCON/SKETCH response</span>
+        </div>
+        <span id="sourceStatus" class="source-status">waiting</span>
+      </div>
+      <div id="sourceScroller" class="source-scroller">
+        <pre id="sourceStream" class="source-stream"></pre>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { parseBySyntax } from '@xcon-viewer/core';
+    import { render, viewerCss } from '@xcon-viewer/viewer';
+
+    const style = document.createElement('style');
+    style.textContent = viewerCss;
+    document.head.appendChild(style);
+
+    const chatMessages = document.getElementById('chatMessages');
+    const chatComposer = document.getElementById('chatComposer');
+    const composerInput = document.getElementById('composerInput');
+    const sendButton = document.getElementById('sendButton');
+    const sourceStream = document.getElementById('sourceStream');
+    const sourceScroller = document.getElementById('sourceScroller');
+    const sourceStatus = document.getElementById('sourceStatus');
+    const chatScroll = document.getElementById('chatScroll');
+    const replayButton = document.getElementById('replayButton');
+    const clearButton = document.getElementById('clearButton');
+    const userTypingDelayMs = 42;
+    const thinkingDelayMs = 1250;
+    const assistantTextDelayMs = 48;
+    const sketchChunkDelayMs = 34;
+    let runToken = 0;
+    let lastStreamingSketchSource = '';
+    let renderedChat = null;
+    let assistantAvatar = null;
+
+    const conversationTurns = [
+      {
+        prompt: 'Create a beautiful pricing section for my SaaS landing page. Do not just explain it — generate the UI.',
+        response: [
+          'Absolutely. Here is a clean pricing section as **Markdown + XCON/SKETCH**.',
+          '',
+          '## SaaS pricing section',
+          '',
+          '- Three clear plans: **Starter**, **Pro**, and **Scale**',
+          '- The recommended plan is visually emphasized',
+          '- CTA buttons are part of the generated UI structure',
+          '- The source is still plain text, so an LLM can edit it safely',
+          '',
+          '```xcon-sketch',
+          'screen "SaaS Pricing Section" 720x520 bg #f8fafc',
+          '  header: panel at 24 24 672 104',
+          '    bg #111827',
+          '    radius 28',
+          '    title: label "Simple pricing for growing teams" at 34 24 430 34',
+          '      color white',
+          '      font',
+          '        size 26',
+          '        weight 800',
+          '    subtitle: label "Generated as Markdown + SKETCH, rendered live by XCON Viewer." at 34 64 460 22',
+          '      color #cbd5e1',
+          '    badge: label "AI → UI" at 556 36 86 34',
+          '      bg #2563eb',
+          '      color white',
+          '      radius 17',
+          '      align center',
+          '      font',
+          '        size 15',
+          '        weight 800',
+          '  starter: panel at 24 162 204 296',
+          '    bg white',
+          '    radius 24',
+          '    border',
+          '      visible true',
+          '      color #d8e0ea',
+          '    name: label "Starter" at 22 24 120 28',
+          '      color #0f172a',
+          '      font',
+          '        size 20',
+          '        weight 800',
+          '    price: label "$19" at 22 70 90 42',
+          '      color #111827',
+          '      font',
+          '        size 36',
+          '        weight 900',
+          '    per: label "/mo" at 104 88 48 20',
+          '      color #64748b',
+          '    f1: label "✓ 3 projects" at 22 142 130 20',
+          '      color #475569',
+          '    f2: label "✓ Basic templates" at 22 174 150 20',
+          '      color #475569',
+          '    f3: label "✓ Community support" at 22 206 160 20',
+          '      color #475569',
+          '    cta: button "Start free" at 22 244 160 40',
+          '      bg #f1f5f9',
+          '      color #0f172a',
+          '      radius 14',
+          '  pro: panel at 258 142 204 336',
+          '    bg #111827',
+          '    radius 28',
+          '    border',
+          '      visible true',
+          '      color #2563eb',
+          '    tag: label "Recommended" at 46 20 112 28',
+          '      bg #fbbf24',
+          '      color #111827',
+          '      radius 14',
+          '      align center',
+          '      font',
+          '        weight 900',
+          '    name: label "Pro" at 24 64 120 28',
+          '      color white',
+          '      font',
+          '        size 20',
+          '        weight 800',
+          '    price: label "$49" at 24 112 96 44',
+          '      color white',
+          '      font',
+          '        size 38',
+          '        weight 900',
+          '    per: label "/mo" at 114 132 48 20',
+          '      color #cbd5e1',
+          '    f1: label "✓ Unlimited UI blocks" at 24 190 160 20',
+          '      color #bfdbfe',
+          '    f2: label "✓ Markdown rendering" at 24 222 160 20',
+          '      color #bfdbfe',
+          '    f3: label "✓ Export source" at 24 254 160 20',
+          '      color #bfdbfe',
+          '    cta: button "Choose Pro" at 24 288 156 40',
+          '      bg #2563eb',
+          '      color white',
+          '      radius 14',
+          '  scale: panel at 492 162 204 296',
+          '    bg white',
+          '    radius 24',
+          '    border',
+          '      visible true',
+          '      color #d8e0ea',
+          '    name: label "Scale" at 22 24 120 28',
+          '      color #0f172a',
+          '      font',
+          '        size 20',
+          '        weight 800',
+          '    price: label "$129" at 22 70 112 42',
+          '      color #111827',
+          '      font',
+          '        size 36',
+          '        weight 900',
+          '    per: label "/mo" at 134 88 48 20',
+          '      color #64748b',
+          '    f1: label "✓ Team workspace" at 22 142 150 20',
+          '      color #475569',
+          '    f2: label "✓ Private templates" at 22 174 150 20',
+          '      color #475569',
+          '    f3: label "✓ Priority support" at 22 206 150 20',
+          '      color #475569',
+          '    cta: button "Contact sales" at 22 244 160 40',
+          '      bg #f1f5f9',
+          '      color #0f172a',
+          '      radius 14',
+          '```'
+        ].join('\n')
+      },
+      {
+        prompt: 'What did you just generate?',
+        response: [
+          'This was not a screenshot. The assistant generated Markdown and XCON/SKETCH source, and XCON Viewer rendered the interface live inside the answer.',
+          '',
+          '## AI answers can become interfaces',
+          '',
+          '- Use Markdown for explanation',
+          '- Use XCON/SKETCH for structured UI blocks',
+          '- Render the result instantly in the browser',
+          '- Let users open the result in Playground, Examples, or Docs',
+          '',
+          '```xcon-sketch',
+          'screen "XCON Viewer CTA" 720x460 bg #f8fafc',
+          '  hero: panel at 24 24 672 412',
+          '    bg #111827',
+          '    radius 30',
+          '    title: label "XCON Viewer" at 44 44 320 44',
+          '      color white',
+          '      font',
+          '        size 36',
+          '        weight 900',
+          '    subtitle: label "Render AI-generated Markdown + SKETCH as live UI." at 44 100 500 28',
+          '      color #cbd5e1',
+          '      font',
+          '        size 18',
+          '        weight 700',
+          '    flow: label "Prompt → Markdown + SKETCH → Live UI" at 44 168 460 34',
+          '      bg #1f2937',
+          '      color #fbbf24',
+          '      radius 17',
+          '      align center',
+          '      font',
+          '        size 18',
+          '        weight 900',
+          '    cta1: button "Try Playground" at 44 260 160 44',
+          '      bg #2563eb',
+          '      color white',
+          '      radius 14',
+          '    cta2: button "View Examples" at 224 260 150 44',
+          '      bg white',
+          '      color #111827',
+          '      radius 14',
+          '    cta3: button "Read Docs" at 394 260 126 44',
+          '      bg #fbbf24',
+          '      color #111827',
+          '      radius 14',
+          '    note: label "Not a screenshot. Not a mockup. Structured UI rendered from text." at 44 352 540 24',
+          '      color #93c5fd',
+          '```'
+        ].join('\n')
+      }
+    ];
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function renderInlineMarkdown(value) {
+      return escapeHtml(value)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>');
+    }
+
+    function renderMarkdownBlock(markdown) {
+      const blocks = markdown.split(/\n{2,}/).filter(Boolean);
+      return blocks.map((block) => {
+        const trimmed = block.trim();
+        if (!trimmed) return '';
+        if (trimmed.startsWith('## ')) return `<h2>${renderInlineMarkdown(trimmed.slice(3))}</h2>`;
+        if (trimmed.startsWith('### ')) return `<h3>${renderInlineMarkdown(trimmed.slice(4))}</h3>`;
+        if (trimmed.startsWith('- ')) {
+          const items = trimmed.split('\n').map((line) => line.replace(/^[-*]\s+/, '').trim());
+          return `<ul>${items.map((item) => `<li>${renderInlineMarkdown(item)}</li>`).join('')}</ul>`;
+        }
+        return `<p>${renderInlineMarkdown(trimmed).replace(/\n/g, '<br>')}</p>`;
+      }).join('');
+    }
+
+    function renderMarkdownWithInlineSketch(markdown, showCaret = false) {
+      const fencePattern = /```([^\n]*)\n([\s\S]*?)```/g;
+      let html = '';
+      let cursor = 0;
+      let previewIndex = 0;
+      let match;
+      while ((match = fencePattern.exec(markdown))) {
+        html += renderMarkdownBlock(markdown.slice(cursor, match.index));
+        const language = match[1].trim().toLowerCase();
+        if (language === 'xcon-sketch' || language === 'xcon') {
+          html += `<div class="inline-xcon-preview" data-preview-index="${previewIndex}"></div>`;
+          previewIndex += 1;
+        } else {
+          html += `<pre><code>${escapeHtml(match[2])}</code></pre>`;
+        }
+        cursor = match.index + match[0].length;
+      }
+
+      const tail = markdown.slice(cursor);
+      const openFenceMatch = tail.match(/```(?:xcon-sketch|xcon)\s*\n[\s\S]*$/i);
+      if (openFenceMatch && typeof openFenceMatch.index === 'number') {
+        html += renderMarkdownBlock(tail.slice(0, openFenceMatch.index));
+        html += '<div class="inline-xcon-preview" data-streaming-preview="true"><div class="inline-xcon-waiting">SKETCH block is streaming. Rendering the latest valid lines...</div></div>';
+      } else {
+        html += renderMarkdownBlock(tail);
+      }
+      if (showCaret) html += '<span class="typing-caret" aria-hidden="true"></span>';
+      return html;
+    }
+
+    function extractCompletedSketchSources(markdown) {
+      const sources = [];
+      const fencePattern = /```([^\n]*)\n([\s\S]*?)```/g;
+      let match;
+      while ((match = fencePattern.exec(markdown))) {
+        const language = match[1].trim().toLowerCase();
+        if (language === 'xcon-sketch' || language === 'xcon') sources.push(match[2].trim());
+      }
+      return sources;
+    }
+
+    function mountInlineSketchPreviews(root, markdown) {
+      const sources = extractCompletedSketchSources(markdown);
+      root.querySelectorAll('[data-preview-index]').forEach((node) => {
+        const source = sources[Number(node.dataset.previewIndex)];
+        if (!source) return;
+        try {
+          const documentModel = parseBySyntax(source, 'sketch');
+          node.innerHTML = '';
+          render(documentModel, node, {
+            allowExternalResources: true,
+            allowHtml: false,
+          });
+        } catch (error) {
+          node.innerHTML = `<div class="inline-xcon-error">SKETCH render error: ${escapeHtml(error.message || error)}</div>`;
+        }
+      });
+    }
+
+    function extractStreamingSketchSource(markdown) {
+      const marker = markdown.match(/```(?:xcon-sketch|xcon)\s*\n/i);
+      if (!marker || typeof marker.index !== 'number') return '';
+      const start = marker.index + marker[0].length;
+      const rest = markdown.slice(start);
+      const closeIndex = rest.indexOf('```');
+      return closeIndex >= 0 ? '' : rest;
+    }
+
+    function findBestEffortSketchSource(source) {
+      let lines = String(source || '').replace(/\r\n/g, '\n').split('\n');
+      const startIndex = lines.findIndex((line) => /^\s*screen\b/i.test(line));
+      if (startIndex < 0) return '';
+      lines = lines.slice(startIndex);
+      while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
+
+      for (let end = lines.length; end >= 1; end -= 1) {
+        const candidate = lines.slice(0, end).join('\n').trimEnd();
+        if (!candidate) continue;
+        try {
+          parseBySyntax(candidate, 'sketch');
+          return candidate;
+        } catch {
+          // Drop the newest incomplete line until the partial SKETCH parses.
+        }
+      }
+      return '';
+    }
+
+    function renderBestEffortSketchPreview(node, source) {
+      const sketchSource = findBestEffortSketchSource(source);
+      if (!sketchSource) {
+        node.innerHTML = '<div class="inline-xcon-waiting">Waiting for a valid screen line...</div>';
+        return;
+      }
+
+      try {
+        const documentModel = parseBySyntax(sketchSource, 'sketch');
+        node.innerHTML = '<div class="streaming-preview-label">Live partial SKETCH preview</div><div data-streaming-preview-body></div>';
+        const body = node.querySelector('[data-streaming-preview-body]');
+        render(documentModel, body, {
+          allowExternalResources: true,
+          allowHtml: false,
+        });
+        lastStreamingSketchSource = sketchSource;
+      } catch (error) {
+        node.innerHTML = `<div class="inline-xcon-error">Partial SKETCH render error: ${escapeHtml(error.message || error)}</div>`;
+      }
+    }
+
+    function mountStreamingSketchPreview(root, markdown) {
+      const node = root.querySelector('[data-streaming-preview="true"]');
+      if (!node) return;
+      const source = extractStreamingSketchSource(markdown);
+      if (!source.trim()) return;
+      renderBestEffortSketchPreview(node, source);
+    }
+
+    function appendUserMessage(content) {
+      const article = document.createElement('article');
+      article.className = 'message user';
+      article.innerHTML = `
+        <div class="avatar">YOU</div>
+        <div id="userPromptBubble" class="bubble">${renderInlineMarkdown(content)}</div>
+      `;
+      chatMessages.appendChild(article);
+      return article.querySelector('.bubble');
+    }
+
+    function appendAssistantMessage() {
+      const article = document.createElement('article');
+      article.className = 'message assistant';
+      article.innerHTML = `
+        <div id="assistantAvatar" class="avatar">AI</div>
+        <div id="renderedChat" class="bubble rendered-chat"></div>
+      `;
+      chatMessages.appendChild(article);
+      return {
+        article,
+        avatar: article.querySelector('#assistantAvatar'),
+        bubble: article.querySelector('#renderedChat'),
+      };
+    }
+
+    function scrollToBottom() {
+      sourceScroller.scrollTop = sourceScroller.scrollHeight;
+      chatScroll.scrollTop = chatScroll.scrollHeight;
+    }
+
+    function realisticTypingDelay(char, index, baseDelay) {
+      if (/[.!?]/.test(char)) return baseDelay + 240;
+      if (/[,;]/.test(char)) return baseDelay + 120;
+      if (char === ' ') return baseDelay + 10;
+      return baseDelay + ((index % 5) * 7);
+    }
+
+    function nextAssistantIndex(markdown, index) {
+      const rendered = markdown.slice(0, index);
+      const inFence = rendered.includes('```xcon-sketch') && !rendered.match(/```xcon-sketch[\s\S]*?```/);
+      if (inFence) {
+        const nextLineBreak = markdown.indexOf('\n', index + 1);
+        const lineEnd = nextLineBreak === -1 ? markdown.length : nextLineBreak + 1;
+        return Math.min(lineEnd, index + 26);
+      }
+      if (markdown[index] === '\n') return index + 1;
+      return Math.min(markdown.length, index + 3 + (index % 4));
+    }
+
+    async function streamComposerInput(token, prompt) {
+      composerInput.value = '';
+      composerInput.focus();
+      for (let index = 0; index <= prompt.length; index += 1) {
+        if (token !== runToken) return false;
+        composerInput.value = prompt.slice(0, index);
+        composerInput.scrollTop = composerInput.scrollHeight;
+        if (index < prompt.length) {
+          await sleep(realisticTypingDelay(prompt[index], index, userTypingDelayMs));
+        }
+      }
+      return true;
+    }
+
+    async function sendPromptFromComposer(token) {
+      if (token !== runToken) return false;
+      sendButton.classList.add('is-sending');
+      appendUserMessage(composerInput.value);
+      composerInput.value = '';
+      scrollToBottom();
+      await sleep(260);
+      sendButton.classList.remove('is-sending');
+      return true;
+    }
+
+    async function streamAssistantResponse(token, markdown) {
+      let index = 0;
+      while (index < markdown.length) {
+        if (token !== runToken) return false;
+        index = nextAssistantIndex(markdown, index);
+        const slice = markdown.slice(0, index);
+        sourceStream.textContent = slice;
+        renderedChat.innerHTML = renderMarkdownWithInlineSketch(slice, true);
+        mountInlineSketchPreviews(renderedChat, slice);
+        mountStreamingSketchPreview(renderedChat, slice);
+        scrollToBottom();
+
+        const streamingSource = extractStreamingSketchSource(slice);
+        sourceStatus.textContent = streamingSource ? 'streaming sketch' : 'responding';
+        await sleep(streamingSource ? sketchChunkDelayMs : realisticTypingDelay(slice.at(-1), index, assistantTextDelayMs));
+      }
+      return true;
+    }
+
+    function appendFinalMarketingCard() {
+      const article = document.createElement('article');
+      article.className = 'message assistant';
+      article.innerHTML = `
+        <div class="avatar">X</div>
+        <div class="bubble">
+          <div class="end-card">
+            <h2>Turn AI answers into live UI.</h2>
+            <p>XCON Viewer renders Markdown + SKETCH blocks into structured interface previews. Try the source, inspect examples, or read the spec.</p>
+            <div class="end-actions">
+              <a class="primary" href="/play">Try Playground</a>
+              <a href="/examples">View Examples</a>
+              <a href="/docs">Read Docs</a>
+              <a href="/template-lab">Template Studio</a>
+            </div>
+          </div>
+        </div>
+      `;
+      chatMessages.appendChild(article);
+      scrollToBottom();
+    }
+
+    async function runScenario() {
+      const token = ++runToken;
+      replayButton.disabled = true;
+      clearButton.disabled = true;
+      sendButton.disabled = true;
+      lastStreamingSketchSource = '';
+      chatMessages.innerHTML = '';
+      composerInput.value = '';
+      renderedChat = null;
+      assistantAvatar = null;
+      sourceStream.textContent = '';
+      sourceStatus.textContent = 'waiting';
+      await sleep(450);
+
+      for (const turn of conversationTurns) {
+        const userFinished = await streamComposerInput(token, turn.prompt);
+        if (!userFinished || token !== runToken) return;
+
+        const sent = await sendPromptFromComposer(token);
+        if (!sent || token !== runToken) return;
+
+        const assistant = appendAssistantMessage();
+        renderedChat = assistant.bubble;
+        assistantAvatar = assistant.avatar;
+        sourceStream.textContent = '';
+        sourceStatus.textContent = 'thinking';
+        assistantAvatar.classList.add('is-thinking');
+        renderedChat.innerHTML = '<div class="thinking-dots" aria-label="Assistant is thinking"><span></span><span></span><span></span></div>';
+        scrollToBottom();
+        await sleep(thinkingDelayMs);
+        if (token !== runToken) return;
+
+        assistantAvatar.classList.remove('is-thinking');
+        const assistantFinished = await streamAssistantResponse(token, turn.response);
+        if (!assistantFinished || token !== runToken) return;
+
+        sourceStream.textContent = turn.response;
+        renderedChat.innerHTML = renderMarkdownWithInlineSketch(turn.response, false);
+        mountInlineSketchPreviews(renderedChat, turn.response);
+        sourceStatus.textContent = 'rendered';
+        scrollToBottom();
+        await sleep(780);
+      }
+
+      appendFinalMarketingCard();
+      sourceStatus.textContent = 'ready';
+      replayButton.disabled = false;
+      clearButton.disabled = false;
+      sendButton.disabled = false;
+    }
+
+    function sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    replayButton.addEventListener('click', runScenario);
+    chatComposer.addEventListener('submit', (event) => {
+      event.preventDefault();
+    });
+    clearButton.addEventListener('click', () => {
+      runToken += 1;
+      chatMessages.innerHTML = '';
+      composerInput.value = '';
+      renderedChat = null;
+      assistantAvatar = null;
+      sourceStream.textContent = '';
+      sourceStatus.textContent = 'waiting';
+      replayButton.disabled = false;
+      clearButton.disabled = false;
+      sendButton.disabled = false;
+    });
+
+    window.addEventListener('load', runScenario);
+  </script>
+</body>
+</html>

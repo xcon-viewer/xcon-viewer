@@ -1,0 +1,26 @@
+screen "Network Diagram Sample" 560x360 bg @surface
+  title: label "Network Diagram" at 24 20 300 32
+    color @ink
+    font
+      size 24
+      weight 800
+
+  subtitle: label "A static public viewer graph with labeled nodes and reference links." at 24 54 430 22
+    color @ink-2
+    font
+      size 13
+      weight 500
+
+  network: networkDiagram at 24 88 512 244
+    backgroundColor #f8fafc
+    nodeRadius 28
+    primaryColor #2563eb
+    nodeColor #14b8a6
+    accentColor #db2777
+    linkColor #94a3b8
+    refLinkColor #f59e0b
+    textColor #0f172a
+    showLabels true
+    showArrows true
+    nodes [{"id":"viewer","label":"Viewer","x":400,"y":110,"color":"#2563eb"},{"id":"core","label":"Core","x":210,"y":285,"color":"#14b8a6"},{"id":"sketch","label":"SKETCH","x":400,"y":285,"color":"#8b5cf6"},{"id":"docs","label":"Docs","x":590,"y":285,"color":"#db2777"}]
+    links [{"source":"viewer","target":"core"},{"source":"viewer","target":"sketch"},{"source":"viewer","target":"docs","type":"ref"},{"source":"core","target":"sketch","type":"folder"}]

@@ -1,6 +1,6 @@
 # XCON Examples
 
-These examples are generated from public XCON/JSON source objects. Each generated example provides JSON, semantic XML, and TAGLESS forms for the same screen. The `sketch` example shows the compact XCON/SKETCH authoring syntax.
+These examples are generated from public XCON source objects. Each generated example provides SKETCH, JSON, XML, and TAGLESS forms for the same screen. Use SKETCH for compact Markdown/LLM authoring, JSON for canonical API and schema work, and XML/TAGLESS for compatibility and round-trip checks.
 
 ## Example Index
 
@@ -13,9 +13,9 @@ These examples are generated from public XCON/JSON source objects. Each generate
 | [layout-stack](./layout-stack/README.md) | Stack Layout | Column stack with public gap and item components. |
 | [nested](./nested/README.md) | Nested Components | Nested panel, labels, progress, and buttons. |
 | [style](./style/README.md) | Style Groups | Font, border, shadow, and shape style groups. |
-| [designer-metadata](./designer-metadata/README.md) | Designer Metadata | Semantic XML can preserve designer namespaced attributes. |
+| [designer-metadata](./designer-metadata/README.md) | Designer Metadata | Designer metadata preserved across compatible syntax forms. |
 | [tagless-custom-marker](./tagless-custom-marker/README.md) | TAGLESS Custom Marker | Same XCON object serialized with a custom marker set. |
-| [syntax-comparison](./syntax-comparison/README.md) | Syntax Comparison | One screen represented as JSON, XML, and TAGLESS. |
+| [syntax-comparison](./syntax-comparison/README.md) | Syntax Comparison | One screen represented as SKETCH, JSON, XML, and TAGLESS. |
 | [invalid](./invalid/README.md) | Invalid Document | Invalid example expected to fail validation. |
 | [components/basic](./components/basic/README.md) | Basic Components | label, button, badge, icon, divider, and avatar. |
 | [components/input-controls](./components/input-controls/README.md) | Input Controls | Form input components with public prop names. |

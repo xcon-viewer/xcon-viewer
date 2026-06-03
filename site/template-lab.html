@@ -1,0 +1,2790 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Template Studio - XCON Viewer</title>
+  <meta name="description" content="Write UI like documentation. Structured UI documents for humans, AI, and Git workflows.">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "@xcon-viewer/core": "/packages/core/dist/index.js",
+        "@xcon-viewer/viewer": "/packages/viewer/dist/index.js",
+        "@xcon-chain/core": "/xcon-chain/packages/core/src/index.js",
+        "@xcon-workflow/core": "/xcon-workflow/packages/core/src/index.js"
+      }
+    }
+  </script>
+  <style>
+    .lab-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+      gap: 36px;
+      align-items: end;
+      padding: 48px 0 24px;
+    }
+
+    .template-studio-page .page {
+      width: min(1840px, calc(100% - 16px));
+    }
+
+    .template-studio-page .topbar {
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+    .lab-hero h1 {
+      max-width: 900px;
+      font-size: clamp(40px, 6vw, 68px);
+      line-height: .94;
+      letter-spacing: -0.04em;
+    }
+
+    .lab-hero-copy {
+      display: grid;
+      gap: 16px;
+    }
+
+    .lab-hero-card {
+      display: grid;
+      gap: 12px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background:
+        linear-gradient(135deg, rgba(46, 98, 168, 0.1), transparent 45%),
+        var(--surface);
+      padding: 18px;
+      box-shadow: 0 18px 40px rgba(23, 32, 51, 0.08);
+    }
+
+    .lab-hero-card strong {
+      color: var(--ink);
+      font-size: 18px;
+    }
+
+    .lab-hero-card span {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .template-toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .template-toolbar select {
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--ink);
+      padding: 0 34px 0 12px;
+      font: inherit;
+      font-weight: 700;
+    }
+
+    .file-import-input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+      border: 0;
+      padding: 0;
+      margin: -1px;
+    }
+
+    .export-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .export-toolbar select {
+      min-height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--ink);
+      padding: 0 30px 0 10px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .lab-grid {
+      display: grid;
+      --template-source-width: 34%;
+      grid-template-columns: minmax(380px, var(--template-source-width)) 10px minmax(620px, 1fr);
+      gap: 8px;
+      align-items: stretch;
+      min-height: 760px;
+      margin: 20px 0 56px;
+    }
+
+    .lab-splitter {
+      position: relative;
+      width: 10px;
+      min-height: 100%;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      cursor: col-resize;
+    }
+
+    .lab-splitter::before {
+      content: "";
+      position: absolute;
+      inset: 12px 3px;
+      border-radius: 999px;
+      background: #d8e0ea;
+    }
+
+    .lab-splitter:hover::before,
+    .lab-splitter:focus-visible::before,
+    .lab-grid.is-resizing .lab-splitter::before {
+      background: #2e62a8;
+    }
+
+    .lab-column {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      min-width: 0;
+      min-height: 0;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--surface);
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(23, 32, 51, 0.08);
+    }
+
+    .lab-column-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 52px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      background: #f8fafc;
+    }
+
+    .lab-column-head strong {
+      font-size: 14px;
+    }
+
+    .lab-column-head span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .lab-editors {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      height: 100%;
+      min-height: 0;
+    }
+
+    .source-tab-strip {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      padding: 8px;
+      border-bottom: 1px solid var(--line);
+      background: #f8fafc;
+    }
+
+    .source-tab-button {
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--ink);
+      padding: 0 12px;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .source-tab-button.is-active {
+      border-color: #2e62a8;
+      background: #2e62a8;
+      color: #fff;
+    }
+
+    .lab-editor-panel {
+      display: grid;
+      grid-template-rows: 40px minmax(0, 1fr);
+      min-height: 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .source-editor-panel {
+      display: none;
+      border-bottom: 0;
+    }
+
+    .source-editor-panel.is-active {
+      display: grid;
+    }
+
+    .lab-editor-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .lab-editor-title button {
+      min-height: 28px;
+      padding: 4px 9px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .editor-host {
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .lab-input {
+      width: 100%;
+      min-height: 100%;
+      resize: none;
+      border: 0;
+      outline: 0;
+      padding: 14px;
+      font: 13px/1.55 "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+      tab-size: 2;
+    }
+
+    #templateInput {
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+
+    #dataInput {
+      background: #ffffff;
+      color: #172033;
+    }
+
+    .tab-strip {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .tab-button {
+      min-height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--ink);
+      padding: 0 12px;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .tab-button.is-active {
+      border-color: #2e62a8;
+      background: #2e62a8;
+      color: #fff;
+    }
+
+    .lab-preview-shell {
+      display: grid;
+      min-height: 708px;
+    }
+
+    .lab-panel {
+      display: none;
+      min-height: 708px;
+      overflow: auto;
+      padding: 14px;
+      background:
+        linear-gradient(#e9eef6 1px, transparent 1px),
+        linear-gradient(90deg, #e9eef6 1px, transparent 1px),
+        #ffffff;
+      background-size: 24px 24px;
+    }
+
+    .lab-panel.is-active {
+      display: block;
+    }
+
+    .template-doc {
+      max-width: 100%;
+      margin: 0 auto;
+      color: var(--ink);
+    }
+
+    .template-doc > :first-child {
+      margin-top: 0;
+    }
+
+    .template-doc h1,
+    .template-doc h2,
+    .template-doc h3,
+    .template-doc h4 {
+      margin: 1.25em 0 0.55em;
+      color: var(--ink);
+      line-height: 1.22;
+      letter-spacing: 0;
+    }
+
+    .template-doc h1 {
+      font-size: 34px;
+      letter-spacing: -0.03em;
+    }
+
+    .template-doc h2 {
+      font-size: 23px;
+    }
+
+    .template-doc h3 {
+      font-size: 18px;
+    }
+
+    .template-doc h4 {
+      font-size: 15px;
+    }
+
+    .template-doc p,
+    .template-doc ul,
+    .template-doc ol,
+    .template-doc blockquote,
+    .template-doc pre,
+    .template-table-wrap,
+    .lab-xcon-block,
+    .xcon-workflow {
+      margin: 0 0 16px;
+    }
+
+    .template-doc p,
+    .template-doc li {
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .template-doc ul,
+    .template-doc ol {
+      padding-left: 24px;
+    }
+
+    .template-doc li {
+      margin: 4px 0;
+    }
+
+    .template-doc li > ul,
+    .template-doc li > ol {
+      margin: 6px 0 0;
+    }
+
+    .template-doc a {
+      color: #2e62a8;
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .template-doc a:hover {
+      text-decoration: underline;
+    }
+
+    .template-doc strong {
+      color: var(--ink);
+    }
+
+    .template-doc img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 12px 28px rgba(23, 32, 51, 0.08);
+    }
+
+    .template-doc blockquote {
+      padding: 10px 16px;
+      border-left: 4px solid #2e62a8;
+      background: rgba(46, 98, 168, 0.08);
+      color: var(--muted);
+    }
+
+    .template-doc blockquote > :last-child {
+      margin-bottom: 0;
+    }
+
+    .template-table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.92);
+    }
+
+    .template-doc table {
+      width: 100%;
+      min-width: 520px;
+      border-collapse: collapse;
+    }
+
+    .template-doc th,
+    .template-doc td {
+      padding: 10px 12px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .template-doc th {
+      background: #f2ede6;
+      color: var(--ink);
+      font-weight: 800;
+    }
+
+    .template-doc th:last-child,
+    .template-doc td:last-child {
+      border-right: 0;
+    }
+
+    .template-doc tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .template-doc code:not(pre code) {
+      padding: 2px 5px;
+      border: 1px solid rgba(196, 98, 45, 0.18);
+      border-radius: 5px;
+      background: rgba(196, 98, 45, 0.08);
+      color: #9a3412;
+      font-size: 0.88em;
+    }
+
+    .template-doc pre {
+      overflow: auto;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #0f172a;
+      color: #f8fafc;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .template-doc pre code {
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: inherit;
+      font-size: inherit;
+    }
+
+    .template-doc .markdown-math-inline {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.12em;
+      padding: 1px 5px;
+      border-radius: 6px;
+      background: rgba(196, 98, 45, 0.08);
+      color: var(--ink);
+      font-family: "Cambria Math", "STIX Two Math", "Times New Roman", serif;
+      font-size: 1.04em;
+      line-height: 1.25;
+      white-space: nowrap;
+    }
+
+    .template-doc .markdown-math-block {
+      display: block;
+      overflow-x: auto;
+      margin: 18px 0 22px;
+      padding: 18px 20px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--ink);
+      font-family: "Cambria Math", "STIX Two Math", "Times New Roman", serif;
+      font-size: 1.24em;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .template-doc .markdown-frac {
+      display: inline-grid;
+      grid-template-rows: auto auto;
+      align-items: center;
+      justify-items: center;
+      min-width: 1.8em;
+      margin: 0 0.12em;
+      vertical-align: middle;
+    }
+
+    .template-doc .markdown-frac-num {
+      width: 100%;
+      padding: 0 0.18em 0.08em;
+      border-bottom: 1px solid currentColor;
+      font-size: 0.82em;
+      line-height: 1.12;
+    }
+
+    .template-doc .markdown-frac-den {
+      padding: 0.08em 0.18em 0;
+      font-size: 0.82em;
+      line-height: 1.12;
+    }
+
+    .template-doc .task-list-item {
+      list-style: none;
+      margin-left: -22px;
+    }
+
+    .template-doc .task-list-item-checkbox {
+      margin-right: 8px;
+      vertical-align: -1px;
+    }
+
+    .lab-error,
+    .inspector-card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.94);
+      padding: 12px;
+    }
+
+    .lab-error {
+      border-color: #fecaca;
+      background: #fef2f2;
+      color: var(--red);
+      white-space: pre-wrap;
+    }
+
+    .lab-chain-result {
+      display: none;
+    }
+
+    .labSugarSilent {
+      display: none;
+    }
+
+    .lab-xcon-block {
+      overflow: visible;
+      max-width: 100%;
+    }
+
+    .lab-xcon-block.is-fit {
+      overflow: hidden;
+    }
+
+    .lab-xcon-block.is-fit > * {
+      transform-origin: 0 0;
+    }
+
+    .inspector {
+      display: grid;
+      gap: 12px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .inspector-card {
+      display: grid;
+      gap: 6px;
+    }
+
+    .inspector-card strong {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+    }
+
+    .inspector-card code,
+    .source-output {
+      white-space: pre-wrap;
+      word-break: break-word;
+      font: 12px/1.55 "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+    }
+
+    .source-output {
+      max-width: 1000px;
+      margin: 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #0f172a;
+      color: #dbeafe;
+      padding: 16px;
+    }
+
+    .xcon-workflow {
+      display: grid;
+      gap: 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.94);
+      padding: 14px;
+    }
+
+    .xw-nodes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .xw-node {
+      min-width: 132px;
+      display: grid;
+      gap: 3px;
+      padding: 10px;
+      border: 1px solid #dbeafe;
+      border-radius: 10px;
+      background: #eff6ff;
+    }
+
+    .xw-node-type,
+    .xw-node small {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .xw-edges {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .lab-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 980px) {
+      .lab-hero {
+        grid-template-columns: 1fr;
+      }
+
+      .lab-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .lab-splitter {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body class="template-studio-page">
+  <header class="topbar">
+    <a class="brand" href="/"><span class="mark">X</span><span>XCON Viewer</span></a>
+    <nav class="nav" aria-label="Primary">
+      <a href="/docs">Docs</a>
+      <a href="/spec">Spec</a>
+      <a href="/examples">Examples</a>
+      <a href="/play">Play</a>
+      <a href="/api">API</a>
+      <a href="/security">Security</a>
+      <a href="/history">History</a>
+      <a href="/faq">FAQ</a>
+      <a class="nav-icon" href="https://github.com/xcon-viewer/xcon-viewer" target="_blank" rel="noopener noreferrer" aria-label="XCON Viewer on GitHub">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.86 8.37 6.84 9.73.5.1.68-.22.68-.5 0-.24-.01-1.05-.01-1.9-2.78.62-3.37-1.22-3.37-1.22-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.36 1.12 2.93.86.09-.67.35-1.12.63-1.38-2.22-.26-4.55-1.14-4.55-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.38 9.38 0 0 1 12 6.96c.85 0 1.7.12 2.5.34 1.9-1.33 2.74-1.05 2.74-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.8-4.56 5.06.36.32.68.94.68 1.9 0 1.38-.01 2.49-.01 2.82 0 .28.18.6.69.5A10.14 10.14 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z"/>
+        </svg>
+      </a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <section class="lab-hero">
+      <div class="lab-hero-copy">
+        <p class="eyebrow">Markdown Template Studio</p>
+        <h1>Markdown UI documents that bind data and render screens.</h1>
+        <p class="lead">Write the visible document in Markdown, use SUGAR for data binding, and drop SKETCH blocks for cards, charts, SpanGrid sheets, and workflow diagrams.</p>
+        <div class="actions">
+          <a class="button primary" href="/play/sketch">Open SKETCH Editor</a>
+          <a class="button" href="/xcon-chain/">Open XCON Chain</a>
+          <a class="button" href="/xcon-workflow/">Open XCON Workflow</a>
+        </div>
+      </div>
+      <div class="lab-hero-card">
+        <strong>Visible syntax: SKETCH + SUGAR</strong>
+        <span>Templates stay readable for authors. The public viewer renders only the finished document while diagnostics stay in the Inspect tab.</span>
+      </div>
+    </section>
+
+    <section class="lab-grid" aria-label="Template document studio">
+      <div class="lab-column">
+        <div class="lab-column-head">
+          <div>
+            <strong>Template source</strong>
+            <span>Visible syntax: SKETCH + SUGAR</span>
+          </div>
+          <div class="template-toolbar">
+            <label class="sr-only" for="presetSelect">Template preset</label>
+            <select id="presetSelect" aria-label="Template preset"></select>
+            <button class="button" id="importDocumentButton" type="button">Import document</button>
+            <input
+              id="importDocumentInput"
+              class="file-import-input"
+              type="file"
+              accept=".hwp3,.hwp,.hwpx,.hwpml,.docx,.pdf,.xlsx,.xls,.md,.markdown,.txt"
+              aria-label="Import HWPX, HWP, DOCX, PDF, spreadsheet, or Markdown document"
+            >
+            <button class="button" id="resetButton" type="button">Reset</button>
+            <button class="button primary" id="renderButton" type="button">Render</button>
+          </div>
+        </div>
+        <div class="lab-editors">
+          <div class="source-tab-strip" role="tablist" aria-label="Template source inputs">
+            <button id="markdownTemplateTab" class="source-tab-button is-active" type="button" role="tab" aria-selected="true" data-source-tab="templateEditorPanel">Markdown template</button>
+            <button id="fixtureJsonTab" class="source-tab-button" type="button" role="tab" aria-selected="false" data-source-tab="dataEditorPanel">Fixture JSON</button>
+          </div>
+          <div id="templateEditorPanel" class="lab-editor-panel source-editor-panel is-active" role="tabpanel" aria-labelledby="markdownTemplateTab">
+            <div class="lab-editor-title">
+              <span>Markdown template</span>
+              <button id="copyTemplateButton" type="button">Copy</button>
+            </div>
+            <div id="templateEditorHost" class="editor-host"></div>
+            <textarea id="templateInput" class="lab-input" spellcheck="false"></textarea>
+          </div>
+          <div id="dataEditorPanel" class="lab-editor-panel source-editor-panel" role="tabpanel" aria-labelledby="fixtureJsonTab">
+            <div class="lab-editor-title">
+              <span>Fixture JSON</span>
+              <button id="formatDataButton" type="button">Format JSON</button>
+            </div>
+            <div id="dataEditorHost" class="editor-host"></div>
+            <textarea id="dataInput" class="lab-input" spellcheck="false"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <button
+        id="templateSplitter"
+        class="lab-splitter"
+        type="button"
+        aria-label="Resize template and preview columns"
+        title="Drag to resize"
+      ></button>
+
+      <div class="lab-column">
+        <div class="lab-column-head">
+          <div>
+            <strong>Rendered document</strong>
+            <span id="statusText">loading modules</span>
+          </div>
+          <div class="tab-strip" role="tablist" aria-label="Template output">
+            <button id="previewTab" class="tab-button is-active" type="button" role="tab" aria-selected="true" data-tab="previewOutput">Preview</button>
+            <button id="inspectTab" class="tab-button" type="button" role="tab" aria-selected="false" data-tab="inspectOutput">Inspect</button>
+            <button id="sourceTab" class="tab-button" type="button" role="tab" aria-selected="false" data-tab="sourceOutput">Source</button>
+          </div>
+          <div class="export-toolbar" aria-label="Save rendered document">
+            <label class="sr-only" for="exportFormatSelect">Document format</label>
+            <select id="exportFormatSelect" aria-label="Document format">
+              <option value="pdf">PDF</option>
+              <option value="hwpx">HWPX</option>
+              <option value="doc">DOC</option>
+              <option value="hwp">HWP</option>
+              <option value="html">HTML</option>
+              <option value="md">Markdown</option>
+            </select>
+            <button class="button" id="exportButton" type="button">Save</button>
+          </div>
+        </div>
+        <div class="lab-preview-shell">
+          <div id="previewOutput" class="lab-panel is-active" role="tabpanel" aria-labelledby="previewTab"></div>
+          <div id="inspectOutput" class="lab-panel" role="tabpanel" aria-labelledby="inspectTab"></div>
+          <div id="sourceOutput" class="lab-panel" role="tabpanel" aria-labelledby="sourceTab"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="page footer">XCON Markdown Template Studio uses viewer-only public packages and does not execute host app logic.</footer>
+
+  <script type="module">
+    // examples/showcase inspired snippets include type: chart and type: spanGrid blocks.
+    const executiveBriefTemplate = [
+      '# Executive Growth Brief',
+      '',
+      '```xcon-chain as revenueTotal',
+      '= record.metrics.revenue | format "$#,###"',
+      '```',
+      '',
+      '```xcon-chain as growthLabel',
+      '= record.metrics.growth | concat "% QoQ"',
+      '```',
+      '',
+      '```xcon-chain as topChannels',
+      '= record.channels | sortBy revenue desc | map name | join ", "',
+      '```',
+      '',
+      '```xcon-chain as revenueChart',
+      '= record.chart.revenue',
+      '```',
+      '',
+      '```xcon-chain as teamGrid',
+      '= record.teamGrid',
+      '```',
+      '',
+      '**$revenueTotal** revenue, **$growthLabel** growth. Top channels: $topChannels.',
+      '',
+      '```xcon-sketch',
+      'screen 860x520 bg #f8fafc',
+      '  hero: panel at 24 24 812 138',
+      '    bg #111827',
+      '    radius 24',
+      '    title: label "Quarterly growth brief" at 28 24 340 32',
+      '      color white',
+      '      font 24 800',
+      '    revenue: label $revenueTotal at 28 66 180 44',
+      '      color #fbbf24',
+      '      font 34 800',
+      '    growth: label $growthLabel at 226 76 160 28',
+      '      color #a7f3d0',
+      '      font 18 800',
+      '    note: label "Data-bound Markdown + SKETCH + SUGAR" at 28 112 360 18',
+      '      color #cbd5e1',
+      '    cta: button "Share brief" at 664 48 128 42',
+      '      bg #2563eb',
+      '      color white',
+      '      radius 12',
+      '  chartBlock: panel at 24 186 396 286',
+      '    bg white',
+      '    radius 18',
+      '    border',
+      '      visible true',
+      '      color #d8e0ea',
+      '    chartTitle: label "Revenue by channel" at 20 18 220 24',
+      '      font 18 800',
+      '      color #172033',
+      '    salesChart: chart at 20 58 354 196',
+      '      chartType "bar"',
+      '      chartData $revenueChart',
+      '  tableBlock: panel at 444 186 392 286',
+      '    bg white',
+      '    radius 18',
+      '    border',
+      '      visible true',
+      '      color #d8e0ea',
+      '    tableTitle: label "Team operating plan" at 20 18 220 24',
+      '      font 18 800',
+      '      color #172033',
+      '    sheet: spanGrid at 20 58 350 196',
+      '      backgroundColor white',
+      '      readonly true',
+      '      data $teamGrid',
+      '```',
+      '',
+      '```xcon-workflow',
+      'workflow "Brief approval"',
+      '  draft: note "Prepare data pack"',
+      '  review: note "Finance review"',
+      '    after draft',
+      '  publish: note "Publish executive brief"',
+      '    after review',
+      '```'
+    ].join('\n');
+
+    const invoiceQuoteTemplate = [
+      '# Invoice + Quote Document',
+      '',
+      '```xcon-chain as clientName',
+      '= record.client.name',
+      '```',
+      '',
+      '```xcon-chain as invoiceTotal',
+      '= record.items | sum amount | format "$#,###"',
+      '```',
+      '',
+      '```xcon-chain as invoiceGrid',
+      '= record.invoiceGrid',
+      '```',
+      '',
+      'Prepared for **$clientName**. Total due: **$invoiceTotal**.',
+      '',
+      '```xcon-sketch',
+      'screen 760x560 bg #f9fafb',
+      '  cover: panel at 24 24 712 108',
+      '    bg #1f2937',
+      '    radius 20',
+      '    title: label "Interactive invoice" at 24 22 280 32',
+      '      color white',
+      '      font 24 800',
+      '    client: label $clientName at 24 64 260 24',
+      '      color #c7d2fe',
+      '      font 16 700',
+      '    total: label $invoiceTotal at 516 34 160 42',
+      '      color #fbbf24',
+      '      align right',
+      '      font 30 800',
+      '  sheet: spanGrid at 24 160 712 250',
+      '    backgroundColor white',
+      '    readonly true',
+      '    data $invoiceGrid',
+      '  pay: button "Approve quote" at 520 438 160 44',
+      '    bg #2563eb',
+      '    color white',
+      '    radius 12',
+      '```'
+    ].join('\n');
+
+    const weeklyBulletinTemplate = [
+      '# Weekly Bulletin Template',
+      '',
+      '```xcon-chain as serviceTitle',
+      '= record.church.name | concat " / " | concat (record.week.date)',
+      '```',
+      '',
+      '```xcon-chain as songLine',
+      '= record.songs | map title | join ", "',
+      '```',
+      '',
+      '```xcon-chain as speakerName',
+      '= record.sermon.speaker | default "Guest speaker"',
+      '```',
+      '',
+      '```xcon-chain as sermonTitle',
+      '= record.sermon.title',
+      '```',
+      '',
+      '```xcon-chain as scriptureText',
+      '= record.sermon.scripture',
+      '```',
+      '',
+      '```xcon-chain as offeringText',
+      '= record.offering.label | concat ": " | concat (record.offering.amount)',
+      '```',
+      '',
+      '## Service Summary',
+      '- Title: $serviceTitle',
+      '- Songs: $songLine',
+      '- Speaker: $speakerName',
+      '',
+      '```xcon-sketch',
+      'screen 680x330 bg #f8fafc',
+      '  title: label $serviceTitle at 24 24 560 36',
+      '    font 24 800',
+      '    color #172033',
+      '  sermonCard: panel at 24 82 300 190',
+      '    bg white',
+      '    border',
+      '      visible true',
+      '      color #d8e0ea',
+      '      radius 16',
+      '    sermonTitle: label $sermonTitle at 20 18 240 30',
+      '      font 20 800',
+      '      color #172033',
+      '    scripture: label $scriptureText at 20 58 240 24',
+      '      font 14 700',
+      '      color #2563eb',
+      '    speaker: label $speakerName at 20 94 220 22',
+      '      color #5f6b7a',
+      '    cta: button "Prepare bulletin" at 20 132 160 42',
+      '      bg #2563eb',
+      '      color white',
+      '      radius 10',
+      '  musicCard: panel at 348 82 308 190',
+      '    bg white',
+      '    border',
+      '      visible true',
+      '      color #d8e0ea',
+      '      radius 16',
+      '    musicTitle: label "Songs" at 20 18 200 28',
+      '      font 20 800',
+      '      color #172033',
+      '    songs: label $songLine at 20 58 250 76',
+      '      color #5f6b7a',
+      '    offering: label $offeringText at 20 142 250 24',
+      '      color #087f5b',
+      '      font 14 800',
+      '```',
+      '',
+      '```xcon-workflow',
+      'workflow "Sunday Service Flow"',
+      '  prep: note "Prepare slides and bulletin"',
+      '  worship: note "Opening worship"',
+      '    after prep',
+      '  sermon: note "Sermon and scripture reading"',
+      '    after worship',
+      '  offering: note "Offering and announcements"',
+      '    after sermon',
+      '  closing: note "Closing song"',
+      '    after offering',
+      '```'
+    ].join('\n');
+
+    const launchReportTemplate = [
+      '# Launch Readout',
+      '',
+      '```xcon-chain as launchName',
+      '= record.launch.name',
+      '```',
+      '',
+      '```xcon-chain as healthLabel',
+      '= record.launch.health | upper',
+      '```',
+      '',
+      '```xcon-chain as funnelChart',
+      '= record.funnelChart',
+      '```',
+      '',
+      '$launchName is currently **$healthLabel**.',
+      '',
+      '```xcon-sketch',
+      'screen 780x470 bg #f8fafc',
+      '  header: panel at 24 24 732 88',
+      '    bg #fff7ed',
+      '    radius 18',
+      '    title: label $launchName at 24 18 360 32',
+      '      font 24 800',
+      '      color #9a3412',
+      '    status: label $healthLabel at 600 26 100 26',
+      '      align right',
+      '      color #16a34a',
+      '      font 18 800',
+      '  funnel: chart at 24 140 360 260',
+      '    chartType "line"',
+      '    chartData $funnelChart',
+      '  insight: panel at 412 140 344 260',
+      '    bg white',
+      '    radius 18',
+      '    border',
+      '      visible true',
+      '      color #d8e0ea',
+      '    h: label "What changed" at 24 24 220 28',
+      '      font 20 800',
+      '    p: label "Templates keep the story stable while data updates the chart, cards, and workflow." at 24 70 270 92',
+      '      color #5f6b7a',
+      '    button: button "Open playbook" at 24 186 138 42',
+      '      bg #ea580c',
+      '      color white',
+      '      radius 12',
+      '```'
+    ].join('\n');
+
+    const showcaseGalleryTemplate = [
+      '# Showcase-style Campaign Memo',
+      '',
+      '```xcon-chain as campaignTitle',
+      '= record.campaign.title',
+      '```',
+      '',
+      '```xcon-chain as galleryData',
+      '= record.gallery',
+      '```',
+      '',
+      'Patterns inspired by `examples/showcase`: visual hero, CTA, gallery cards, badge, alert, and compact metrics.',
+      '',
+      '```xcon-sketch',
+      'screen 820x560 bg #f8fafc',
+      '  hero: banner at 24 24 772 220',
+      '    bannerHeight "220px"',
+      '    radius 22',
+      '    indicator',
+      '      show true',
+      '    slides $galleryData',
+      '  title: label $campaignTitle at 32 272 360 34',
+      '    font 26 800',
+      '    color #172033',
+      '  alertBox: alert at 32 326 340 86',
+      '    title "Data-bound campaign note"',
+      '    text "Change the fixture JSON and the rendered visual memo updates immediately."',
+      '  metricA: card at 404 286 180 126',
+      '    title "Reach"',
+      '    text "148K"',
+      '  metricB: card at 604 286 180 126',
+      '    title "CTR"',
+      '    text "6.8%"',
+      '```'
+    ].join('\n');
+
+    const cleaningChecklistTemplate = [
+      '# Shared space cleaning checklist',
+      '',
+      '```xcon-chain as checklistTitle',
+      '= record.title',
+      '```',
+      '',
+      '```xcon-chain as areaSummary',
+      '= record.rows | map area | join ", "',
+      '```',
+      '',
+      '```xcon-chain as checkerName',
+      '= record.confirmed.name',
+      '```',
+      '',
+      '```xcon-chain as checklistDate',
+      '= record.confirmed.date',
+      '```',
+      '',
+      '```xcon-chain as cleaningGrid',
+      '= record.cleaningGrid',
+      '```',
+      '',
+      '```xcon-chain as cleaningColumns',
+      '= record.cleaningColumns',
+      '```',
+      '',
+      'A poster-style operations document for **$areaSummary**. Confirmed by **$checkerName** on **$checklistDate**.',
+      '',
+      '```xcon-sketch',
+      'screen 860x720 bg #dbeafe',
+      '  hero: panel at 0 0 860 270',
+      '    bg #f8fafc',
+      '    badge: label "COMMONS HQ" at 74 56 176 42',
+      '      bg #2563eb',
+      '      color white',
+      '      radius 21',
+      '      align center',
+      '      valign middle',
+      '      font 18 800',
+      '    titleA: label "Shared Space" at 74 118 410 48',
+      '      color #2563eb',
+      '      font 40 800',
+      '    titleB: label "Cleaning Checklist" at 74 166 500 58',
+      '      color #30343b',
+      '      font 48 800',
+      '    subtitle: label "Clean spaces stay easy when everyone shares the routine." at 78 232 460 24',
+      '      color #30343b',
+      '      font 16 700',
+      '    crew: panel at 604 72 166 154',
+      '      bg #dbeafe',
+      '      radius 34',
+      '      face: label "Clean crew" at 20 42 126 28',
+      '        align center',
+      '        color #1e40af',
+      '        font 16 800',
+      '      spray: label "Mon-Fri" at 36 86 94 26',
+      '        bg white',
+      '        color #2563eb',
+      '        radius 13',
+      '        align center',
+      '        valign middle',
+      '        font 12 800',
+      '  board: panel at 64 280 732 346',
+      '    bg white',
+      '    radius 24',
+      '    border',
+      '      visible true',
+      '      color #60a5fa',
+      '    sheet: spanGrid at 0 0 732 346',
+      '      backgroundColor white',
+      '      readonly true',
+      '      data $cleaningGrid',
+      '      columns $cleaningColumns',
+      '  signature: panel at 64 630 732 82',
+      '    bg white',
+      '    radius 18',
+      '    border',
+      '      visible true',
+      '      color #60a5fa',
+      '    checker: label "Confirmed by  $checkerName" at 44 22 300 26',
+      '      color #30343b',
+      '      font 18 800',
+      '    date: label "Date  $checklistDate" at 454 22 230 26',
+      '      color #30343b',
+      '      font 18 800',
+      '```',
+      '',
+      'This template is designed to test bidirectional HWP import and export capabilities using kordoc (https://github.com/chrisryugj/kordoc).'
+    ].join('\n');
+
+    const inlineFixtureTemplate = [
+      '# Inline fixture document',
+      '',
+      'This template carries its own fixture data in an `xcon-chain-fixture` fence. The Fixture JSON tab can still provide shared defaults, but inline fixture values override them for this render.',
+      '',
+      '```xcon-chain-fixture',
+      '{',
+      '  "record": {',
+      '    "project": {',
+      '      "name": "Neighborhood pop-up launch",',
+      '      "owner": "Mina Park",',
+      '      "status": "Ready for review"',
+      '    },',
+      '    "metrics": {',
+      '      "orders": 1840,',
+      '      "growth": 22',
+      '    },',
+      '    "tasks": [',
+      '      ["Task", "Owner", "Status"],',
+      '      ["Landing page", "Mina", "Ready"],',
+      '      ["Local ads", "Jae", "Review"],',
+      '      ["Store kits", "Ari", "Packing"]',
+      '    ]',
+      '  }',
+      '}',
+      '```',
+      '',
+      '```xcon-chain as projectTitle',
+      '= record.project.name',
+      '```',
+      '',
+      '```xcon-chain as orderTotal',
+      '= record.metrics.orders | format "#,###"',
+      '```',
+      '',
+      '```xcon-chain as growthLabel',
+      '= record.metrics.growth | concat "% week over week"',
+      '```',
+      '',
+      '```xcon-chain as ownerName',
+      '= record.project.owner',
+      '```',
+      '',
+      '```xcon-chain as projectStatus',
+      '= record.project.status',
+      '```',
+      '',
+      '```xcon-chain as taskGrid',
+      '= record.tasks',
+      '```',
+      '',
+      'Prepared by **$ownerName** for **$projectTitle**. Current status: **$projectStatus**.',
+      '',
+      '```xcon-sketch',
+      'screen 760x420 bg #f8fafc',
+      '  hero: panel at 24 24 712 122',
+      '    bg #111827',
+      '    radius 22',
+      '    title: label $projectTitle at 28 24 380 30',
+      '      color white',
+      '      font 24 800',
+      '    orders: label "$orderTotal orders" at 28 64 180 34',
+      '      color #fbbf24',
+      '      font 30 800',
+      '    growth: label "$growthLabel" at 226 70 220 24',
+      '      color #a7f3d0',
+      '      font 16 800',
+      '    owner: label "Owner: $ownerName" at 520 50 150 24',
+      '      color #dbeafe',
+      '      align right',
+      '  sheet: spanGrid at 24 174 420 176',
+      '    backgroundColor white',
+      '    readonly true',
+      '    data $taskGrid',
+      '```'
+    ].join('\n');
+
+    const TEMPLATE_PRESETS = {
+      executiveBrief: {
+        label: 'Executive brief',
+        template: executiveBriefTemplate,
+        data: {
+          record: {
+            metrics: { revenue: 1284000, growth: 18 },
+            channels: [
+              { name: 'Partner', revenue: 420000 },
+              { name: 'Direct', revenue: 610000 },
+              { name: 'Marketplace', revenue: 254000 }
+            ],
+            chart: {
+              revenue: {
+                labels: ['Direct', 'Partner', 'Market'],
+                datasets: [{ label: 'Revenue', data: [610, 420, 254], backgroundColor: '#2563eb' }]
+              }
+            },
+            teamGrid: [
+              ['Team', 'Owner', 'Status'],
+              ['Sales', 'Mina', 'Ready'],
+              ['Product', 'Leo', 'Review'],
+              ['Ops', 'Ari', 'Launch']
+            ]
+          }
+        }
+      },
+      invoiceQuote: {
+        label: 'Invoice quote',
+        template: invoiceQuoteTemplate,
+        data: {
+          record: {
+            client: { name: 'Northstar Design Co.' },
+            items: [
+              { name: 'Template setup', qty: 1, amount: 1200 },
+              { name: 'Data binding', qty: 1, amount: 1800 },
+              { name: 'QA package', qty: 1, amount: 650 }
+            ],
+            invoiceGrid: [
+              ['Item', 'Qty', 'Amount'],
+              ['Template setup', '1', '$1,200'],
+              ['Data binding', '1', '$1,800'],
+              ['QA package', '1', '$650'],
+              ['Total', '', '$3,650']
+            ]
+          }
+        }
+      },
+      weeklyBulletin: {
+        label: 'Weekly bulletin',
+        template: weeklyBulletinTemplate,
+        data: {
+          record: {
+            church: { name: 'Grace Community Church' },
+            week: { date: 'May 31, 2026' },
+            sermon: {
+              title: 'A Table in the Wilderness',
+              scripture: 'Psalm 23:5',
+              speaker: 'Rev. Hannah Lee'
+            },
+            songs: [
+              { title: 'Great Is Thy Faithfulness' },
+              { title: 'Amazing Grace' },
+              { title: 'Doxology' }
+            ],
+            offering: {
+              label: 'Mission Fund',
+              amount: '$4,280'
+            }
+          }
+        }
+      },
+      launchReport: {
+        label: 'Launch report',
+        template: launchReportTemplate,
+        data: {
+          record: {
+            launch: { name: 'Public Docs Launch', health: 'green' },
+            funnelChart: {
+              labels: ['Awareness', 'Trial', 'Adopt', 'Share'],
+              datasets: [{ label: 'Users', data: [1200, 680, 420, 210], borderColor: '#ea580c' }]
+            }
+          }
+        }
+      },
+      showcaseGallery: {
+        label: 'Showcase memo',
+        template: showcaseGalleryTemplate,
+        data: {
+          record: {
+            campaign: { title: 'Spring Product Story' },
+            gallery: [
+              {
+                type: 'image',
+                src: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=1200&q=80',
+                objectFit: 'fill',
+                overlayTag: 'LIVE',
+                overlayTitle: 'Workspace launch',
+                overlaySub: 'Fresh visuals for the product memo.',
+                overlayCta: 'Review'
+              },
+              {
+                type: 'image',
+                src: 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1200&q=80',
+                objectFit: 'fill',
+                overlayTag: 'DESIGN',
+                overlayTitle: 'Editorial system',
+                overlaySub: 'Reusable cards and hero patterns.',
+                overlayCta: 'Open'
+              }
+            ]
+          }
+        }
+      },
+      cleaningChecklist: {
+        label: 'Shared space cleaning checklist',
+        template: cleaningChecklistTemplate,
+        data: {
+          record: {
+            title: 'Shared Space Cleaning Checklist',
+            confirmed: {
+              name: 'Avery Brooks, Facilities Manager',
+              date: 'May 28, 2026'
+            },
+            rows: [
+              { area: 'Lounge / Shared table', owner: 'Ava Parker', day: 'Tue' },
+              { area: 'Restroom cleaning', owner: 'Noah Brooks', day: '' },
+              { area: 'Kitchen / Sink', owner: 'Mia Collins', day: 'Wed' },
+              { area: 'Trash / Sorting', owner: 'Ethan Reed', day: '' },
+              { area: 'Hall / Elevator', owner: 'Olivia Stone', day: 'Mon' },
+              { area: 'Meeting room reset', owner: 'Liam Carter', day: 'Thu' },
+              { area: 'Windows / Glass weekly', owner: 'Emma Hayes', day: '' }
+            ],
+            cleaningGrid: [
+              ['Area', 'Owner', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+              ['Lounge / Shared table', 'Ava Parker', '', '✓', '', '', ''],
+              ['Restroom cleaning', 'Noah Brooks', '', '', '', '', ''],
+              ['Kitchen / Sink', 'Mia Collins', '', '', '✓', '', ''],
+              ['Trash / Sorting', 'Ethan Reed', '', '', '', '', ''],
+              ['Hall / Elevator', 'Olivia Stone', '✓', '', '', '', ''],
+              ['Meeting room reset', 'Liam Carter', '', '', '', '✓', ''],
+              ['Windows / Glass weekly', 'Emma Hayes', '', '', '', '', '']
+            ],
+            cleaningColumns: [
+              { id: 'area', title: 'Area', width: 250 },
+              { id: 'owner', title: 'Owner', width: 120 },
+              { id: 'mon', title: 'Mon', width: 70 },
+              { id: 'tue', title: 'Tue', width: 70 },
+              { id: 'wed', title: 'Wed', width: 70 },
+              { id: 'thu', title: 'Thu', width: 70 },
+              { id: 'fri', title: 'Fri', width: 70 }
+            ]
+          }
+        }
+      },
+      inlineFixtureDemo: {
+        label: 'Inline fixture document',
+        template: inlineFixtureTemplate,
+        data: {
+          record: {
+            project: {
+              owner: 'Fallback Owner',
+              status: 'Draft'
+            }
+          }
+        }
+      }
+    };
+
+    const templateInput = document.getElementById('templateInput');
+    const dataInput = document.getElementById('dataInput');
+    const templateEditorHost = document.getElementById('templateEditorHost');
+    const dataEditorHost = document.getElementById('dataEditorHost');
+    const previewOutput = document.getElementById('previewOutput');
+    const inspectOutput = document.getElementById('inspectOutput');
+    const sourceOutput = document.getElementById('sourceOutput');
+    const statusText = document.getElementById('statusText');
+    const labGrid = document.querySelector('.lab-grid');
+    const templateSplitter = document.getElementById('templateSplitter');
+    const presetSelect = document.getElementById('presetSelect');
+    const importDocumentButton = document.getElementById('importDocumentButton');
+    const importDocumentInput = document.getElementById('importDocumentInput');
+    const exportFormatSelect = document.getElementById('exportFormatSelect');
+    const exportButton = document.getElementById('exportButton');
+    const labSugarSilent = true;
+    const markdownItSources = [
+      '/vendor/markdown-it/markdown-it.min.js',
+      'vendor/markdown-it/markdown-it.min.js',
+      'https://cdn.jsdelivr.net/npm/markdown-it@14.1.0/dist/markdown-it.min.js'
+    ];
+
+    let modulesPromise;
+    let markdownItPromise;
+    let markdownRenderer;
+    let templateEditor;
+    let dataEditor;
+    let lastRenderState = null;
+    let isResizingTemplate = false;
+
+    initializePresetSelect();
+    setPreset('executiveBrief');
+    applySavedTemplateWidth();
+    setupTabs();
+    setupSourceTabs();
+    setupEditors();
+
+    document.getElementById('renderButton').addEventListener('click', renderLab);
+    document.getElementById('resetButton').addEventListener('click', () => setPreset(presetSelect.value || 'executiveBrief'));
+    document.getElementById('formatDataButton').addEventListener('click', () => {
+      try {
+        setDataText(JSON.stringify(JSON.parse(getDataText()), null, 2));
+        renderLab();
+      } catch (error) {
+        showFatalError(`Invalid JSON: ${error.message}`);
+      }
+    });
+    document.getElementById('copyTemplateButton').addEventListener('click', async () => {
+      await navigator.clipboard.writeText(getTemplateText());
+      statusText.textContent = 'template copied';
+    });
+    importDocumentButton.addEventListener('click', () => {
+      importDocumentInput.click();
+    });
+    importDocumentInput.addEventListener('change', importDocumentFile);
+    exportButton.addEventListener('click', () => {
+      exportRenderedDocument();
+    });
+    presetSelect.addEventListener('change', () => setPreset(presetSelect.value));
+    templateSplitter.addEventListener('pointerdown', startTemplateResize);
+    window.addEventListener('resize', debounce(fitRenderedBlocks, 120));
+
+    renderLab();
+
+    function initializePresetSelect() {
+      presetSelect.innerHTML = Object.entries(TEMPLATE_PRESETS)
+        .map(([key, preset]) => `<option value="${escapeHtml(key)}">${escapeHtml(preset.label)}</option>`)
+        .join('');
+    }
+
+    function setPreset(key) {
+      const preset = TEMPLATE_PRESETS[key] || TEMPLATE_PRESETS.executiveBrief;
+      presetSelect.value = key in TEMPLATE_PRESETS ? key : 'executiveBrief';
+      setTemplateText(preset.template);
+      setDataText(JSON.stringify(preset.data, null, 2));
+      renderLab();
+    }
+
+    function setupTabs() {
+      for (const button of document.querySelectorAll('.tab-button')) {
+        button.addEventListener('click', () => {
+          for (const tab of document.querySelectorAll('.tab-button')) {
+            tab.classList.toggle('is-active', tab === button);
+            tab.setAttribute('aria-selected', tab === button ? 'true' : 'false');
+          }
+          for (const panel of document.querySelectorAll('.lab-panel')) {
+            panel.classList.toggle('is-active', panel.id === button.dataset.tab);
+          }
+          if (lastRenderState) {
+            renderPreviewOnly(lastRenderState);
+            renderInspector(lastRenderState);
+            renderResolvedSource(lastRenderState);
+          }
+        });
+      }
+    }
+
+    function setupSourceTabs() {
+      for (const button of document.querySelectorAll('.source-tab-button')) {
+        button.addEventListener('click', () => {
+          for (const tab of document.querySelectorAll('.source-tab-button')) {
+            const active = tab === button;
+            tab.classList.toggle('is-active', active);
+            tab.setAttribute('aria-selected', active ? 'true' : 'false');
+          }
+          for (const panel of document.querySelectorAll('.source-editor-panel')) {
+            panel.classList.toggle('is-active', panel.id === button.dataset.sourceTab);
+          }
+          templateEditor?.layout();
+          dataEditor?.layout();
+        });
+      }
+    }
+
+    function showSourceEditorTab(panelId) {
+      for (const tab of document.querySelectorAll('.source-tab-button')) {
+        const active = tab.dataset.sourceTab === panelId;
+        tab.classList.toggle('is-active', active);
+        tab.setAttribute('aria-selected', active ? 'true' : 'false');
+      }
+      for (const panel of document.querySelectorAll('.source-editor-panel')) {
+        panel.classList.toggle('is-active', panel.id === panelId);
+      }
+      templateEditor?.layout();
+      dataEditor?.layout();
+    }
+
+    function setupEditors() {
+      templateInput.addEventListener('input', debounce(renderLab, 350));
+      dataInput.addEventListener('input', debounce(renderLab, 350));
+
+      if (!window.require) {
+        templateEditorHost.style.display = 'none';
+        dataEditorHost.style.display = 'none';
+        return;
+      }
+
+      window.require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
+      window.require(['vs/editor/editor.main'], () => {
+        const monacoRef = window.monaco;
+        monacoRef.languages.register({ id: 'xconTemplate' });
+        monacoRef.languages.setMonarchTokensProvider('xconTemplate', {
+          tokenizer: {
+            root: [
+              [/```(xcon-(chain|chain-fixture|sketch|workflow)|chain-fixture|fixture).*/, 'keyword'],
+              [/^= .*/, 'number'],
+              [/\$[A-Za-z_][\w.-]*/, 'variable'],
+              [/\b(screen|panel|label|button|chart|spanGrid|workflow|note|after)\b/, 'type.identifier'],
+              [/"[^"]*"/, 'string'],
+              [/# .*/, 'keyword']
+            ]
+          }
+        });
+        monacoRef.editor.defineTheme('xconTemplateDark', {
+          base: 'vs-dark',
+          inherit: true,
+          rules: [
+            { token: 'variable', foreground: '93c5fd' },
+            { token: 'type.identifier', foreground: '67e8f9' }
+          ],
+          colors: { 'editor.background': '#0f172a' }
+        });
+
+        templateInput.style.display = 'none';
+        dataInput.style.display = 'none';
+        templateEditor = monacoRef.editor.create(templateEditorHost, {
+          value: templateInput.value,
+          language: 'xconTemplate',
+          theme: 'xconTemplateDark',
+          automaticLayout: true,
+          minimap: { enabled: false },
+          fontSize: 13,
+          lineHeight: 21,
+          wordWrap: 'on',
+          tabSize: 2
+        });
+        dataEditor = monacoRef.editor.create(dataEditorHost, {
+          value: dataInput.value,
+          language: 'json',
+          theme: 'vs',
+          automaticLayout: true,
+          minimap: { enabled: false },
+          fontSize: 13,
+          lineHeight: 21,
+          wordWrap: 'on',
+          tabSize: 2
+        });
+        templateEditor.onDidChangeModelContent(debounce(renderLab, 350));
+        dataEditor.onDidChangeModelContent(debounce(renderLab, 350));
+      });
+    }
+
+    function getTemplateText() {
+      return templateEditor ? templateEditor.getValue() : templateInput.value;
+    }
+
+    function setTemplateText(value) {
+      templateInput.value = value;
+      if (templateEditor) templateEditor.setValue(value);
+    }
+
+    function getDataText() {
+      return dataEditor ? dataEditor.getValue() : dataInput.value;
+    }
+
+    function setDataText(value) {
+      dataInput.value = value;
+      if (dataEditor) dataEditor.setValue(value);
+    }
+
+    async function importDocumentFile(event) {
+      const file = event.target.files?.[0];
+      event.target.value = '';
+      if (!file) return;
+
+      statusText.textContent = `importing ${file.name}`;
+      try {
+        const contentBase64 = arrayBufferToBase64(await file.arrayBuffer());
+        const response = await fetch('/api/import/document', {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json'
+          },
+          body: JSON.stringify({
+            fileName: file.name,
+            contentBase64,
+            options: buildDocumentImportOptions(file)
+          })
+        });
+
+        if (!response.ok) {
+          const message = await readImportError(response);
+          throw new Error(message);
+        }
+
+        const result = await response.json();
+        setTemplateText(result.markdown || '');
+        showSourceEditorTab('templateEditorPanel');
+        await renderLab();
+        const issueCount = Array.isArray(result.diagnostics) ? result.diagnostics.length : 0;
+        statusText.textContent = issueCount
+          ? `imported ${file.name} with ${issueCount} issue(s)`
+          : `imported ${file.name}`;
+      } catch (error) {
+        showFatalError(`Import failed: ${error.message || String(error)}`);
+      }
+    }
+
+    function buildDocumentImportOptions(file) {
+      return {
+        title: file?.name || 'imported-document',
+        mode: 'enhanced',
+        tableMode: 'auto',
+        documentWidth: getDocumentImportWidth(),
+        includeFrontmatter: true,
+        features: {
+          sketch: true,
+          chain: true,
+          workflow: true
+        }
+      };
+    }
+
+    function getDocumentImportWidth() {
+      const panelWidth = previewOutput?.clientWidth || 0;
+      const availableWidth = panelWidth - 28;
+      if (!Number.isFinite(availableWidth) || availableWidth <= 0) return 760;
+      return Math.max(360, Math.min(1200, Math.round(availableWidth)));
+    }
+
+    function arrayBufferToBase64(buffer) {
+      const bytes = new Uint8Array(buffer);
+      let binary = '';
+      const chunkSize = 0x8000;
+      for (let index = 0; index < bytes.length; index += chunkSize) {
+        const chunk = bytes.subarray(index, index + chunkSize);
+        binary += String.fromCharCode(...chunk);
+      }
+      return btoa(binary);
+    }
+
+    async function readImportError(response) {
+      try {
+        const data = await response.clone().json();
+        return data.error || data.detail || `Document import failed with HTTP ${response.status}.`;
+      } catch (_error) {
+        const text = await response.text();
+        return text.trim() || `Document import failed with HTTP ${response.status}.`;
+      }
+    }
+
+    function applySavedTemplateWidth() {
+      const saved = Number(localStorage.getItem('xconTemplateStudioSourceWidth'));
+      if (Number.isFinite(saved)) {
+        setTemplateSourceWidth(saved);
+      }
+    }
+
+    function startTemplateResize(event) {
+      isResizingTemplate = true;
+      labGrid.classList.add('is-resizing');
+      templateSplitter.setPointerCapture(event.pointerId);
+      event.preventDefault();
+    }
+
+    templateSplitter.addEventListener('pointermove', (event) => {
+      if (!isResizingTemplate) return;
+      const rect = labGrid.getBoundingClientRect();
+      const width = ((event.clientX - rect.left) / rect.width) * 100;
+      setTemplateSourceWidth(width);
+      fitRenderedBlocks();
+    });
+
+    templateSplitter.addEventListener('pointerup', finishTemplateResize);
+    templateSplitter.addEventListener('pointercancel', finishTemplateResize);
+
+    function finishTemplateResize() {
+      if (!isResizingTemplate) return;
+      isResizingTemplate = false;
+      labGrid.classList.remove('is-resizing');
+      localStorage.setItem('xconTemplateStudioSourceWidth', labGrid.style.getPropertyValue('--template-source-width').replace('%', ''));
+    }
+
+    function setTemplateSourceWidth(width) {
+      const clamped = Math.min(52, Math.max(28, width));
+      labGrid.style.setProperty('--template-source-width', `${clamped}%`);
+    }
+
+    async function loadModules() {
+      if (!modulesPromise) {
+        modulesPromise = Promise.all([
+          loadMarkdownItBundle(),
+          import('@xcon-viewer/core'),
+          import('@xcon-viewer/viewer'),
+          import('@xcon-chain/core'),
+          import('@xcon-workflow/core')
+        ]).then(([, viewerCore, viewerRenderer, chainCore, workflowCore]) => {
+          ensureViewerStyle(viewerRenderer.viewerCss);
+          return { viewerCore, viewerRenderer, chainCore, workflowCore };
+        });
+      }
+      return modulesPromise;
+    }
+
+    async function renderLab() {
+      statusText.textContent = 'rendering';
+      try {
+        const templateSource = getTemplateText();
+        const data = resolveTemplateFixtureData(templateSource, JSON.parse(getDataText()));
+        const modules = await loadModules();
+        const state = await renderTemplateDocument(templateSource, data, modules);
+        lastRenderState = state;
+        renderPreviewOnly(state);
+        renderInspector(state);
+        renderResolvedSource(state);
+        statusText.textContent = state.diagnostics.length ? `${state.diagnostics.length} issue(s)` : 'rendered';
+      } catch (error) {
+        showFatalError(error.message || String(error));
+      }
+    }
+
+    function renderPreviewOnly(state) {
+      previewOutput.innerHTML = `<article class="template-doc">${state.html}</article>`;
+      if (state.viewerRenderer && typeof state.viewerRenderer.hydrateXconViewer === 'function') {
+        state.viewerRenderer.hydrateXconViewer(previewOutput);
+      }
+      fitRenderedBlocks();
+    }
+
+    function fitRenderedBlocks() {
+      window.requestAnimationFrame(() => {
+        for (const block of previewOutput.querySelectorAll('.lab-xcon-block')) {
+          const child = block.firstElementChild;
+          block.classList.remove('is-fit');
+          block.style.height = '';
+          if (!child) continue;
+          child.style.transform = '';
+
+          const availableWidth = block.clientWidth;
+          const naturalWidth = Math.max(child.scrollWidth, child.getBoundingClientRect().width);
+          const naturalHeight = Math.max(child.scrollHeight, child.getBoundingClientRect().height);
+          if (!availableWidth || !naturalWidth || naturalWidth <= availableWidth) continue;
+
+          const scale = Math.max(0.72, availableWidth / naturalWidth);
+          child.style.transform = `scale(${scale})`;
+          block.classList.add('is-fit');
+          block.style.height = `${Math.ceil(naturalHeight * scale)}px`;
+        }
+
+        for (const image of previewOutput.querySelectorAll('.lab-xcon-block img')) {
+          if (!image.complete) image.addEventListener('load', fitRenderedBlocks, { once: true });
+        }
+      });
+    }
+
+    function renderInspector(state) {
+      const cards = [
+        ['SUGAR variables', JSON.stringify(state.vars, null, 2)],
+        ['Diagnostics', state.diagnostics.length ? state.diagnostics.join('\n') : 'No issues.'],
+        ['Render log', state.logs.length ? state.logs.join('\n') : 'No log entries.']
+      ];
+      inspectOutput.innerHTML = `<div class="inspector">${cards.map(([title, body]) => [
+        '<div class="inspector-card">',
+        `<strong>${escapeHtml(title)}</strong>`,
+        `<code>${escapeHtml(body)}</code>`,
+        '</div>'
+      ].join('')).join('')}</div>`;
+    }
+
+    function renderResolvedSource(state) {
+      sourceOutput.innerHTML = `<pre class="source-output">${escapeHtml(state.resolvedSource)}</pre>`;
+    }
+
+    async function exportRenderedDocument() {
+      if (!lastRenderState) {
+        statusText.textContent = 'render first';
+        return;
+      }
+      const format = exportFormatSelect.value || 'pdf';
+      try {
+        if (shouldUseServerExport(format)) {
+          await exportViaServer(format);
+          return;
+        }
+        if (format === 'md') {
+          downloadBlob(
+            `${getExportFileBaseName()}.md`,
+            new Blob([lastRenderState.resolvedSource || getTemplateText()], { type: 'text/markdown;charset=utf-8' })
+          );
+          statusText.textContent = 'markdown saved';
+          return;
+        }
+
+        const html = buildExportHtml(format);
+        const extension = format === 'doc' ? 'doc' : 'html';
+        const mime = format === 'doc'
+          ? 'application/msword;charset=utf-8'
+          : 'text/html;charset=utf-8';
+        downloadBlob(`${getExportFileBaseName()}.${extension}`, new Blob(['\ufeff', html], { type: mime }));
+        statusText.textContent = `${extension.toUpperCase()} saved`;
+      } catch (error) {
+        showFatalError(`Export failed: ${error.message || String(error)}`);
+      }
+    }
+
+    function shouldUseServerExport(format) {
+      return format === 'pdf' || format === 'hwpx' || format === 'hwp';
+    }
+
+    async function exportViaServer(format) {
+      const article = previewOutput.querySelector('.template-doc');
+      if (!article) {
+        throw new Error('There is no rendered document to save.');
+      }
+
+      const payload = {
+        format,
+        title: getExportTitle(),
+        markdown: lastRenderState.resolvedSource || getTemplateText(),
+        html: buildExportHtml(format),
+        options: {
+          pdf: {
+            pageSize: 'A4',
+            orientation: 'portrait'
+          },
+          hwpx: {
+            language: 'ko-KR',
+            includeVisualBlocks: 'auto',
+            requireVisualBlocks: true
+          },
+          hwp: {
+            language: 'ko-KR',
+            includeVisualBlocks: 'auto',
+            requireVisualBlocks: true
+          }
+        }
+      };
+
+      let response;
+      try {
+        response = await fetch('/api/export', {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+      } catch (error) {
+        if (format === 'pdf') {
+          statusText.textContent = 'server PDF unavailable; print fallback';
+          printRenderedDocument();
+          return;
+        }
+        throw error;
+      }
+
+      if (!response.ok) {
+        const message = await readExportError(response);
+        if (format === 'pdf') {
+          statusText.textContent = 'server PDF unavailable; print fallback';
+          printRenderedDocument();
+          return;
+        }
+        throw new Error(message);
+      }
+
+      const blob = await response.blob();
+      const extension = resolveServerExportExtension(format, response);
+      downloadBlob(`${getExportFileBaseName()}.${extension}`, blob);
+      statusText.textContent = `${extension.toUpperCase()} saved`;
+    }
+
+    function resolveServerExportExtension(format, response) {
+      const disposition = response.headers.get('content-disposition') || '';
+      const contentType = response.headers.get('content-type') || '';
+      if (/\.hwpx(?:["';]|$)/i.test(disposition) || /hwp\+zip/i.test(contentType)) return 'hwpx';
+      if (/\.hwp(?:["';]|$)/i.test(disposition) || /application\/x-hwp/i.test(contentType)) return 'hwp';
+      return format === 'hwpx' ? 'hwpx' : 'pdf';
+    }
+
+    async function readExportError(response) {
+      try {
+        const data = await response.clone().json();
+        return data.error || data.detail || `Server export failed with HTTP ${response.status}.`;
+      } catch (_error) {
+        const text = await response.text();
+        return text.trim() || `Server export failed with HTTP ${response.status}.`;
+      }
+    }
+
+    function printRenderedDocument() {
+      const html = buildExportHtml('pdf');
+      const printWindow = window.open('', '_blank', 'width=960,height=1080');
+      if (!printWindow) {
+        throw new Error('The browser blocked the print window.');
+      }
+      printWindow.document.open();
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.addEventListener('load', () => {
+        setTimeout(() => printWindow.print(), 120);
+      }, { once: true });
+      statusText.textContent = 'PDF print ready';
+    }
+
+    function buildExportHtml(format) {
+      const article = previewOutput.querySelector('.template-doc');
+      if (!article) {
+        throw new Error('There is no rendered document to save.');
+      }
+      const title = getExportTitle();
+      const isOfficeHtml = format === 'doc';
+      const namespaceAttrs = isOfficeHtml
+        ? ' xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"'
+        : '';
+      const officeHead = isOfficeHtml
+        ? '<xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml>'
+        : '';
+      return [
+        '<!doctype html>',
+        `<html lang="ko"${namespaceAttrs}>`,
+        '<head>',
+        '<meta charset="utf-8">',
+        `<title>${escapeHtml(title)}</title>`,
+        officeHead,
+        '<style>',
+        lastRenderState?.viewerRenderer?.viewerCss || '',
+        getExportDocumentCss(format),
+        '</style>',
+        '</head>',
+        '<body>',
+        `<main class="export-document">${article.innerHTML}</main>`,
+        '</body>',
+        '</html>'
+      ].join('');
+    }
+
+    function getExportDocumentCss(format) {
+      const officeMode = format === 'doc';
+      return `
+        @page { size: A4; margin: 18mm; }
+        html, body {
+          margin: 0;
+          background: #ffffff;
+          color: #111827;
+          font-family: ${officeMode ? "'Malgun Gothic', '맑은 고딕', Batang, serif" : "Inter, 'Malgun Gothic', system-ui, sans-serif"};
+          font-size: ${officeMode ? '11pt' : '15px'};
+          line-height: 1.6;
+        }
+        .export-document {
+          max-width: 960px;
+          margin: 0 auto;
+          padding: ${officeMode ? '0' : '24px'};
+        }
+        h1, h2, h3, h4 {
+          color: #111827;
+          line-height: 1.25;
+          margin: 1.1em 0 0.55em;
+        }
+        h1 { font-size: ${officeMode ? '22pt' : '34px'}; }
+        h2 { font-size: ${officeMode ? '16pt' : '24px'}; }
+        h3 { font-size: ${officeMode ? '13pt' : '19px'}; }
+        p, li { color: #334155; }
+        a { color: #1d4ed8; text-decoration: none; }
+        strong { color: #111827; }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 12px 0;
+        }
+        th, td {
+          border: 1px solid #cbd5e1;
+          padding: 8px 10px;
+          vertical-align: top;
+          text-align: left;
+        }
+        th { background: #f2ede6; color: #111827; font-weight: 700; }
+        img { max-width: 100%; height: auto; }
+        blockquote {
+          margin: 12px 0;
+          padding: 8px 14px;
+          border-left: 4px solid #2e62a8;
+          background: #eff6ff;
+          color: #475569;
+        }
+        pre {
+          white-space: pre-wrap;
+          border: 1px solid #cbd5e1;
+          border-radius: 8px;
+          background: #0f172a;
+          color: #f8fafc;
+          padding: 12px;
+        }
+        code {
+          font-family: Consolas, 'D2Coding', monospace;
+        }
+        .template-table-wrap {
+          overflow: visible;
+          border: 0;
+        }
+        .lab-chain-result,
+        .labSugarSilent {
+          display: none;
+        }
+        .lab-xcon-block {
+          overflow: visible;
+          margin: 14px 0;
+        }
+        .lab-xcon-block > * {
+          max-width: 100%;
+        }
+        .xcon-workflow {
+          border: 1px solid #cbd5e1;
+          border-radius: 12px;
+          padding: 12px;
+          margin: 14px 0;
+        }
+        .xw-nodes {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        .xw-node {
+          border: 1px solid #bfdbfe;
+          border-radius: 8px;
+          background: #eff6ff;
+          padding: 8px;
+        }
+        .markdown-math-inline {
+          font-family: 'Cambria Math', 'Times New Roman', serif;
+        }
+        .markdown-math-block {
+          display: block;
+          text-align: center;
+          margin: 16px 0;
+          font-family: 'Cambria Math', 'Times New Roman', serif;
+          font-size: 1.18em;
+        }
+        @media print {
+          body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+          .export-document { padding: 0; }
+        }
+      `;
+    }
+
+    function getExportTitle() {
+      const heading = previewOutput.querySelector('.template-doc h1, .template-doc h2, .template-doc h3');
+      return (heading?.textContent || presetSelect.selectedOptions?.[0]?.textContent || 'xcon-template-document').trim();
+    }
+
+    function getExportFileBaseName() {
+      return sanitizeFileName(getExportTitle() || 'xcon-template-document');
+    }
+
+    function sanitizeFileName(value) {
+      return String(value || 'xcon-template-document')
+        .normalize('NFKC')
+        .replace(/[\\/:*?"<>|]+/g, '-')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+        .slice(0, 80) || 'xcon-template-document';
+    }
+
+    function downloadBlob(fileName, blob) {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function resolveTemplateFixtureData(source, baseData) {
+      const fencePattern = /```([^\n]*)\n([\s\S]*?)```/g;
+      let mergedData = cloneFixtureData(baseData);
+      let match;
+      while ((match = fencePattern.exec(String(source || ''))) !== null) {
+        const [language] = String(match[1] || '').trim().split(/\s+/).filter(Boolean);
+        const lang = (language || '').toLowerCase();
+        if (!isFixtureFenceLanguage(lang)) continue;
+        let fixtureData;
+        try {
+          fixtureData = JSON.parse(match[2]);
+        } catch (error) {
+          throw new Error(`Invalid xcon-chain-fixture JSON: ${error.message}`);
+        }
+        mergedData = mergeFixtureData(mergedData, fixtureData);
+      }
+      return mergedData;
+    }
+
+    function isFixtureFenceLanguage(lang) {
+      return lang === 'xcon-chain-fixture' || lang === 'chain-fixture' || lang === 'fixture' || lang === 'json-fixture';
+    }
+
+    function cloneFixtureData(value) {
+      if (value === undefined) return {};
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function mergeFixtureData(baseValue, overrideValue) {
+      if (isPlainObject(baseValue) && isPlainObject(overrideValue)) {
+        const output = { ...baseValue };
+        for (const [key, value] of Object.entries(overrideValue)) {
+          output[key] = Object.prototype.hasOwnProperty.call(output, key)
+            ? mergeFixtureData(output[key], value)
+            : cloneFixtureData(value);
+        }
+        return output;
+      }
+      return cloneFixtureData(overrideValue);
+    }
+
+    function isPlainObject(value) {
+      return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+    }
+
+    async function renderTemplateDocument(source, data, modules) {
+      const env = { data, vars: {}, logs: [], diagnostics: [] };
+      const htmlParts = [];
+      const sourceParts = [];
+      const fencePattern = /```([^\n]*)\n([\s\S]*?)```/g;
+      let lastIndex = 0;
+      let match;
+
+      while ((match = fencePattern.exec(source)) !== null) {
+        const textPart = source.slice(lastIndex, match.index);
+        const resolvedText = applyVariables(textPart, env.vars, false);
+        htmlParts.push(renderMarkdownText(resolvedText));
+        sourceParts.push(resolvedText);
+        const renderedFence = await renderFence(match[1], match[2], env, modules);
+        htmlParts.push(renderedFence.html);
+        sourceParts.push(renderedFence.source);
+        lastIndex = fencePattern.lastIndex;
+      }
+
+      const tail = applyVariables(source.slice(lastIndex), env.vars, false);
+      htmlParts.push(renderMarkdownText(tail));
+      sourceParts.push(tail);
+      return {
+        html: htmlParts.join(''),
+        resolvedSource: sourceParts.join('').trim(),
+        vars: env.vars,
+        logs: env.logs,
+        diagnostics: env.diagnostics,
+        viewerRenderer: modules.viewerRenderer
+      };
+    }
+
+    async function renderFence(info, content, env, modules) {
+      const [language, ...args] = String(info || '').trim().split(/\s+/).filter(Boolean);
+      const lang = (language || '').toLowerCase();
+      if (isFixtureFenceLanguage(lang)) {
+        return renderFixtureFence(content, env);
+      }
+      if (lang === 'xcon-chain' || lang === 'chain' || lang === 'sugar') {
+        return renderSugarFence(args, content, env, modules.chainCore);
+      }
+      if (lang === 'xcon-sketch' || lang === 'sketch') {
+        return renderSketchFence(content, env, modules);
+      }
+      if (lang === 'xcon-workflow' || lang === 'workflow') {
+        return renderWorkflowFence(content, env, modules.workflowCore);
+      }
+      const markdownSource = `\`\`\`${info}\n${content}\n\`\`\`\n`;
+      return { html: renderMarkdownText(markdownSource), source: `\n${markdownSource}` };
+    }
+
+    function renderFixtureFence(content, env) {
+      try {
+        JSON.parse(String(content || '{}'));
+        env.logs.push('Inline fixture loaded.');
+        return { html: '', source: '' };
+      } catch (error) {
+        const message = `Fixture error: ${error.message}`;
+        env.diagnostics.push(message);
+        return { html: renderError(message), source: `\n<!-- ${message} -->\n` };
+      }
+    }
+
+    function renderSugarFence(args, content, env, chainCore) {
+      const expression = String(content || '').trim();
+      const alias = getAlias(args);
+      try {
+        const result = chainCore.isSugarExpression(expression)
+          ? chainCore.evaluateSugar(expression, env.data)
+          : chainCore.evaluate(expression, env.data);
+        if (alias) env.vars[alias] = result;
+        env.logs.push(`SUGAR ${alias || '(inline)'} = ${formatResult(result)}`);
+        return {
+          html: labSugarSilent ? '<span class="labSugarSilent" aria-hidden="true"></span>' : `<span>${escapeHtml(formatResult(result))}</span>`,
+          source: ''
+        };
+      } catch (error) {
+        const message = `SUGAR error: ${error.message}`;
+        env.diagnostics.push(message);
+        return { html: renderError(message), source: `\n<!-- ${message} -->\n` };
+      }
+    }
+
+    function renderSketchFence(content, env, modules) {
+      const source = applyVariables(content, env.vars, true);
+      try {
+        const documentModel = modules.viewerCore.parseBySyntax(source, 'sketch');
+        const renderOptions = {
+          allowExternalResources: true,
+          allowHtml: false
+        };
+        const html = [
+          '<div class="lab-xcon-block">',
+          `<div class="xcon-viewer-host" data-xcon-viewer-host style="${escapeAttr(xconHostFrameStyle(documentModel))}">`,
+          modules.viewerRenderer.renderToHtml(documentModel, renderOptions),
+          '</div>',
+          '</div>'
+        ].join('');
+        env.logs.push('SKETCH block rendered.');
+        return { html, source: `\n\`\`\`xcon-sketch\n${source}\n\`\`\`\n` };
+      } catch (error) {
+        const message = `SKETCH error: ${error.message}`;
+        env.diagnostics.push(message);
+        return { html: renderError(message), source: `\n<!-- ${message} -->\n` };
+      }
+    }
+
+    function xconHostFrameStyle(root) {
+      const pos = xconRectParts(xconValue(root, 'pos'));
+      const declarations = [
+        'position:relative',
+        'display:inline-block',
+        'box-sizing:border-box',
+        'max-width:100%',
+        'overflow:visible',
+        'vertical-align:top',
+        'isolation:isolate'
+      ];
+      if (pos) {
+        const width = Math.max(0, pos[0]) + pos[2];
+        const height = Math.max(0, pos[1]) + pos[3];
+        declarations.push(`width:${numberPx(width)}`, `height:${numberPx(height)}`);
+      } else {
+        declarations.push('width:100%', 'min-height:100%');
+      }
+      return declarations.join(';');
+    }
+
+    function xconValue(node, key) {
+      if (!node) return undefined;
+      if (typeof node.get === 'function') return node.get(key);
+      return node[key];
+    }
+
+    function xconRectParts(value) {
+      let parts = null;
+      if (Array.isArray(value)) {
+        parts = value;
+      } else if (typeof value === 'string') {
+        parts = value.split(/[,\s]+/).filter(Boolean);
+      } else if (value && typeof value === 'object') {
+        parts = [value.x, value.y, value.width, value.height];
+      }
+      if (!parts || parts.length < 4) return null;
+      const numbers = parts.slice(0, 4).map((part) => Number(part));
+      return numbers.every(Number.isFinite) ? numbers : null;
+    }
+
+    function numberPx(value) {
+      return `${Math.max(0, Math.round(Number(value) || 0))}px`;
+    }
+
+    function renderWorkflowFence(content, env, workflowCore) {
+      const source = applyVariables(content, env.vars, false);
+      try {
+        const workflow = workflowCore.parseWorkflow(source);
+        const diagnostics = workflowCore.validateWorkflow(workflow);
+        if (diagnostics.length) {
+          env.diagnostics.push(...diagnostics.map((item) => `${item.severity || 'info'}: ${item.message || item}`));
+        }
+        env.logs.push('Workflow block rendered.');
+        return {
+          html: workflowCore.renderWorkflowHtml(workflow, { diagnostics }),
+          source: `\n\`\`\`xcon-workflow\n${source}\n\`\`\`\n`
+        };
+      } catch (error) {
+        const message = `Workflow error: ${error.message}`;
+        env.diagnostics.push(message);
+        return { html: renderError(message), source: `\n<!-- ${message} -->\n` };
+      }
+    }
+
+    function renderMarkdownText(text) {
+      const source = String(text || '');
+      if (!source.trim()) return '';
+      const prepared = prepareMarkdownMath(source);
+      return restoreMarkdownMath(enhanceMarkdownHtml(getMarkdownRenderer().render(prepared.source)), prepared.tokens);
+    }
+
+    function getMarkdownRenderer() {
+      if (markdownRenderer) return markdownRenderer;
+      const MarkdownIt = resolveMarkdownItFactory();
+      if (typeof MarkdownIt !== 'function') {
+        throw new Error(`markdown-it browser bundle failed to load. Tried: ${markdownItSources.join(', ')}`);
+      }
+      markdownRenderer = MarkdownIt({
+        html: false,
+        linkify: true,
+        typographer: false
+      });
+      markdownRenderer.renderer.rules.table_open = () => '<div class="template-table-wrap"><table>';
+      markdownRenderer.renderer.rules.table_close = () => '</table></div>';
+      return markdownRenderer;
+    }
+
+    async function loadMarkdownItBundle() {
+      const existingFactory = resolveMarkdownItFactory();
+      if (typeof existingFactory === 'function') return existingFactory;
+      if (markdownItPromise) return markdownItPromise;
+      markdownItPromise = (async () => {
+        const failures = [];
+        for (const source of markdownItSources) {
+          try {
+            await loadScript(source);
+            const loadedFactory = resolveMarkdownItFactory();
+            if (typeof loadedFactory === 'function') return loadedFactory;
+            try {
+              await loadScriptAsBrowserGlobal(source);
+              const evaluatedFactory = resolveMarkdownItFactory();
+              if (typeof evaluatedFactory === 'function') return evaluatedFactory;
+            } catch (error) {
+              failures.push(`${source}: loaded but did not expose markdownit; browser-global retry failed: ${error.message || error}`);
+              continue;
+            }
+            failures.push(`${source}: loaded but did not expose markdownit`);
+          } catch (error) {
+            failures.push(`${source}: ${error.message || error}`);
+          }
+        }
+        throw new Error(`markdown-it browser bundle failed to load. ${failures.join('; ')}`);
+      })();
+      return markdownItPromise;
+    }
+
+    function resolveMarkdownItFactory() {
+      const candidates = [
+        globalThis.markdownit,
+        globalThis.MarkdownIt,
+        globalThis.markdownIt,
+        globalThis.module && globalThis.module.exports && globalThis.module.exports.default,
+        globalThis.module && globalThis.module.exports,
+        globalThis.exports && globalThis.exports.default,
+        globalThis.exports
+      ];
+      const factory = candidates.find((candidate) => typeof candidate === 'function');
+      if (factory && typeof globalThis.markdownit !== 'function') {
+        globalThis.markdownit = factory;
+      }
+      return factory;
+    }
+
+    function loadScript(source) {
+      return new Promise((resolve, reject) => {
+        const existing = document.querySelector(`script[data-template-lab-markdown-it="${source}"]`);
+        if (existing) {
+          if (resolveMarkdownItFactory() || existing.dataset.loaded === 'true') {
+            resolve();
+            return;
+          }
+          existing.addEventListener('load', resolve, { once: true });
+          existing.addEventListener('error', () => reject(new Error('script load failed')), { once: true });
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = source;
+        script.async = true;
+        script.dataset.templateLabMarkdownIt = source;
+        script.onload = () => {
+          script.dataset.loaded = 'true';
+          resolve();
+        };
+        script.onerror = () => reject(new Error('script load failed'));
+        document.head.appendChild(script);
+      });
+    }
+
+    async function loadScriptAsBrowserGlobal(source) {
+      const response = await fetch(source, { cache: 'force-cache' });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const code = await response.text();
+      const runBrowserBundle = new Function(
+        'hostGlobal',
+        'const module = { exports: {} };\n' +
+        'const exports = module.exports;\n' +
+        'const define = undefined;\n' +
+        `${code}\n` +
+        'const exported = module.exports && (module.exports.default || module.exports);\n' +
+        'const factory = typeof exported === "function" ? exported : hostGlobal.markdownit;\n' +
+        'if (typeof factory === "function") hostGlobal.markdownit = factory;\n' +
+        'return factory;'
+      );
+      return runBrowserBundle.call(globalThis, globalThis);
+    }
+
+    function enhanceMarkdownHtml(html) {
+      return String(html || '').replace(/<li>\s*\[([ xX])\]\s*/g, (_match, marker) => {
+        const checked = String(marker).toLowerCase() === 'x' ? ' checked' : '';
+        return `<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled${checked}> `;
+      });
+    }
+
+    function prepareMarkdownMath(markdownSource) {
+      const tokens = [];
+      const output = [];
+      const lines = String(markdownSource || '').split('\n');
+      let inFence = false;
+      let fenceMarker = '';
+
+      for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+        const line = lines[lineIndex];
+        const fenceMatch = line.match(/^\s*(```|~~~)/);
+        if (fenceMatch) {
+          if (!inFence) {
+            inFence = true;
+            fenceMarker = fenceMatch[1];
+          } else if (fenceMatch[1] === fenceMarker) {
+            inFence = false;
+            fenceMarker = '';
+          }
+          output.push(line);
+          continue;
+        }
+
+        if (inFence) {
+          output.push(line);
+          continue;
+        }
+
+        const trimmed = line.trim();
+        if (trimmed.startsWith('$$')) {
+          const collected = [];
+          let rest = trimmed.slice(2);
+          let closed = false;
+          const sameLineEnd = rest.lastIndexOf('$$');
+          if (sameLineEnd >= 0) {
+            collected.push(rest.slice(0, sameLineEnd));
+            closed = true;
+          } else {
+            if (rest) collected.push(rest);
+            while (lineIndex + 1 < lines.length) {
+              lineIndex += 1;
+              const nextLine = lines[lineIndex];
+              const endIndex = nextLine.indexOf('$$');
+              if (endIndex >= 0) {
+                collected.push(nextLine.slice(0, endIndex));
+                closed = true;
+                break;
+              }
+              collected.push(nextLine);
+            }
+          }
+          if (closed) {
+            output.push('', createMathToken(tokens, collected.join('\n'), true), '');
+          } else {
+            output.push(line);
+          }
+          continue;
+        }
+
+        output.push(replaceInlineMath(line, tokens));
+      }
+
+      return { source: output.join('\n'), tokens };
+    }
+
+    function replaceInlineMath(line, tokens) {
+      let output = '';
+      let index = 0;
+      while (index < line.length) {
+        const start = line.indexOf('$', index);
+        if (start < 0) {
+          output += line.slice(index);
+          break;
+        }
+        if (line[start - 1] === '\\' || line[start + 1] === '$') {
+          output += line.slice(index, start + 1);
+          index = start + 1;
+          continue;
+        }
+        let end = start + 1;
+        while (end < line.length) {
+          const char = line[end];
+          if (char === '$' && line[end - 1] !== '\\') break;
+          end += 1;
+        }
+        if (end >= line.length) {
+          output += line.slice(index);
+          break;
+        }
+        const expression = line.slice(start + 1, end).trim();
+        if (!expression) {
+          output += line.slice(index, end + 1);
+        } else {
+          output += line.slice(index, start);
+          output += createMathToken(tokens, expression, false);
+        }
+        index = end + 1;
+      }
+      return output;
+    }
+
+    function createMathToken(tokens, expression, display) {
+      const marker = `@@XCON_MATH_${tokens.length}@@`;
+      tokens.push({
+        marker,
+        display,
+        html: renderMathExpression(expression, display)
+      });
+      return marker;
+    }
+
+    function restoreMarkdownMath(html, tokens) {
+      let output = String(html || '');
+      for (const token of tokens) {
+        const marker = escapeRegExp(token.marker);
+        if (token.display) {
+          output = output.replace(new RegExp(`<p>\\s*${marker}\\s*</p>`, 'g'), token.html);
+        }
+        output = output.replace(new RegExp(marker, 'g'), token.html);
+      }
+      return output;
+    }
+
+    function renderMathExpression(expression, display) {
+      const body = renderTexLite(expression);
+      const tag = display ? 'div' : 'span';
+      const className = display ? 'markdown-math-block' : 'markdown-math-inline';
+      return `<${tag} class="${className}" role="img" aria-label="${escapeHtml(expression)}">${body}</${tag}>`;
+    }
+
+    function renderTexLite(expression) {
+      let html = escapeHtml(String(expression || '').trim())
+        .replace(/\\left\s*/g, '')
+        .replace(/\\right\s*/g, '');
+
+      for (let pass = 0; pass < 6; pass += 1) {
+        html = html.replace(/\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}/g, (_match, numerator, denominator) => (
+          `<span class="markdown-frac"><span class="markdown-frac-num">${renderTexLite(numerator)}</span><span class="markdown-frac-den">${renderTexLite(denominator)}</span></span>`
+        ));
+        html = html.replace(/\\sqrt\s*\{([^{}]+)\}/g, (_match, value) => `√<span class="markdown-radicand">${renderTexLite(value)}</span>`);
+      }
+
+      html = html
+        .replace(/\\(sum|prod|int)\s*_\{([^{}]+)\}\s*\^\{([^{}]+)\}/g, (_match, name, sub, sup) => `${mathSymbol(name)}<sub>${renderTexLite(sub)}</sub><sup>${renderTexLite(sup)}</sup>`)
+        .replace(/\^\{([^{}]+)\}/g, (_match, value) => `<sup>${renderTexLite(value)}</sup>`)
+        .replace(/_\{([^{}]+)\}/g, (_match, value) => `<sub>${renderTexLite(value)}</sub>`)
+        .replace(/\^([A-Za-z0-9+\-=]+)/g, (_match, value) => `<sup>${escapeHtml(value)}</sup>`)
+        .replace(/_([A-Za-z0-9+\-=]+)/g, (_match, value) => `<sub>${escapeHtml(value)}</sub>`)
+        .replace(/\\([A-Za-z]+)\b/g, (_match, name) => mathSymbol(name) || `\\${name}`)
+        .replace(/\\,/g, '&thinsp;')
+        .replace(/\\;/g, '&emsp;');
+
+      return html;
+    }
+
+    function mathSymbol(name) {
+      const symbols = {
+        alpha: 'α', beta: 'β', gamma: 'γ', delta: 'δ', epsilon: 'ε',
+        theta: 'θ', lambda: 'λ', mu: 'μ', pi: 'π', sigma: 'σ',
+        phi: 'φ', omega: 'ω', Gamma: 'Γ', Delta: 'Δ', Theta: 'Θ',
+        Lambda: 'Λ', Pi: 'Π', Sigma: 'Σ', Phi: 'Φ', Omega: 'Ω',
+        sum: '∑', prod: '∏', int: '∫', infty: '∞', approx: '≈',
+        neq: '≠', le: '≤', ge: '≥', times: '×', cdot: '·',
+        pm: '±', to: '→', rightarrow: '→', leftarrow: '←'
+      };
+      return symbols[name] || '';
+    }
+
+    function escapeRegExp(value) {
+      return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    const variableReferencePattern = /\$([A-Za-z_][\w-]*(?:\.[A-Za-z_][\w-]*)*)/g;
+
+    function getAlias(args) {
+      for (let index = 0; index < args.length; index += 1) {
+        const arg = args[index];
+        if (arg === 'as' && args[index + 1]) return args[index + 1].trim();
+        if (arg.startsWith('as=')) return arg.slice(3).trim();
+      }
+      const first = args[0] || '';
+      return /^[A-Za-z_][\w.-]*$/.test(first) ? first : '';
+    }
+
+    function applyVariables(text, vars, sketchMode) {
+      const source = String(text || '');
+      return source.replace(variableReferencePattern, (match, name, offset) => {
+        if (!Object.prototype.hasOwnProperty.call(vars, name)) return match;
+        const value = vars[name];
+        if (!sketchMode) return formatResult(value);
+        if (isInsideQuotedSketchString(source, offset)) return escapeSketchStringFragment(value);
+        if (value && typeof value === 'object') return JSON.stringify(value);
+        if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+        return JSON.stringify(formatResult(value));
+      });
+    }
+
+    function isInsideQuotedSketchString(source, offset) {
+      const lineStart = source.lastIndexOf('\n', Math.max(0, offset - 1)) + 1;
+      let quote = '';
+      let escaped = false;
+      for (let index = lineStart; index < offset; index += 1) {
+        const char = source[index];
+        if (escaped) {
+          escaped = false;
+          continue;
+        }
+        if (char === '\\') {
+          escaped = true;
+          continue;
+        }
+        if ((char === '"' || char === '`') && !quote) {
+          quote = char;
+        } else if (char === quote) {
+          quote = '';
+        }
+      }
+      return Boolean(quote);
+    }
+
+    function escapeSketchStringFragment(value) {
+      return formatResult(value)
+        .replace(/\\/g, '\\\\')
+        .replace(/"/g, '\\"')
+        .replace(/\r?\n/g, '\\n');
+    }
+
+    function formatResult(value) {
+      if (Array.isArray(value)) return value.map(formatResult).join(', ');
+      if (value && typeof value === 'object') return JSON.stringify(value);
+      if (value === null || value === undefined) return '';
+      return String(value);
+    }
+
+    function renderError(message) {
+      return `<div class="lab-error">${escapeHtml(message)}</div>`;
+    }
+
+    function showFatalError(message) {
+      const state = {
+        html: renderError(message),
+        resolvedSource: '',
+        vars: {},
+        logs: [],
+        diagnostics: [message]
+      };
+      lastRenderState = state;
+      renderPreviewOnly(state);
+      renderInspector(state);
+      renderResolvedSource(state);
+      statusText.textContent = 'error';
+    }
+
+    function ensureViewerStyle(cssText) {
+      if (document.getElementById('xcon-viewer-style')) return;
+      const style = document.createElement('style');
+      style.id = 'xcon-viewer-style';
+      style.textContent = cssText;
+      document.head.appendChild(style);
+    }
+
+    function debounce(fn, delay) {
+      let timer = 0;
+      return () => {
+        window.clearTimeout(timer);
+        timer = window.setTimeout(fn, delay);
+      };
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value)
+        .replace(/'/g, '&#39;')
+        .replace(/`/g, '&#96;');
+    }
+  </script>
+</body>
+</html>

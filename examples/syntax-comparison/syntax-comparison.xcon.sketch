@@ -1,0 +1,6 @@
+screen 402x300
+  title: label "One screen. Four syntaxes." at 24 40 354 34
+    font
+      size 22
+      weight 800
+  body: textView "SKETCH, JSON, XML, and TAGLESS parse into the same XCON Object Model." at 24 92 354 96

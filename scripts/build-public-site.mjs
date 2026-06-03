@@ -7,6 +7,14 @@ const outDir = join(rootDir, 'dist-site');
 
 const fileCopies = [
   ['site/index.html', 'index.html'],
+  ['site/template-lab.html', 'template-lab.html'],
+  ['site/meta-lab.html', 'meta-lab.html'],
+  ['site/chatgpt-simulation.html', 'chatgpt-simulation.html'],
+  ['site/chatgpt-markdown-sketch-simulation.html', 'chatgpt-markdown-sketch-simulation.html'],
+  ['site/html-css-simulation.html', 'html-css-simulation.html'],
+  ['site/xcon-viewer-viral-demo-no-site-header.html', 'xcon-viewer-viral-demo-no-site-header.html'],
+  ['site/chatgpt-viral-demo-v2.html', 'chatgpt-viral-demo-v2.html'],
+  ['site/claude-markdown-sketch-demo.html', 'claude-markdown-sketch-demo.html'],
   ['site/docs.html', 'docs.html'],
   ['site/spec.html', 'spec.html'],
   ['site/examples.html', 'examples.html'],

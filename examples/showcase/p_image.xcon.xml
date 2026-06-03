@@ -1,0 +1,54 @@
+<Panel border="visible:true; width:1; color:var(--border); radius:10" shadow="opacity:0.08; blur:6" pos="0,0,560,32" al="autoHeight:true; gap:10px; padding:14px 16px" componentsOrder="hdr,h04a,a04,h04b,b04">
+  <Label name="hdr" text="04 · Image" pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+  <Label name="h04a" text="image · shapes &amp; overlays (#04-A)" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" />
+  <Panel name="a04" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:16px; padding:0" componentsOrder="hdr,rad,ov,av">
+    <Label name="hdr" text=" " pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+    <Panel name="rad" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0; direction:row; alignItems:stretch; justifyContent:flex-start" componentsOrder="r1,r2,r3">
+      <Image name="r1" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&amp;q=80" border="visible:false; radius:6px" objectFit="fill" pos="0,0,170,90" />
+      <Image name="r2" src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&amp;q=80" border="visible:false; radius:12px" objectFit="fill" pos="0,0,170,90" />
+      <Image name="r3" src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&amp;q=80" border="visible:false; radius:16px" objectFit="fill" pos="0,0,170,90" />
+    </Panel>
+    <Panel name="ov" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:0; padding:0" componentsOrder="hdr,im">
+      <Label name="hdr" text="Overlay with Caption" pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+      <Image name="im" src="https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&amp;q=80" alt="mountain" border="visible:false; radius:12px" objectFit="fill" overlayTag="Photography" overlayTitle="Into the Wild Night" overlaySub="Shot in the Dolomites · March 2026" pos="0,0,560,200" />
+    </Panel>
+    <Panel name="av" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:10px; padding:4px 0; direction:row; alignItems:center; justifyContent:flex-start" componentsOrder="a1,a2,a3,a4,a5">
+      <Image name="a1" src="https://i.pravatar.cc/72?img=47" border="visible:false; radius:50%" objectFit="fill" pos="0,0,72,72" />
+      <Image name="a2" src="https://i.pravatar.cc/56?img=12" border="visible:false; radius:50%" objectFit="fill" pos="0,0,56,56" />
+      <Image name="a3" src="https://i.pravatar.cc/44?img=32" border="visible:false; radius:50%" objectFit="fill" pos="0,0,44,44" />
+      <Image name="a4" src="https://i.pravatar.cc/32?img=5" border="visible:false; radius:50%" objectFit="fill" pos="0,0,32,32" />
+      <Image name="a5" src="https://i.pravatar.cc/72?img=60" border="visible:false; radius:12px" objectFit="fill" pos="0,0,72,72" />
+    </Panel>
+  </Panel>
+  <Label name="h04b" text="image · states &amp; captions (#04-B)" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" />
+  <Panel name="b04" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:14px; padding:0" componentsOrder="hdr,fig,sk,fit">
+    <Label name="hdr" text=" " pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+    <Panel name="fig" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="hdr,fi,fc">
+      <Label name="hdr" text="With Caption" pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+      <Image name="fi" src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&amp;q=80" border="visible:false; radius:12px" objectFit="fill" pos="0,0,560,160" />
+      <Label name="fc" text="Fig. 1 — Summit of Dachstein, Austria · 2,995m altitude · ISO 200" pos="0,0,560,28" font="size:11; italic:true" textAlign="center" color="var(--ink-3)" al="width:100%" />
+    </Panel>
+    <Panel name="sk" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:10px; padding:0" componentsOrder="hdr,row,blk">
+      <Label name="hdr" text="Skeleton / Loading State" pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+      <Panel name="row" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:10px; padding:0; direction:row; alignItems:center" componentsOrder="c,lines">
+        <Label name="c" text=" " pos="0,0,56,56" font="size:1" textAlign="left" color="transparent" labelPadding="0" border="visible:false; radius:50%" style="border: 1px solid var(--border); box-sizing: border-box; overflow: hidden;" shimmer="true" shimmerDirection="rtl" al="flex:0 0 auto" />
+        <Panel name="lines" style="min-width: 0;" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0; flex:1 1 auto" componentsOrder="l1,l2">
+          <Label name="l1" text=" " pos="0,0,560,12" font="size:1" textAlign="left" color="transparent" labelPadding="0" style="border-radius: 6px; min-height: 12px; display: block;" shimmer="true" shimmerDirection="rtl" al="width:100%" />
+          <Label name="l2" text=" " pos="0,0,560,10" font="size:1" textAlign="left" color="transparent" labelPadding="0" style="border-radius: 6px; min-height: 10px; width: 70%; max-width: 100%; display: block;" shimmer="true" shimmerDirection="rtl" al="alignSelf:flex-start" />
+        </Panel>
+      </Panel>
+      <Label name="blk" text=" " pos="0,0,560,100" font="size:1" textAlign="left" color="transparent" labelPadding="0" style="border-radius: var(--r-sm); min-height: 100px; display: block; border: 1px solid var(--border); box-sizing: border-box;" shimmer="true" shimmerDirection="rtl" al="width:100%" />
+    </Panel>
+    <Panel name="fit" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:10px; padding:0; direction:row; alignItems:flex-start; justifyContent:flex-start" componentsOrder="hdr,c1,c2">
+      <Label name="hdr" text="Object-fit Comparison" pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+      <Panel name="c1" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:6px; padding:0" componentsOrder="hdr,i">
+        <Label name="hdr" text="cover" pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+        <Image name="i" src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=400&amp;q=80" border="visible:false; radius:8px" objectFit="fill" pos="0,0,268,80" />
+      </Panel>
+      <Panel name="c2" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:6px; padding:0" componentsOrder="hdr,j">
+        <Label name="hdr" text="contain" pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+        <Image name="j" src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=400&amp;q=80" border="visible:false; radius:8px" objectFit="contain" pos="0,0,268,80" />
+      </Panel>
+    </Panel>
+  </Panel>
+</Panel>

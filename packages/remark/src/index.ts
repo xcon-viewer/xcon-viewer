@@ -14,7 +14,7 @@ export interface MdastNode {
   [key: string]: unknown;
 }
 
-const xconLanguages = new Set(['xcon', 'xcon-json', 'xcon-xml', 'xcon-tagless', 'xcon-sketch', 'xcons']);
+const xconLanguages = new Set(['xcon-sketch', 'xcons', 'xcon', 'xcon-json', 'xcon-xml', 'xcon-tagless']);
 
 export default function remarkXcon(options: RemarkXconOptions = {}): (tree: MdastNode) => MdastNode {
   return (tree) => transformNode(tree, options);
@@ -46,10 +46,10 @@ export function renderXconNode(source: string, language = 'xcon', options: Remar
 }
 
 function languageToSyntax(language: string): XconSyntax | null {
+  if (language === 'xcon-sketch' || language === 'xcons') return 'sketch';
   if (language === 'xcon-json') return 'json';
   if (language === 'xcon-xml') return 'xml';
   if (language === 'xcon-tagless') return 'tagless';
-  if (language === 'xcon-sketch' || language === 'xcons') return 'sketch';
   return null;
 }
 

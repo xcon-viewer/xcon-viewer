@@ -1,0 +1,764 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ChatGPT Artifact Simulation - XCON Viewer</title>
+  <meta name="description" content="A ChatGPT-style simulation where Markdown answers with XCON fences render as live artifact previews." />
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    :root {
+      --sim-bg: #f7f3ee;
+      --sim-panel: rgba(255, 255, 255, 0.92);
+      --sim-panel-strong: #ffffff;
+      --sim-line: #d8e0ea;
+      --sim-muted: #61708a;
+      --sim-dark: #111827;
+      --sim-blue: #2563eb;
+      --sim-orange: #c4622d;
+      --sim-grid: rgba(58, 107, 170, 0.14);
+      --sim-shadow: 0 24px 70px rgba(17, 24, 39, 0.14);
+    }
+
+    body {
+      min-height: 100vh;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(37, 99, 235, 0.10), transparent 30%),
+        radial-gradient(circle at 86% 8%, rgba(196, 98, 45, 0.11), transparent 28%),
+        var(--sim-bg);
+    }
+
+    .site-header {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(18px);
+    }
+
+    .simulation-shell {
+      height: calc(100vh - 64px);
+      padding: 18px;
+      box-sizing: border-box;
+      display: grid;
+      grid-template-columns: minmax(420px, 0.9fr) minmax(560px, 1.35fr);
+      gap: 16px;
+    }
+
+    .chat-panel,
+    .artifact-panel {
+      min-width: 0;
+      min-height: 0;
+      border: 1px solid var(--sim-line);
+      border-radius: 18px;
+      background: var(--sim-panel);
+      box-shadow: var(--sim-shadow);
+      overflow: hidden;
+    }
+
+    .chat-panel {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+    }
+
+    .sim-toolbar,
+    .artifact-toolbar {
+      min-height: 60px;
+      padding: 12px 16px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--sim-line);
+      background: rgba(255, 255, 255, 0.74);
+    }
+
+    .sim-kicker {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .sim-kicker strong,
+    .artifact-title strong {
+      color: var(--sim-dark);
+      font-size: 16px;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .sim-kicker span,
+    .artifact-title span {
+      color: var(--sim-muted);
+      font-size: 12px;
+      line-height: 1.2;
+    }
+
+    .sim-actions {
+      display: flex;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    .sim-button {
+      border: 1px solid var(--sim-line);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--sim-dark);
+      font-size: 13px;
+      font-weight: 700;
+      height: 36px;
+      padding: 0 14px;
+      cursor: pointer;
+    }
+
+    .sim-button.primary {
+      border-color: transparent;
+      background: var(--sim-blue);
+      color: #fff;
+    }
+
+    .chat-messages {
+      min-height: 0;
+      overflow: auto;
+      padding: 18px 18px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(17, 24, 39, 0.28) transparent;
+    }
+
+    .message {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      animation: messageIn 220ms ease-out;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: #fff;
+      background: var(--sim-dark);
+    }
+
+    .message.user .avatar {
+      background: var(--sim-orange);
+    }
+
+    .bubble {
+      border: 1px solid var(--sim-line);
+      border-radius: 16px;
+      padding: 13px 14px;
+      background: #fff;
+      color: var(--sim-dark);
+      line-height: 1.55;
+      font-size: 14px;
+      box-shadow: 0 12px 28px rgba(17, 24, 39, 0.05);
+    }
+
+    .message.user .bubble {
+      background: #fff7ed;
+      border-color: #fed7aa;
+    }
+
+    .markdown-preview h1,
+    .markdown-preview h2,
+    .markdown-preview h3 {
+      margin: 0.3em 0 0.45em;
+      line-height: 1.18;
+    }
+
+    .markdown-preview h2 {
+      font-size: 19px;
+    }
+
+    .markdown-preview p {
+      margin: 0.4em 0;
+    }
+
+    .markdown-preview pre {
+      max-height: 280px;
+      margin: 12px 0 0;
+      padding: 12px;
+      overflow: auto;
+      border-radius: 12px;
+      background: #0f172a;
+      color: #e5edff;
+      font-size: 12px;
+      line-height: 1.55;
+      tab-size: 2;
+    }
+
+    .markdown-preview code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    .typing-caret {
+      display: inline-block;
+      width: 7px;
+      height: 1.15em;
+      margin-left: 2px;
+      vertical-align: -0.18em;
+      background: var(--sim-blue);
+      animation: blink 850ms steps(1) infinite;
+    }
+
+    .composer {
+      border-top: 1px solid var(--sim-line);
+      padding: 14px 16px 16px;
+      background: rgba(255, 255, 255, 0.86);
+    }
+
+    .composer-box {
+      min-height: 54px;
+      border: 1px solid var(--sim-line);
+      border-radius: 18px;
+      background: #fff;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px 9px 16px;
+      box-sizing: border-box;
+      box-shadow: 0 10px 24px rgba(17, 24, 39, 0.07);
+    }
+
+    .composer-text {
+      min-width: 0;
+      color: #111827;
+      font-size: 14px;
+      line-height: 1.35;
+      white-space: pre-wrap;
+    }
+
+    .send-button {
+      width: 38px;
+      height: 38px;
+      border: 0;
+      border-radius: 14px;
+      background: var(--sim-blue);
+      color: #fff;
+      font-weight: 900;
+      cursor: default;
+      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.27);
+    }
+
+    .artifact-panel {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    .artifact-title {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .status-pill {
+      min-width: 92px;
+      height: 32px;
+      border-radius: 999px;
+      display: inline-grid;
+      place-items: center;
+      padding: 0 12px;
+      background: #eef2ff;
+      color: #26437d;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .artifact-workspace {
+      min-height: 0;
+      overflow: auto;
+      padding: 22px;
+      background-image:
+        linear-gradient(var(--sim-grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--sim-grid) 1px, transparent 1px);
+      background-size: 24px 24px;
+      background-color: #fbfdff;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(17, 24, 39, 0.34) transparent;
+    }
+
+    .artifact-preview {
+      width: max-content;
+      min-width: 100%;
+      min-height: 100%;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    .artifact-placeholder {
+      width: min(640px, 100%);
+      min-height: 360px;
+      border: 1px dashed #b8c5d8;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.72);
+      display: grid;
+      place-items: center;
+      color: var(--sim-muted);
+      font-size: 14px;
+      text-align: center;
+      padding: 28px;
+      box-sizing: border-box;
+    }
+
+    .artifact-preview .xcon-render-root,
+    .artifact-preview [data-xcon-type="form"] {
+      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.16);
+    }
+
+    .timeline-strip {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .timeline-chip {
+      border: 1px solid #d8e0ea;
+      border-radius: 999px;
+      padding: 4px 9px;
+      background: #f8fafc;
+      color: #53627a;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .timeline-chip.active {
+      border-color: #bfdbfe;
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    @keyframes messageIn {
+      from { transform: translateY(8px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @media (max-width: 1100px) {
+      body {
+        overflow: auto;
+      }
+
+      .simulation-shell {
+        height: auto;
+        min-height: calc(100vh - 64px);
+        grid-template-columns: 1fr;
+      }
+
+      .chat-panel,
+      .artifact-panel {
+        min-height: 620px;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .simulation-shell {
+        padding: 10px;
+      }
+
+      .sim-toolbar,
+      .artifact-toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .sim-actions {
+        width: 100%;
+      }
+
+      .sim-button {
+        flex: 1 1 0;
+      }
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "@xcon-viewer/core": "/packages/core/dist/index.js",
+        "@xcon-viewer/viewer": "/packages/viewer/dist/index.js"
+      }
+    }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/">
+      <span class="brand-mark">X</span>
+      <span>XCON Viewer</span>
+    </a>
+    <nav>
+      <a href="/docs">Docs</a>
+      <a href="/spec">Spec</a>
+      <a href="/examples">Examples</a>
+      <a href="/play">Play</a>
+      <a href="/template-lab">Template Lab</a>
+      <a href="/api">API</a>
+      <a href="/security">Security</a>
+    </nav>
+  </header>
+
+  <main class="simulation-shell">
+    <section class="chat-panel" aria-label="Chat simulation">
+      <div class="sim-toolbar">
+        <div>
+          <div class="sim-kicker">
+            <strong>ChatGPT-style artifact simulation</strong>
+            <span>Markdown answer + XCON fence</span>
+          </div>
+          <div class="timeline-strip" aria-label="Playback steps">
+            <span class="timeline-chip" data-step="prompt">Prompt</span>
+            <span class="timeline-chip" data-step="thinking">Draft</span>
+            <span class="timeline-chip" data-step="fence">Fence</span>
+            <span class="timeline-chip" data-step="rendered">Preview</span>
+          </div>
+        </div>
+        <div class="sim-actions">
+          <button class="sim-button" type="button" id="clearButton">Clear</button>
+          <button class="sim-button primary" type="button" id="replayButton">Replay</button>
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chatMessages" aria-live="polite"></div>
+
+      <div class="composer">
+        <div class="composer-box">
+          <div class="composer-text" id="composerText"></div>
+          <button class="send-button" type="button" aria-label="Send prompt">↑</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="artifact-panel" aria-label="Artifact preview">
+      <div class="artifact-toolbar">
+        <div class="artifact-title">
+          <strong>Artifact preview</strong>
+          <span id="artifactSubtitle">waiting for a complete XCON fence</span>
+        </div>
+        <span class="status-pill" id="artifactStatus">waiting</span>
+      </div>
+      <div class="artifact-workspace" id="artifactWorkspace">
+        <div class="artifact-preview" id="artifactPreview">
+          <div class="artifact-placeholder">
+            The assistant response will stream on the left. When the XCON/SKETCH fence closes, this pane renders the UI document as an artifact.
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { deserialize } from '@xcon-viewer/core';
+    import { render, viewerCss } from '@xcon-viewer/viewer';
+
+    const style = document.createElement('style');
+    style.textContent = viewerCss;
+    document.head.appendChild(style);
+
+    const chatMessages = document.getElementById('chatMessages');
+    const composerText = document.getElementById('composerText');
+    const artifactPreview = document.getElementById('artifactPreview');
+    const artifactStatus = document.getElementById('artifactStatus');
+    const artifactSubtitle = document.getElementById('artifactSubtitle');
+    const replayButton = document.getElementById('replayButton');
+    const clearButton = document.getElementById('clearButton');
+    const chips = Array.from(document.querySelectorAll('.timeline-chip'));
+
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    let runToken = 0;
+
+    const promptText = 'Create a polished launch brief artifact for a pop-up coffee weekend. Use Markdown, then include an XCON/SKETCH fence so the preview can render a dashboard, schedule table, and approval flow.';
+
+    const artifactFence = [
+      '```xcon-sketch',
+      'screen "Pop-up Coffee Launch Brief" 860x620 bg #f8fafc',
+      '  hero: panel at 24 24 812 138',
+      '    bg #111827',
+      '    radius 24',
+      '    title: label "Weekend pop-up launch" at 28 24 340 32',
+      '      color white',
+      '      font',
+      '        size 24',
+      '        weight 800',
+      '    revenue: label "1,284 pre-orders" at 28 66 260 42',
+      '      color #fbbf24',
+      '      font',
+      '        size 32',
+      '        weight 800',
+      '    growth: label "18% waitlist growth" at 290 74 220 28',
+      '      color #a7f3d0',
+      '      font',
+      '        size 18',
+      '        weight 800',
+      '    note: label "Markdown answer + XCON/SKETCH artifact preview" at 28 112 410 18',
+      '      color #cbd5e1',
+      '    photo: image at 592 18 190 102',
+      '      src "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=900&q=80"',
+      '      objectFit "cover"',
+      '      radius 18',
+      '    cta: button "Share artifact" at 650 88 128 36',
+      '      bg #2563eb',
+      '      color white',
+      '      radius 12',
+      '  chartBlock: panel at 24 186 396 286',
+      '    bg white',
+      '    radius 18',
+      '    border',
+      '      visible true',
+      '      color #d8e0ea',
+      '    chartTitle: label "Orders by channel" at 20 18 220 24',
+      '      color #172033',
+      '      font',
+      '        size 18',
+      '        weight 800',
+      '    ordersChart: chart at 20 58 354 196',
+      '      chartType "bar"',
+      '      chartData {"labels":["Walk-in","Instagram","Partners"],"datasets":[{"label":"Orders","data":[610,420,254],"backgroundColor":"#c4622d"}]}',
+      '  tableBlock: panel at 444 186 392 286',
+      '    bg white',
+      '    radius 18',
+      '    border',
+      '      visible true',
+      '      color #d8e0ea',
+      '    tableTitle: label "Launch checklist" at 20 18 220 24',
+      '      color #172033',
+      '      font',
+      '        size 18',
+      '        weight 800',
+      '    sheet: spanGrid at 20 58 350 196',
+      '      backgroundColor white',
+      '      readonly true',
+      '      data [["Task","Owner","Status"],["Menu photos","Mina","Ready"],["Influencer drops","Leo","Review"],["Cold brew stock","Ari","Launch"]]',
+      '      columns [{"id":"task","title":"Task","width":150},{"id":"owner","title":"Owner","width":96},{"id":"status","title":"Status","width":104}]',
+      '  approval: panel at 24 496 812 96',
+      '    bg white',
+      '    radius 18',
+      '    border',
+      '      visible true',
+      '      color #d8e0ea',
+      '    flowTitle: label "Artifact approval flow" at 20 14 220 24',
+      '      color #172033',
+      '      font',
+      '        size 18',
+      '        weight 800',
+      '    step1: panel at 20 50 160 30',
+      '      bg #eff6ff',
+      '      radius 12',
+      '      s1: label "Prepare menu pack" at 12 6 130 18',
+      '        color #1e3a8a',
+      '    arrow1: label ">" at 198 54 20 20',
+      '      color #64748b',
+      '    step2: panel at 232 50 150 30',
+      '      bg #ecfdf5',
+      '      radius 12',
+      '      s2: label "Team review" at 12 6 110 18',
+      '        color #065f46',
+      '    arrow2: label ">" at 402 54 20 20',
+      '      color #64748b',
+      '    step3: panel at 436 50 170 30',
+      '      bg #fff7ed',
+      '      radius 12',
+      '      s3: label "Publish launch page" at 12 6 140 18',
+      '        color #9a3412',
+      '```'
+    ].join('\n');
+
+    const assistantMarkdown = [
+      'Here is a polished artifact response. The Markdown stays readable in chat, while the XCON fence becomes a live preview on the right.',
+      '',
+      '### What I included',
+      '',
+      '- A launch hero with visual emphasis',
+      '- A small dashboard chart',
+      '- A checklist grid',
+      '- An approval flow suitable for a document artifact',
+      '',
+      artifactFence,
+      '',
+      'The artifact can be copied into the playground, embedded in Markdown, or exported through the document pipeline.'
+    ].join('\n');
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function renderInline(value) {
+      return escapeHtml(value)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>');
+    }
+
+    function renderProse(markdown) {
+      const blocks = markdown.split(/\n{2,}/).filter((block) => block.length);
+      return blocks.map((block) => {
+        const trimmed = block.trim();
+        if (!trimmed) return '';
+        if (trimmed.startsWith('### ')) return `<h3>${renderInline(trimmed.slice(4))}</h3>`;
+        if (trimmed.startsWith('## ')) return `<h2>${renderInline(trimmed.slice(3))}</h2>`;
+        if (trimmed.startsWith('# ')) return `<h2>${renderInline(trimmed.slice(2))}</h2>`;
+        if (trimmed.startsWith('- ')) {
+          const items = trimmed.split('\n').map((line) => line.replace(/^[-*]\s+/, '').trim());
+          return `<ul>${items.map((item) => `<li>${renderInline(item)}</li>`).join('')}</ul>`;
+        }
+        return `<p>${renderInline(trimmed).replace(/\n/g, '<br>')}</p>`;
+      }).join('');
+    }
+
+    function renderMarkdown(markdown, showCaret = false) {
+      const fenceRegex = /```([^\n]*)\n([\s\S]*?)```/g;
+      let html = '';
+      let cursor = 0;
+      let match;
+      while ((match = fenceRegex.exec(markdown))) {
+        html += renderProse(markdown.slice(cursor, match.index));
+        const language = match[1].trim() || 'code';
+        html += `<pre><code data-language="${escapeHtml(language)}">${escapeHtml(match[2])}</code></pre>`;
+        cursor = match.index + match[0].length;
+      }
+      html += renderProse(markdown.slice(cursor));
+      if (showCaret) html += '<span class="typing-caret" aria-hidden="true"></span>';
+      return `<div class="markdown-preview">${html}</div>`;
+    }
+
+    function setActiveStep(step) {
+      chips.forEach((chip) => chip.classList.toggle('active', chip.dataset.step === step));
+    }
+
+    function setArtifactState(state, subtitle) {
+      artifactStatus.textContent = state;
+      artifactSubtitle.textContent = subtitle;
+    }
+
+    function resetArtifact() {
+      setArtifactState('waiting', 'waiting for a complete XCON fence');
+      artifactPreview.innerHTML = '<div class="artifact-placeholder">The assistant response will stream on the left. When the XCON/SKETCH fence closes, this pane renders the UI document as an artifact.</div>';
+    }
+
+    function addMessage(role, html) {
+      const message = document.createElement('article');
+      message.className = `message ${role}`;
+      message.innerHTML = `
+        <div class="avatar">${role === 'user' ? 'YOU' : 'AI'}</div>
+        <div class="bubble">${html}</div>
+      `;
+      chatMessages.appendChild(message);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      return message.querySelector('.bubble');
+    }
+
+    function extractXconFence(markdown) {
+      const match = markdown.match(/```(?:xcon-sketch|xcon)\s*\n([\s\S]*?)```/i);
+      return match ? match[1].trim() : '';
+    }
+
+    function renderArtifactFromMarkdown(markdown) {
+      const sketch = extractXconFence(markdown);
+      if (!sketch) return false;
+      setArtifactState('rendering', 'XCON fence detected');
+      try {
+        const documentModel = deserialize(sketch);
+        artifactPreview.innerHTML = '';
+        render(documentModel, artifactPreview, {
+          allowExternalResources: true,
+          allowHtml: false
+        });
+        setArtifactState('rendered', 'live XCON artifact');
+        setActiveStep('rendered');
+      } catch (error) {
+        artifactPreview.innerHTML = `<div class="artifact-placeholder">XCON render error:<br>${escapeHtml(error.message || error)}</div>`;
+        setArtifactState('error', 'inspect the XCON fence');
+      }
+      return true;
+    }
+
+    async function typeComposer(text, token) {
+      composerText.textContent = '';
+      for (let index = 0; index <= text.length; index += 2) {
+        if (token !== runToken) return false;
+        composerText.innerHTML = `${escapeHtml(text.slice(0, index))}<span class="typing-caret" aria-hidden="true"></span>`;
+        await sleep(16);
+      }
+      composerText.textContent = text;
+      return true;
+    }
+
+    async function streamAssistant(markdown, token) {
+      const bubble = addMessage('assistant', renderMarkdown('', true));
+      let renderedArtifact = false;
+      let index = 0;
+      while (index < markdown.length) {
+        if (token !== runToken) return false;
+        const remaining = markdown.length - index;
+        const inFence = markdown.slice(0, index).includes('```xcon-sketch') && !markdown.slice(0, index).match(/```xcon-sketch[\s\S]*?```/);
+        const step = inFence ? Math.min(22, remaining) : Math.min(9, remaining);
+        index += step;
+        const slice = markdown.slice(0, index);
+        bubble.innerHTML = renderMarkdown(slice, true);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        if (!renderedArtifact && extractXconFence(slice)) {
+          renderedArtifact = renderArtifactFromMarkdown(slice);
+        }
+        await sleep(inFence ? 10 : 18);
+      }
+      bubble.innerHTML = renderMarkdown(markdown, false);
+      if (!renderedArtifact) renderArtifactFromMarkdown(markdown);
+      return true;
+    }
+
+    async function runScenario() {
+      const token = ++runToken;
+      replayButton.disabled = true;
+      clearButton.disabled = true;
+      chatMessages.innerHTML = '';
+      composerText.textContent = '';
+      resetArtifact();
+      setActiveStep('prompt');
+      await sleep(450);
+      if (!(await typeComposer(promptText, token))) return;
+      await sleep(260);
+      addMessage('user', renderMarkdown(promptText));
+      composerText.textContent = '';
+      setActiveStep('thinking');
+      await sleep(680);
+      setActiveStep('fence');
+      await streamAssistant(assistantMarkdown, token);
+      replayButton.disabled = false;
+      clearButton.disabled = false;
+    }
+
+    replayButton.addEventListener('click', runScenario);
+    clearButton.addEventListener('click', () => {
+      runToken++;
+      chatMessages.innerHTML = '';
+      composerText.textContent = '';
+      resetArtifact();
+      setActiveStep('');
+      replayButton.disabled = false;
+      clearButton.disabled = false;
+    });
+
+    window.addEventListener('load', runScenario);
+  </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+screen 320x180
+  backgroundColor "#FFFFFF"
+  hello: label "Hello XCON" at 24 64 272 40
+    font
+      size 24
+      weight 800
+    color "#111827"
+    textAlign "center"

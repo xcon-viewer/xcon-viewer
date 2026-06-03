@@ -1,0 +1,23 @@
+<Panel border="visible:true; width:1; color:var(--border); radius:10" shadow="visible:true; opacity:0.08; blur:6" pos="0,0,560,32" al="autoHeight:true; gap:18px; padding:14px 16px" componentsOrder="hdr,ex1,ex2,ex3,ex4,ex5">
+  <Label name="hdr" text="Extended · badge" pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+  <Panel name="ex1" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="cap,c">
+    <Label name="cap" text="Full showcase" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" labelPadding="0 0 10px 0" style="letter-spacing:0.4px;text-transform:uppercase;" />
+    <Badge name="c" pos="0,0,560,200" extVariant="showcase" al="width:100%; alignSelf:stretch" />
+  </Panel>
+  <Panel name="ex2" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="cap,c">
+    <Label name="cap" text="filled · medium" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" labelPadding="16px 0 10px 0" style="letter-spacing:0.4px;text-transform:uppercase;" />
+    <Badge name="c" pos="0,0,560,44" text="NEW" variant="filled" size="medium" al="width:100%; alignSelf:stretch" />
+  </Panel>
+  <Panel name="ex3" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="cap,c">
+    <Label name="cap" text="outline · Custom color" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" labelPadding="16px 0 10px 0" style="letter-spacing:0.4px;text-transform:uppercase;" />
+    <Badge name="c" pos="0,0,560,44" text="Beta" variant="outline" color="#7c6af7" al="width:100%; alignSelf:stretch" />
+  </Panel>
+  <Panel name="ex4" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="cap,c">
+    <Label name="cap" text="dot · Online" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" labelPadding="16px 0 10px 0" style="letter-spacing:0.4px;text-transform:uppercase;" />
+    <Badge name="c" pos="0,0,560,44" variant="dot" size="small" al="width:100%; alignSelf:stretch" />
+  </Panel>
+  <Panel name="ex5" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="cap,c">
+    <Label name="cap" text="size · large" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" labelPadding="16px 0 10px 0" style="letter-spacing:0.4px;text-transform:uppercase;" />
+    <Badge name="c" pos="0,0,560,48" text="v2" variant="filled" backgroundColor="#198754" size="large" al="width:100%; alignSelf:stretch" />
+  </Panel>
+</Panel>

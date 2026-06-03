@@ -23,6 +23,8 @@ interface TokenLike {
 }
 
 const xconLanguages = new Set([
+  'xcon-sketch',
+  'xcons',
   'xcon',
   'xcon-json',
   'xconj',
@@ -31,8 +33,6 @@ const xconLanguages = new Set([
   'xcon-tagless',
   'xconl',
   'xcont',
-  'xcon-sketch',
-  'xcons',
 ]);
 
 export default function xconMarkdownIt(md: MarkdownItLike, options: XconMarkdownItOptions = {}): void {
@@ -62,10 +62,10 @@ export function renderXconFence(source: string, language = 'xcon', options: Xcon
 }
 
 function languageToSyntax(language: string): XconSyntax | null {
+  if (language === 'xcon-sketch' || language === 'xcons') return 'sketch';
   if (language === 'xcon-json' || language === 'xconj') return 'json';
   if (language === 'xcon-xml' || language === 'xconx') return 'xml';
   if (language === 'xcon-tagless' || language === 'xconl' || language === 'xcont') return 'tagless';
-  if (language === 'xcon-sketch' || language === 'xcons') return 'sketch';
   return null;
 }
 

@@ -56,6 +56,7 @@ const publicComponentTypes = [
   'shape',
   'slider',
   'spacer',
+  'spanGrid',
   'spinner',
   'stack',
   'switch',
@@ -139,7 +140,7 @@ const actionHolderProps = [
 const removedLocalFileProps = ['acceptedTypes', 'maxFiles', 'maxFileSize', 'uploadUrl'];
 
 schema.description =
-  'Public viewer-only XCON/JSON schema for declarative UI documents. It covers renderable component documents and nested data for XCON/JSON, XCON/XML, XCON/TAGLESS, and XCON/SKETCH conversion.';
+  'Public viewer-only XCON/JSON schema for declarative UI documents. It covers renderable component documents and nested data for XCON/SKETCH, XCON/JSON, XCON/XML, and XCON/TAGLESS conversion.';
 schema.definitions.componentType.enum = publicComponentTypes;
 schema.definitions.safeObject = {
   type: 'object',

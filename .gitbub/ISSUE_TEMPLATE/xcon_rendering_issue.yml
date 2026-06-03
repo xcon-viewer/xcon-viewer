@@ -1,0 +1,95 @@
+name: XCON syntax or rendering issue
+description: Report a parser, converter, validator, or renderer mismatch.
+title: "[XCON]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form when a specific XCON document, SKETCH block, XML document, TAGLESS document, or JSON document parses, converts, validates, or renders incorrectly.
+
+  - type: checkboxes
+    id: existing
+    attributes:
+      label: Existing issue check
+      options:
+        - label: I have searched existing issues and discussions.
+          required: true
+
+  - type: dropdown
+    id: syntax
+    attributes:
+      label: Input syntax
+      options:
+        - XCON/JSON
+        - XCON/XML
+        - XCON/TAGLESS
+        - XCON/SKETCH
+        - Markdown fenced xcon block
+        - Mixed / conversion pipeline
+    validations:
+      required: true
+
+  - type: dropdown
+    id: operation
+    attributes:
+      label: Operation
+      multiple: true
+      options:
+        - Parse
+        - Validate
+        - Convert
+        - Render
+        - Format
+        - CLI
+        - Markdown integration
+    validations:
+      required: true
+
+  - type: textarea
+    id: input
+    attributes:
+      label: Minimal input
+      description: Paste the smallest input that shows the problem.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+      description: Include output, screenshot, error message, or rendered behavior.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+      description: Describe the expected parse/convert/validate/render result.
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      value: |
+        - OS:
+        - Browser:
+        - Node:
+        - npm:
+        - Package/version:
+        - Commit SHA:
+      render: markdown
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Security check
+      options:
+        - label: This does not describe a suspected script execution, HTML injection, URL bypass, CSS bypass, or external resource loading bypass.
+          required: true

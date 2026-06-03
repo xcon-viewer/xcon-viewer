@@ -1,0 +1,15 @@
+screen 402x560
+  title: label "Support ticket" at 24 32 354 34
+    font
+      size 24
+      weight 800
+  severity: select at 24 92 354 44
+    placeholder "Severity"
+    options [{"value":"low","label":"Low"},{"value":"high","label":"High"}]
+  subject: textField "Subject" at 24 152 354 44
+  details: textarea at 24 212 354 140
+    placeholder "Describe the issue"
+    rows null
+  submit: button "Create ticket" at 24 384 354 48
+    backgroundColor "#DC2626"
+    color "#FFFFFF"

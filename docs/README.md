@@ -1,8 +1,8 @@
 # XCON Viewer Docs
 
-Public XCON is a viewer-only UI document format. It describes one screen as structured objects and can be written in JSON, XML, TAGLESS, or SKETCH syntax.
+Public XCON is a viewer-only UI document format. It describes one screen as structured objects and is optimized around XCON/SKETCH for authoring and XCON/JSON for canonical interchange. XML and TAGLESS are supported compatibility formats.
 
-XCON/SKETCH is a compact authoring syntax for Markdown and LLM-generated examples. It parses into the same XCON Object Model and can be converted to JSON, XML, or TAGLESS.
+XCON/SKETCH is a compact authoring syntax for Markdown and LLM-generated examples. It parses into the same XCON Object Model and can be converted to JSON first, then XML or TAGLESS when compatibility output is needed.
 
 ## Documents
 
@@ -11,8 +11,10 @@ XCON/SKETCH is a compact authoring syntax for Markdown and LLM-generated example
 - [Public site structure](./public-site.md)
 - [Deployment guide](./deployment.md)
 - [Deployment file inventory](./deployment-files.md)
+- [Release and publish runbook](./release-and-publishing.md)
 - [Format specification](../spec/README.md)
 - [XCON/SKETCH syntax](../spec/xcon-sketch-syntax.md)
+- [XCON/JSON syntax](../spec/xcon-json-syntax.md)
 - [Examples](../examples/README.md)
 - [JSON Schema](../schema/xcon.schema.json)
 - [Playground](../playground/index.html) or `/play` through the static server

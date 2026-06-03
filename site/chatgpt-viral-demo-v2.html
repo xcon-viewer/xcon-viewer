@@ -1,0 +1,1202 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>XCON Viewer — Drop UI into any LLM app</title>
+  <meta name="description"
+    content="Watch AI generate real UI components inside a ChatGPT-style conversation. No code. No canvas. Just a prompt." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0d0d0d;
+      --surface: #161616;
+      --surface2: #1e1e1e;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.14);
+      --text: #ececec;
+      --text-muted: #8a8a8a;
+      --text-faint: #555;
+      --accent: #10a37f;
+      --accent-dim: rgba(16, 163, 127, 0.15);
+      --accent-glow: rgba(16, 163, 127, 0.4);
+      --user-bg: #2a2a2a;
+      --source-text: #7089a4;
+      --sidebar-w: 260px;
+      --font: 'Geist', system-ui, sans-serif;
+      --mono: 'Geist Mono', monospace;
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f8f4ee;
+        --surface: #fffdf9;
+        --surface2: #f2ece3;
+        --border: rgba(47, 36, 28, 0.13);
+        --border-strong: rgba(47, 36, 28, 0.22);
+        --text: #18181b;
+        --text-muted: #495565;
+        --text-faint: #6b7280;
+        --accent: #c8642e;
+        --accent-dim: rgba(200, 100, 46, 0.14);
+        --accent-glow: rgba(200, 100, 46, 0.28);
+        --user-bg: #282828;
+        --source-text: #4a617b;
+      }
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .app {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex: 0 0 var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar-top {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .new-chat-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border-strong);
+      border-radius: 10px;
+      background: transparent;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .new-chat-btn:hover {
+      background: var(--surface2);
+    }
+
+    .sidebar-section {
+      padding: 18px 12px 6px;
+    }
+
+    .sidebar-section-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-faint);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0 6px;
+      margin-bottom: 4px;
+    }
+
+    .chat-history-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 13px;
+      transition: all 0.12s;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-history-item:hover {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .chat-history-item.active {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .user-profile:hover {
+      background: var(--surface2);
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #10a37f, #1a7f5a);
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .user-name {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .user-plan {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* MAIN */
+    .main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      height: 52px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+
+    .model-selector {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border-strong);
+      background: transparent;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .model-selector:hover {
+      background: var(--surface2);
+    }
+
+    .model-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 6px var(--accent-glow);
+    }
+
+    .demo-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ctrl-btn {
+      padding: 5px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border-strong);
+      background: transparent;
+      color: var(--text-muted);
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .ctrl-btn:hover {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .ctrl-btn.primary {
+      background: var(--accent);
+      border-color: transparent;
+      color: white;
+    }
+
+    .ctrl-btn.primary:hover {
+      background: #0d8f6e;
+    }
+
+    .ctrl-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* SPLIT */
+    .content-split {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) clamp(320px, 26vw, 440px);
+      position: relative;
+    }
+
+    /* CHAT */
+    .chat-area {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .chat-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 0;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+    }
+
+    .chat-messages {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .message {
+      padding: 20px 0;
+    }
+
+    .message-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .msg-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .msg-avatar.user-av {
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      color: white;
+    }
+
+    .msg-avatar.ai-av {
+      background: var(--accent);
+      color: white;
+      padding: 4px;
+    }
+
+    .msg-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .msg-body {
+      padding-left: 38px;
+    }
+
+    .message.user .msg-body {
+      background: var(--user-bg);
+      color: #f8fafc;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-left: 38px;
+      margin-top: -10px;
+    }
+
+    .message.user .msg-body p {
+      color: #f8fafc;
+    }
+
+    .rendered-chat {
+      color: var(--text);
+      line-height: 1.65;
+    }
+
+    .rendered-chat h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 16px 0 8px;
+    }
+
+    .rendered-chat h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 12px 0 6px;
+    }
+
+    .rendered-chat p {
+      margin: 6px 0;
+      color: var(--text);
+    }
+
+    .rendered-chat ul {
+      margin: 8px 0 10px;
+      padding-left: 20px;
+    }
+
+    .rendered-chat li {
+      margin: 4px 0;
+      color: var(--text-muted);
+    }
+
+    .rendered-chat li strong,
+    .rendered-chat strong {
+      color: var(--text);
+    }
+
+    .inline-xcon-preview {
+      margin: 16px 0 10px;
+      border-radius: 16px;
+      overflow: auto;
+      background: #1a1f2e;
+      border: 1px solid var(--border-strong);
+      padding: 16px;
+      max-width: 100%;
+      scrollbar-width: thin;
+    }
+
+    .inline-xcon-waiting,
+    .inline-xcon-error {
+      min-height: 120px;
+      border: 1px dashed var(--border-strong);
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      color: var(--text-faint);
+      text-align: center;
+      padding: 18px;
+    }
+
+    .inline-xcon-preview[data-streaming-preview="true"] {
+      border-style: dashed;
+      border-color: var(--accent);
+    }
+
+    .streaming-preview-label {
+      margin: -4px 0 10px;
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .msg-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 10px;
+      padding-left: 38px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .message:hover .msg-actions {
+      opacity: 1;
+    }
+
+    .msg-action-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 8px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: var(--text-faint);
+      font-size: 12px;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: all 0.15s;
+    }
+
+    .msg-action-btn:hover {
+      background: var(--surface2);
+      color: var(--text-muted);
+    }
+
+    .thinking-dots {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .thinking-dots span {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      animation: dotBounce 1.2s ease-in-out infinite;
+    }
+
+    .thinking-dots span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .thinking-dots span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    .typing-caret {
+      display: inline-block;
+      width: 2px;
+      height: 1.1em;
+      margin-left: 1px;
+      vertical-align: -0.1em;
+      background: var(--text);
+      animation: blink 750ms steps(1) infinite;
+    }
+
+    /* COMPOSER */
+    .chat-composer {
+      padding: 12px 24px 20px;
+      flex-shrink: 0;
+    }
+
+    .composer-inner {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .composer-box {
+      display: flex;
+      align-items: flex-end;
+      border: 1px solid var(--border-strong);
+      border-radius: 16px;
+      background: var(--surface2);
+      padding: 10px 10px 10px 18px;
+      transition: border-color 0.2s;
+    }
+
+    .composer-box:focus-within {
+      border-color: rgba(16, 163, 127, 0.5);
+      box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.08);
+    }
+
+    .composer-input {
+      flex: 1;
+      min-height: 24px;
+      max-height: 120px;
+      resize: none;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.5;
+      padding: 4px 0;
+    }
+
+    .composer-input::placeholder {
+      color: var(--text-faint);
+    }
+
+    .composer-tools {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding-left: 8px;
+    }
+
+    .icon-btn {
+      width: 34px;
+      height: 34px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: all 0.15s;
+    }
+
+    .icon-btn:hover {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .composer-send {
+      width: 36px;
+      height: 36px;
+      border: none;
+      border-radius: 10px;
+      background: var(--accent);
+      color: white;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+
+    .composer-send:hover {
+      background: #0d8f6e;
+    }
+
+    .composer-send:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .composer-send.is-sending {
+      transform: scale(0.95);
+      opacity: 0.7;
+    }
+
+    .composer-caption {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-faint);
+      margin-top: 8px;
+    }
+
+    /* SOURCE */
+    .source-area {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--surface);
+    }
+
+    .source-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      height: 52px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .source-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .source-status-badge {
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-faint);
+      transition: all 0.3s;
+    }
+
+    .source-status-badge.streaming {
+      background: rgba(16, 163, 127, 0.12);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .source-status-badge.rendered {
+      background: rgba(16, 163, 127, 0.08);
+      border-color: rgba(16, 163, 127, 0.3);
+      color: #0d8f6e;
+    }
+
+    .source-scroller {
+      flex: 1;
+      overflow: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.08) transparent;
+    }
+
+    .source-stream {
+      min-height: 100%;
+      margin: 0;
+      padding: 20px;
+      white-space: pre;
+      overflow-wrap: normal;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.75;
+      color: var(--source-text);
+    }
+
+    /* CTA OVERLAY */
+    .cta-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(13, 13, 13, 0.88);
+      backdrop-filter: blur(12px);
+      display: grid;
+      place-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+      z-index: 100;
+    }
+
+    .cta-overlay.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .cta-card {
+      max-width: 540px;
+      width: calc(100% - 48px);
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 24px;
+      padding: 48px 40px 40px;
+      text-align: center;
+      box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+      animation: ctaRise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+      position: relative;
+    }
+
+    @keyframes ctaRise {
+      from {
+        transform: translateY(40px) scale(0.95);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    .cta-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(16, 163, 127, 0.3);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 999px;
+      margin-bottom: 24px;
+    }
+
+    .cta-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .cta-title {
+      font-size: 32px;
+      font-weight: 800;
+      line-height: 1.15;
+      color: var(--text);
+      margin-bottom: 14px;
+      letter-spacing: -0.02em;
+    }
+
+    .cta-title span {
+      background: linear-gradient(135deg, #10a37f, #3be8b0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .cta-desc {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+
+    .cta-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .cta-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 26px;
+      border-radius: 12px;
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+      box-shadow: 0 8px 24px rgba(16, 163, 127, 0.3);
+    }
+
+    .cta-primary:hover {
+      background: #0d8f6e;
+      transform: translateY(-1px);
+      box-shadow: 0 12px 32px rgba(16, 163, 127, 0.4);
+    }
+
+    .cta-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-radius: 12px;
+      border: 1px solid var(--border-strong);
+      background: transparent;
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .cta-secondary:hover {
+      background: var(--surface2);
+    }
+
+    .cta-share-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: var(--text-faint);
+      font-size: 12px;
+      flex-wrap: wrap;
+    }
+
+    .share-icon-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .share-icon-btn:hover {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .cta-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-faint);
+      cursor: pointer;
+      font-size: 18px;
+      display: grid;
+      place-items: center;
+      transition: all 0.15s;
+    }
+
+    .cta-close:hover {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    @keyframes blink {
+      50% {
+        opacity: 0;
+      }
+    }
+
+    @keyframes dotBounce {
+
+      0%,
+      80%,
+      100% {
+        transform: translateY(0);
+        opacity: 0.4;
+      }
+
+      40% {
+        transform: translateY(-4px);
+        opacity: 1;
+      }
+    }
+
+    @keyframes avatarPulse {
+      50% {
+        box-shadow: 0 0 0 6px rgba(16, 163, 127, 0.15);
+      }
+    }
+
+    .is-thinking {
+      animation: avatarPulse 1.2s ease-in-out infinite;
+    }
+
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    @media (max-width: 960px) {
+      .sidebar {
+        display: none;
+      }
+
+      .content-split {
+        grid-template-columns: 1fr;
+      }
+
+      .source-area {
+        display: none;
+      }
+
+      html,
+      body {
+        overflow: auto;
+      }
+
+      .app {
+        height: auto;
+      }
+    }
+  </style>
+  <script
+    type="importmap">{"imports":{"@xcon-viewer/core":"/packages/core/dist/index.js","@xcon-viewer/viewer":"/packages/viewer/dist/index.js"}}</script>
+</head>
+
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <a href="https://xconviewer.dev" target="_blank"
+          style="display:flex;align-items:center;gap:8px;padding:8px 10px 12px;text-decoration:none;color:var(--text);">
+          <div
+            style="width:26px;height:26px;border-radius:7px;background:var(--accent);display:grid;place-items:center;font-size:12px;font-weight:900;color:white;flex-shrink:0;">
+            X</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;">XCON Viewer</div>
+            <div style="font-size:10px;color:var(--text-faint);">xconviewer.dev</div>
+          </div>
+        </a>
+        <button class="new-chat-btn">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          New chat
+        </button>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Today</div>
+        <div class="chat-history-item active">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+          Monthly revenue summary
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Yesterday</div>
+        <div class="chat-history-item"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+            viewBox="0 0 24 24">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>User churn dashboard</div>
+        <div class="chat-history-item"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+            viewBox="0 0 24 24">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>Sprint retrospective card</div>
+        <div class="chat-history-item"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+            viewBox="0 0 24 24">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>Onboarding funnel analysis</div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Last 7 days</div>
+        <div class="chat-history-item"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+            viewBox="0 0 24 24">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>API usage report card</div>
+        <div class="chat-history-item"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+            viewBox="0 0 24 24">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>Sales pipeline overview</div>
+      </div>
+      <div class="sidebar-footer">
+        <div class="user-profile">
+          <div class="user-avatar">U</div>
+          <div>
+            <div class="user-name">You</div>
+            <div class="user-plan">XCON Pro</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main">
+      <div class="topbar">
+        <button class="model-selector">
+          <div class="model-dot"></div>
+          XCON-4o
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </button>
+        <div class="demo-controls">
+          <a href="https://github.com/xcon-viewer/xcon-viewer" target="_blank"
+            style="display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;border:1px solid var(--border-strong);color:var(--text-muted);font-size:12px;font-weight:600;text-decoration:none;"
+            onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='transparent'"><svg
+              width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.86 8.37 6.84 9.73.5.1.68-.22.68-.5 0-.24-.01-1.05-.01-1.9-2.78.62-3.37-1.22-3.37-1.22-.45-1.18-1.11-1.5-1.11-1.5-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.57 2.36 1.12 2.93.86.09-.67.35-1.12.63-1.38-2.22-.26-4.55-1.14-4.55-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05A9.38 9.38 0 0 1 12 6.96c.85 0 1.7.12 2.5.34 1.9-1.33 2.74-1.05 2.74-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.8-4.56 5.06.36.32.68.94.68 1.9 0 1.38-.01 2.49-.01 2.82 0 .28.18.6.69.5A10.14 10.14 0 0 0 22 12.25C22 6.58 17.52 2 12 2Z" />
+            </svg> GitHub</a>
+          <button id="clearButton" class="ctrl-btn">Clear</button>
+          <button id="replayButton" class="ctrl-btn primary">&#9654; Replay demo</button>
+        </div>
+      </div>
+
+      <div class="content-split">
+        <!-- CTA OVERLAY -->
+        <div class="cta-overlay" id="ctaOverlay">
+          <div class="cta-card">
+            <button class="cta-close" id="ctaClose">&#215;</button>
+            <div class="cta-badge">
+              <div class="cta-dot"></div> Live demo complete
+            </div>
+            <h2 class="cta-title">Add this to your<br><span>LLM app today.</span></h2>
+            <p class="cta-desc">One npm install. AI responses render as charts,<br>grids, and dashboards — streamed
+              inline, safe by design.</p>
+            <div
+              style="background:var(--surface2);border:1px solid var(--border-strong);border-radius:10px;padding:10px 16px;margin-bottom:20px;text-align:left;">
+              <code style="font-family:var(--mono);font-size:12px;color:#a7f3d0;">npm install @xcon-viewer/core
+                @xcon-viewer/viewer</code></div>
+            <div class="cta-buttons">
+              <a href="https://xconviewer.dev/docs" target="_blank" class="cta-primary">Read the docs <svg width="14"
+                  height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg></a>
+              <a href="https://xconviewer.dev/play" target="_blank" class="cta-secondary">Try playground</a>
+            </div>
+            <div class="cta-share-row">
+              <span>Share this demo</span>
+              <button class="share-icon-btn" id="shareX">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.259 5.631 5.905-5.631zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+                Post on X
+              </button>
+              <button class="share-icon-btn" id="copyLink">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                </svg>
+                Copy link
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- CHAT -->
+        <div class="chat-area">
+          <div id="chatScroll" class="chat-scroll">
+            <div id="chatMessages" class="chat-messages"></div>
+          </div>
+          <div class="chat-composer">
+            <div class="composer-inner">
+              <div class="composer-box">
+                <textarea id="composerInput" class="composer-input" rows="1"
+                  placeholder="Ask anything — XCON renders UI inline…"></textarea>
+                <div class="composer-tools">
+                  <button class="icon-btn"><svg width="16" height="16" fill="none" stroke="currentColor"
+                      stroke-width="2" viewBox="0 0 24 24">
+                      <path
+                        d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                    </svg></button>
+                  <button id="sendButton" class="composer-send"><svg width="16" height="16" fill="none"
+                      stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                      <path d="M12 19V5M5 12l7-7 7 7" />
+                    </svg></button>
+                </div>
+              </div>
+              <p class="composer-caption"><a href="https://xconviewer.dev" target="_blank"
+                  style="color:var(--accent);text-decoration:none;font-weight:600;">xconviewer.dev</a>
+                &nbsp;&middot;&nbsp; <code style="font-size:10px;color:var(--text-faint);">npm install
+                  @xcon-viewer/core</code></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- SOURCE -->
+        <div class="source-area">
+          <div class="source-topbar">
+            <div class="source-label">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="16 18 22 12 16 6" />
+                <polyline points="8 6 2 12 8 18" />
+              </svg>
+              Raw response stream
+            </div>
+            <span id="sourceStatus" class="source-status-badge">waiting</span>
+          </div>
+          <div id="sourceScroller" class="source-scroller">
+            <pre id="sourceStream" class="source-stream"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { parseBySyntax } from '@xcon-viewer/core';
+    import { render, viewerCss } from '@xcon-viewer/viewer';
+    const style = document.createElement('style');
+    style.textContent = viewerCss;
+    document.head.appendChild(style);
+
+    const chatMessages = document.getElementById('chatMessages'), composerInput = document.getElementById('composerInput'), sendButton = document.getElementById('sendButton'), sourceStream = document.getElementById('sourceStream'), sourceScroller = document.getElementById('sourceScroller'), sourceStatus = document.getElementById('sourceStatus'), chatScroll = document.getElementById('chatScroll'), replayButton = document.getElementById('replayButton'), clearButton = document.getElementById('clearButton'), ctaOverlay = document.getElementById('ctaOverlay'), ctaClose = document.getElementById('ctaClose'), shareX = document.getElementById('shareX'), copyLink = document.getElementById('copyLink');
+    const userTypingDelayMs = 38, thinkingDelayMs = 1100, assistantTextDelayMs = 44, sketchChunkDelayMs = 28;
+    let runToken = 0, lastStreamingSketchSource = '', renderedChat = null, assistantAvatar = null;
+
+    const conversationTurns = [
+      {
+        prompt: "Summarize this month's revenue. Show me a dashboard.",
+        response: ['Good news \u2014 MRR crossed $124K this month, up 18% from last month, driven mostly by enterprise upgrades.', '', '## Monthly revenue summary', '', '- **MRR: $124,800** \u2014 up 18% MoM', '- Enterprise plan drove **62%** of new revenue', '- Churn held steady at **2.1%** \u2014 lowest this quarter', '- Net Revenue Retention: **118%**', '', '```xcon-sketch', 'screen "Revenue Dashboard" 720x500 bg #f8fafc', '  hero: panel at 24 24 672 108', '    bg #111827', '    radius 22', '    title: label "Monthly Revenue" at 28 22 260 28', '      color white', '      font', '        size 20', '        weight 800', '    mrr: label "$124,800" at 28 58 200 42', '      color #fbbf24', '      font', '        size 34', '        weight 800', '    growth: label "+18% MoM" at 240 68 130 24', '      color #a7f3d0', '      font', '        size 16', '        weight 700', '    nrr: panel at 520 24 132 60', '      bg #1f2937', '      radius 14', '      n1: label "NRR" at 18 10 96 18', '        color #93c5fd', '        align center', '      n2: label "118%" at 18 32 96 22', '        color white', '        align center', '        font', '          size 18', '          weight 800', '  metrics: panel at 24 156 672 100', '    bg white', '    radius 18', '    border', '      visible true', '      color #d8e0ea', '    m1: panel at 20 18 148 64', '      bg #eff6ff', '      radius 12', '      t: label "New MRR" at 12 8 120 18', '        color #1e40af', '        font', '          size 11', '          weight 700', '      v: label "$38,400" at 12 30 120 24', '        color #1d4ed8', '        font', '          size 18', '          weight 800', '    m2: panel at 186 18 148 64', '      bg #ecfdf5', '      radius 12', '      t: label "Expansion" at 12 8 120 18', '        color #065f46', '        font', '          size 11', '          weight 700', '      v: label "$22,100" at 12 30 120 24', '        color #059669', '        font', '          size 18', '          weight 800', '    m3: panel at 352 18 148 64', '      bg #fef2f2', '      radius 12', '      t: label "Churned" at 12 8 120 18', '        color #991b1b', '        font', '          size 11', '          weight 700', '      v: label "-$2,600" at 12 30 120 24', '        color #dc2626', '        font', '          size 18', '          weight 800', '    m4: panel at 518 18 134 64', '      bg #faf5ff', '      radius 12', '      t: label "Churn Rate" at 12 8 110 18', '        color #6b21a8', '        font', '          size 11', '          weight 700', '      v: label "2.1%" at 12 30 110 24', '        color #7c3aed', '        font', '          size 18', '          weight 800', '  planBreak: panel at 24 280 672 176', '    bg white', '    radius 18', '    border', '      visible true', '      color #d8e0ea', '    pt: label "Revenue by plan" at 20 18 200 22', '      color #172033', '      font', '        size 16', '        weight 800', '    p1: panel at 20 54 294 96', '      bg #f0fdf4', '      radius 14', '      pl: label "Enterprise" at 16 12 180 20', '        color #166534', '        font', '          size 13', '          weight 700', '      pv: label "$77,400" at 16 36 180 28', '        color #15803d', '        font', '          size 22', '          weight 800', '      pp: label "62% of total" at 16 68 180 18', '        color #4ade80', '    p2: panel at 334 54 294 96', '      bg #fffbeb', '      radius 14', '      pl: label "Growth plan" at 16 12 180 20', '        color #92400e', '        font', '          size 13', '          weight 700', '      pv: label "$47,400" at 16 36 180 28', '        color #d97706', '        font', '          size 22', '          weight 800', '      pp: label "38% of total" at 16 68 180 18', '        color #fbbf24', '    cta: button "Export report" at 544 138 108 34', '      bg #2563eb', '      color white', '      radius 10', '```'].join('\n')
+      },
+      {
+        prompt: "Which plan has the highest churn risk?",
+        response: ['Based on the data, the Growth plan shows the highest churn risk signals this month.', '', '## Churn risk by plan', '', '- **Growth plan**: 3 accounts flagged \u2014 low logins + no feature adoption', '- **Starter plan**: 2 accounts at risk, both on month-to-month', '- Enterprise accounts stable \u2014 all on annual contracts', '', '```xcon-sketch', 'screen "Churn Risk Breakdown" 720x400 bg #f8fafc', '  header: panel at 24 24 672 72', '    bg #7f1d1d', '    radius 20', '    title: label "Churn risk \u2014 this month" at 28 16 400 26', '      color white', '      font', '        size 19', '        weight 800', '    sub: label "3 accounts flagged for intervention" at 28 48 400 18', '      color #fca5a5', '  riskA: panel at 24 118 210 248', '    bg white', '    radius 18', '    border', '      visible true', '      color #fecaca', '    badge: label "HIGH RISK" at 16 16 110 24', '      bg #dc2626', '      color white', '      radius 12', '      align center', '    plan: label "Growth plan" at 16 52 170 20', '      color #172033', '      font', '        size 15', '        weight 800', '    count: label "3 accounts" at 16 78 170 18', '      color #dc2626', '      font', '        size 13', '        weight 700', '    r1: label "\u2022 Low login freq." at 16 108 170 16', '      color #64748b', '    r2: label "\u2022 No feature adoption" at 16 130 170 16', '      color #64748b', '    r3: label "\u2022 Month-to-month" at 16 152 170 16', '      color #64748b', '    action: button "Review accounts" at 16 198 160 34', '      bg #dc2626', '      color white', '      radius 10', '  riskB: panel at 254 118 210 248', '    bg white', '    radius 18', '    border', '      visible true', '      color #fed7aa', '    badge: label "MEDIUM" at 16 16 110 24', '      bg #ea580c', '      color white', '      radius 12', '      align center', '    plan: label "Starter plan" at 16 52 170 20', '      color #172033', '      font', '        size 15', '        weight 800', '    count: label "2 accounts" at 16 78 170 18', '      color #ea580c', '      font', '        size 13', '        weight 700', '    r1: label "\u2022 M-t-M billing" at 16 108 170 16', '      color #64748b', '    r2: label "\u2022 Support tickets up" at 16 130 170 16', '      color #64748b', '    action: button "Schedule check-in" at 16 198 160 34', '      bg #ea580c', '      color white', '      radius 10', '  riskC: panel at 484 118 212 248', '    bg white', '    radius 18', '    border', '      visible true', '      color #bbf7d0', '    badge: label "STABLE" at 16 16 110 24', '      bg #16a34a', '      color white', '      radius 12', '      align center', '    plan: label "Enterprise" at 16 52 170 20', '      color #172033', '      font', '        size 15', '        weight 800', '    count: label "All 18 accounts" at 16 78 170 18', '      color #16a34a', '      font', '        size 13', '        weight 700', '    r1: label "\u2022 Annual contracts" at 16 108 170 16', '      color #64748b', '    r2: label "\u2022 NPS avg 72" at 16 130 170 16', '      color #64748b', '    r3: label "\u2022 High feature use" at 16 152 170 16', '      color #64748b', '    action: button "View details" at 16 198 160 34', '      bg #16a34a', '      color white', '      radius 10', '```'].join('\n')
+      },
+      {
+        prompt: "Show me the whole launch system: pipeline, owners, and dependencies.",
+        response: ['Here is the launch command center view I would put in front of the team. It combines pipeline trend, accountable owners, and dependency risk in one live artifact.', '', '## Launch command center', '', '- **Weighted pipeline:** $1.42M across four acquisition motions', '- **Owner grid:** every launch lane has a named DRI and status', '- **Dependency map:** CRM enrichment is the critical handoff feeding email and sales routing', '', '```xcon-sketch', 'screen "Launch Command Center" 720x640 bg #f8fafc', '  hero: panel at 24 24 672 112', '    bg #111827', '    radius 24', '    title: label "Launch command center" at 28 22 340 30', '      color white', '      font 24 800', '    pipeline: label "$1.42M" at 28 62 180 42', '      color #fbbf24', '      font 34 800', '    label: label "weighted pipeline" at 194 78 160 20', '      color #a7f3d0', '      font 14 800', '    status: label "3 blockers / 1 critical path" at 420 28 220 24', '      color #fecaca', '      align right', '      font 15 800', '    note: label "Marketing, sales, and lifecycle ops in one shared view" at 420 60 220 40', '      color #cbd5e1', '      align right', '      font 13 600', '  chartBlock: panel at 24 158 320 214', '    bg white', '    radius 18', '    border', '      visible true', '      color #d8e0ea', '    chartTitle: label "Pipeline by motion" at 20 18 220 24', '      color #172033', '      font 18 800', '    motionChart: chart at 20 56 278 132', '      chartType "bar"', '      chartData {"labels":["Inbound","Partners","Expansion","Events"],"datasets":[{"label":"Pipeline","data":[420,360,510,130],"backgroundColor":"#c4622d"}]}', '  ownerBlock: panel at 368 158 328 214', '    bg white', '    radius 18', '    border', '      visible true', '      color #d8e0ea', '    ownerTitle: label "Launch owners" at 20 18 220 24', '      color #172033', '      font 18 800', '    ownerGrid: spanGrid at 20 56 288 132', '      backgroundColor white', '      readonly true', '      data [["Workstream","Owner","Status"],["Data room","Nia","Ready"],["Email ops","Jules","Blocked"],["Sales routing","Mika","Review"]]', '      columns [{"id":"workstream","title":"Workstream","width":126},{"id":"owner","title":"Owner","width":74},{"id":"status","title":"Status","width":88}]', '  networkBlock: panel at 24 396 672 210', '    bg white', '    radius 20', '    border', '      visible true', '      color #d8e0ea', '    networkTitle: label "Dependency map" at 20 18 220 24', '      color #172033', '      font 18 800', '    network: networkDiagram at 20 52 632 138', '      backgroundColor #eef6ff', '      nodeRadius 24', '      primaryColor #2563eb', '      nodeColor #14b8a6', '      accentColor #db2777', '      linkColor #94a3b8', '      refLinkColor #f59e0b', '      textColor #0f172a', '      showLabels true', '      showArrows true', '      nodes [{"id":"capture","label":"Lead capture","x":90,"y":280,"color":"#2563eb"},{"id":"crm","label":"CRM enrich","x":255,"y":280,"color":"#14b8a6"},{"id":"score","label":"Lead score","x":430,"y":165,"color":"#8b5cf6"},{"id":"email","label":"Lifecycle email","x":430,"y":395,"color":"#db2777"},{"id":"sales","label":"Sales route","x":610,"y":165,"color":"#f59e0b"},{"id":"brief","label":"Exec brief","x":610,"y":395,"color":"#10b981"}]', '      links [{"source":"capture","target":"crm"},{"source":"crm","target":"score"},{"source":"crm","target":"email"},{"source":"score","target":"sales","type":"ref"},{"source":"email","target":"brief"},{"source":"sales","target":"brief","type":"folder"}]', '```'].join('\n')
+      },
+      {
+        prompt: "Give me a one-pager I can share with the team.",
+        response: ['Here is a shareable summary with the key numbers and action items for this month.', '', '## Team summary card', '', '- Revenue healthy, churn risk contained, NRR strong at 118%', '- Two CS action items this week', '- Health score up to 87', '', '```xcon-sketch', 'screen "Monthly One-Pager" 720x460 bg #f8fafc', '  header: panel at 24 24 672 84', '    bg #111827', '    radius 20', '    title: label "Monthly business review" at 28 20 400 24', '      color white', '      font', '        size 18', '        weight 800', '    date: label "May 2026" at 28 52 200 18', '      color #94a3b8', '    status: label "On track \u2191" at 574 28 80 28', '      bg #166534', '      color #a7f3d0', '      radius 14', '      align center', '      font', '        size 13', '        weight 800', '  kpis: panel at 24 132 672 72', '    bg white', '    radius 14', '    border', '      visible true', '      color #d8e0ea', '    k1: label "MRR  $124.8K" at 32 22 190 28', '      color #172033', '      font', '        size 15', '        weight 800', '    sep1: shape at 226 10 1 52', '      bg #e2e8f0', '    k2: label "Growth  +18%" at 246 22 180 28', '      color #172033', '      font', '        size 15', '        weight 800', '    sep2: shape at 432 10 1 52', '      bg #e2e8f0', '    k3: label "NRR  118%" at 452 22 160 28', '      color #172033', '      font', '        size 15', '        weight 800', '    sep3: shape at 616 10 1 52', '      bg #e2e8f0', '    k4: label "Churn  2.1%" at 630 22 54 28', '      color #dc2626', '      font', '        size 14', '        weight 800', '  actions: panel at 24 230 440 192', '    bg white', '    radius 18', '    border', '      visible true', '      color #d8e0ea', '    at: label "Action items" at 20 18 200 22', '      color #172033', '      font', '        size 16', '        weight 800', '    a1: label "1. CS to contact 3 at-risk Growth accounts by Friday" at 20 52 390 18', '      color #475569', '    a2: label "2. Offer annual upgrade to 2 Starter accounts" at 20 78 390 18', '      color #475569', '    a3: label "3. Prep expansion pitch for top 5 Enterprise" at 20 104 390 18', '      color #475569', '    share: button "Copy shareable link" at 20 146 168 34', '      bg #2563eb', '      color white', '      radius 10', '  score: panel at 484 230 212 192', '    bg #0f172a', '    radius 18', '    st: label "Health score" at 20 18 160 20', '      color white', '      font', '        size 14', '        weight 700', '    sv: label "87" at 20 48 160 60', '      color #fbbf24', '      align center', '      font', '        size 50', '        weight 800', '    sl: label "out of 100" at 20 112 160 18', '      color #64748b', '      align center', '    sd: label "\u2191 +4 from last month" at 20 140 170 22', '      color #a7f3d0', '      align center', '      font', '        size 12', '        weight 700', '```'].join('\n')
+      }
+    ];
+
+    function escapeHtml(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+    function renderInlineMarkdown(v) { return escapeHtml(v).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/`([^`]+)`/g, '<code>$1</code>'); }
+    function renderMarkdownBlock(md) { return md.split(/\n{2,}/).filter(Boolean).map(block => { const t = block.trim(); if (!t) return ''; if (t.startsWith('## ')) return `<h2>${renderInlineMarkdown(t.slice(3))}</h2>`; if (t.startsWith('### ')) return `<h3>${renderInlineMarkdown(t.slice(4))}</h3>`; if (t.startsWith('- ')) { const items = t.split('\n').map(l => l.replace(/^[-*]\s+/, '').trim()); return `<ul>${items.map(i => `<li>${renderInlineMarkdown(i)}</li>`).join('')}</ul>`; } return `<p>${renderInlineMarkdown(t).replace(/\n/g, '<br>')}</p>`; }).join(''); }
+    function renderMarkdownWithInlineSketch(md, showCaret = false) { const fence = /```([^\n]*)\n([\s\S]*?)```/g; let html = '', cursor = 0, previewIndex = 0, match; while ((match = fence.exec(md))) { html += renderMarkdownBlock(md.slice(cursor, match.index)); const lang = match[1].trim().toLowerCase(); if (lang === 'xcon-sketch' || lang === 'xcon') { html += `<div class="inline-xcon-preview" data-preview-index="${previewIndex}"></div>`; previewIndex++; } else { html += `<pre><code>${escapeHtml(match[2])}</code></pre>`; } cursor = match.index + match[0].length; } const tail = md.slice(cursor); const openFence = tail.match(/```(?:xcon-sketch|xcon)\s*\n[\s\S]*$/i); if (openFence && typeof openFence.index === 'number') { html += renderMarkdownBlock(tail.slice(0, openFence.index)); html += '<div class="inline-xcon-preview" data-streaming-preview="true"><div class="inline-xcon-waiting">SKETCH block is streaming\u2026</div></div>'; } else { html += renderMarkdownBlock(tail); } if (showCaret) html += '<span class="typing-caret" aria-hidden="true"></span>'; return html; }
+    function extractCompletedSketchSources(md) { const sources = []; const pat = /```([^\n]*)\n([\s\S]*?)```/g; let m; while ((m = pat.exec(md))) { const lang = m[1].trim().toLowerCase(); if (lang === 'xcon-sketch' || lang === 'xcon') sources.push(m[2].trim()); } return sources; }
+    function mountInlineSketchPreviews(root, md) { const sources = extractCompletedSketchSources(md); root.querySelectorAll('[data-preview-index]').forEach(node => { const src = sources[Number(node.dataset.previewIndex)]; if (!src) return; try { const doc = parseBySyntax(src, 'sketch'); node.innerHTML = ''; render(doc, node, { allowExternalResources: true, allowHtml: false }); } catch (e) { node.innerHTML = `<div class="inline-xcon-error">SKETCH render error: ${escapeHtml(e.message || e)}</div>`; } }); }
+    function extractStreamingSketchSource(md) { const marker = md.match(/```(?:xcon-sketch|xcon)\s*\n/i); if (!marker || typeof marker.index !== 'number') return ''; const start = marker.index + marker[0].length; const rest = md.slice(start); const closeIdx = rest.indexOf('```'); return closeIdx >= 0 ? '' : rest; }
+    function findBestEffortSketchSource(src) { let lines = String(src || '').replace(/\r\n/g, '\n').split('\n'); const startIdx = lines.findIndex(l => /^\s*screen\b/i.test(l)); if (startIdx < 0) return ''; lines = lines.slice(startIdx); while (lines.length && !lines[lines.length - 1].trim()) lines.pop(); for (let end = lines.length; end >= 1; end--) { const candidate = lines.slice(0, end).join('\n').trimEnd(); if (!candidate) continue; try { parseBySyntax(candidate, 'sketch'); return candidate; } catch { } } return ''; }
+    function renderBestEffortSketchPreview(node, src) { const sketch = findBestEffortSketchSource(src); if (!sketch) { node.innerHTML = '<div class="inline-xcon-waiting">Waiting for a valid screen line\u2026</div>'; return; } try { const doc = parseBySyntax(sketch, 'sketch'); node.innerHTML = '<div class="streaming-preview-label">Live partial preview</div><div data-streaming-preview-body></div>'; render(doc, node.querySelector('[data-streaming-preview-body]'), { allowExternalResources: true, allowHtml: false }); lastStreamingSketchSource = sketch; } catch (e) { node.innerHTML = `<div class="inline-xcon-error">Partial render error: ${escapeHtml(e.message || e)}</div>`; } }
+    function mountStreamingSketchPreview(root, md) { const node = root.querySelector('[data-streaming-preview="true"]'); if (!node) return; const src = extractStreamingSketchSource(md); if (!src.trim()) return; renderBestEffortSketchPreview(node, src); }
+    function setSourceStatus(label) { sourceStatus.textContent = label; sourceStatus.className = 'source-status-badge'; if (label === 'streaming' || label === 'streaming sketch') sourceStatus.classList.add('streaming'); if (label === 'rendered') sourceStatus.classList.add('rendered'); }
+    function appendUserMessage(content) { const article = document.createElement('article'); article.className = 'message user'; article.innerHTML = `<div class="message-header"><div class="msg-avatar user-av">U</div><div class="msg-name">You</div></div><div class="msg-body"><p>${renderInlineMarkdown(content)}</p></div>`; chatMessages.appendChild(article); return article.querySelector('.msg-body'); }
+    function appendAssistantMessage() { const article = document.createElement('article'); article.className = 'message assistant'; article.innerHTML = `<div class="message-header"><div class="msg-avatar ai-av" id="assistantAvatar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div><div class="msg-name">XCON-4o</div></div><div id="renderedChat" class="msg-body rendered-chat"></div><div class="msg-actions"><button class="msg-action-btn"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy</button><button class="msg-action-btn"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg> Good response</button><button class="msg-action-btn"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg> Regenerate</button></div>`; chatMessages.appendChild(article); return { article, avatar: article.querySelector('#assistantAvatar'), bubble: article.querySelector('#renderedChat') }; }
+    function scrollToBottom() { sourceScroller.scrollTop = sourceScroller.scrollHeight; chatScroll.scrollTop = chatScroll.scrollHeight; }
+    function realisticTypingDelay(char, index, base) { if (/[.!?]/.test(char)) return base + 200; if (/[,;]/.test(char)) return base + 90; if (char === ' ') return base + 8; return base + ((index % 5) * 6); }
+    function nextAssistantIndex(md, index) { const rendered = md.slice(0, index); const inFence = rendered.includes('```xcon-sketch') && !rendered.match(/```xcon-sketch[\s\S]*?```/); if (inFence) { const nextLine = md.indexOf('\n', index + 1); const lineEnd = nextLine === -1 ? md.length : nextLine + 1; return Math.min(lineEnd, index + 24); } if (md[index] === '\n') return index + 1; return Math.min(md.length, index + 3 + (index % 4)); }
+    async function streamComposerInput(token, prompt) { composerInput.value = ''; composerInput.focus(); for (let i = 0; i <= prompt.length; i++) { if (token !== runToken) return false; composerInput.value = prompt.slice(0, i); composerInput.scrollTop = composerInput.scrollHeight; if (i < prompt.length) await sleep(realisticTypingDelay(prompt[i], i, userTypingDelayMs)); } return true; }
+    async function sendPromptFromComposer(token) { if (token !== runToken) return false; sendButton.classList.add('is-sending'); appendUserMessage(composerInput.value); composerInput.value = ''; scrollToBottom(); await sleep(220); sendButton.classList.remove('is-sending'); return true; }
+    async function streamAssistantResponse(token, md) { let index = 0; while (index < md.length) { if (token !== runToken) return false; index = nextAssistantIndex(md, index); const slice = md.slice(0, index); sourceStream.textContent = slice; renderedChat.innerHTML = renderMarkdownWithInlineSketch(slice, true); mountInlineSketchPreviews(renderedChat, slice); mountStreamingSketchPreview(renderedChat, slice); scrollToBottom(); const streamingSrc = extractStreamingSketchSource(slice); setSourceStatus(streamingSrc ? 'streaming sketch' : 'streaming'); await sleep(streamingSrc ? sketchChunkDelayMs : realisticTypingDelay(slice.at(-1), index, assistantTextDelayMs)); } return true; }
+    async function runScenario() { const token = ++runToken; replayButton.disabled = true; clearButton.disabled = true; sendButton.disabled = true; ctaOverlay.classList.remove('visible'); lastStreamingSketchSource = ''; chatMessages.innerHTML = ''; composerInput.value = ''; renderedChat = null; assistantAvatar = null; sourceStream.textContent = ''; setSourceStatus('waiting'); await sleep(400); for (const turn of conversationTurns) { const userDone = await streamComposerInput(token, turn.prompt); if (!userDone || token !== runToken) return; const sent = await sendPromptFromComposer(token); if (!sent || token !== runToken) return; const assistant = appendAssistantMessage(); renderedChat = assistant.bubble; assistantAvatar = assistant.avatar; sourceStream.textContent = ''; setSourceStatus('thinking'); assistantAvatar.classList.add('is-thinking'); renderedChat.innerHTML = '<div class="thinking-dots"><span></span><span></span><span></span></div>'; scrollToBottom(); await sleep(thinkingDelayMs); if (token !== runToken) return; assistantAvatar.classList.remove('is-thinking'); const assistantDone = await streamAssistantResponse(token, turn.response); if (!assistantDone || token !== runToken) return; sourceStream.textContent = turn.response; renderedChat.innerHTML = renderMarkdownWithInlineSketch(turn.response, false); mountInlineSketchPreviews(renderedChat, turn.response); setSourceStatus('rendered'); scrollToBottom(); await sleep(700); } replayButton.disabled = false; clearButton.disabled = false; sendButton.disabled = false; await sleep(900); if (token === runToken) ctaOverlay.classList.add('visible'); }
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+    replayButton.addEventListener('click', runScenario);
+    clearButton.addEventListener('click', () => { runToken++; chatMessages.innerHTML = ''; composerInput.value = ''; renderedChat = null; assistantAvatar = null; sourceStream.textContent = ''; setSourceStatus('waiting'); ctaOverlay.classList.remove('visible'); replayButton.disabled = false; clearButton.disabled = false; sendButton.disabled = false; });
+    ctaClose.addEventListener('click', () => ctaOverlay.classList.remove('visible'));
+    shareX.addEventListener('click', () => { const text = encodeURIComponent('\uD83E\uDD2F Just saw AI render actual UI components inside a chat \u2014 streamed in real time, no canvas, no code. This is XCON SKETCH.'); const url = encodeURIComponent(location.href); window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank'); });
+    copyLink.addEventListener('click', () => { navigator.clipboard.writeText(location.href).then(() => { copyLink.textContent = '\u2713 Copied!'; setTimeout(() => { copyLink.innerHTML = '<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Copy link'; }, 2000); }); });
+    window.addEventListener('load', runScenario);
+  </script>
+</body>
+
+</html>

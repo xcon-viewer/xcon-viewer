@@ -1,0 +1,2229 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Meta Lab - XCON Viewer</title>
+  <meta name="description" content="Experiment with path-based metadata, fixture binding, XCON Chain, XCON Workflow, and SKETCH rendering.">
+  <script type="importmap">
+    {
+      "imports": {
+        "@xcon-viewer/core": "/packages/core/dist/index.js",
+        "@xcon-viewer/viewer": "/packages/viewer/dist/index.js",
+        "@xcon-chain/core": "/xcon-chain/packages/core/src/index.js",
+        "@xcon-workflow/core": "/xcon-workflow/packages/core/src/index.js"
+      }
+    }
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f2ed;
+      --panel: #fffdfa;
+      --panel-2: #f8fafc;
+      --ink: #172033;
+      --muted: #64748b;
+      --line: #d8e0ea;
+      --accent: #c4622d;
+      --accent-2: #2563eb;
+      --good: #047857;
+      --warn: #b45309;
+      --bad: #b91c1c;
+      --code: #111827;
+      --grid: rgba(37, 99, 235, 0.12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+        var(--bg);
+      background-size: 24px 24px;
+    }
+    a { color: inherit; }
+    .shell {
+      width: min(1780px, calc(100vw - 24px));
+      margin: 12px auto;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 12px;
+      min-height: calc(100vh - 24px);
+    }
+    .topbar,
+    .pane,
+    .preview-shell {
+      border: 1px solid var(--line);
+      background: rgba(255, 253, 250, 0.94);
+      border-radius: 14px;
+      box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      gap: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .mark {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: var(--ink);
+      color: white;
+      font-weight: 900;
+    }
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: 20px; letter-spacing: -0.01em; }
+    .subtle { color: var(--muted); font-size: 13px; }
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .button {
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--ink);
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-weight: 800;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 13px;
+    }
+    .button.primary {
+      border-color: #205ba9;
+      background: #2c65ad;
+      color: white;
+    }
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(320px, 0.9fr) minmax(520px, 1.35fr) minmax(520px, 1.45fr);
+      gap: 12px;
+      min-height: 0;
+    }
+    .pane {
+      min-width: 0;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      overflow: hidden;
+    }
+    .pane-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(248, 250, 252, 0.8);
+    }
+    .pane-title {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      min-width: 0;
+    }
+    .pane-title strong { font-size: 15px; }
+    .pane-body {
+      min-height: 0;
+      overflow: auto;
+      padding: 14px;
+    }
+    .form-row { display: grid; gap: 8px; margin-bottom: 14px; }
+    label {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: white;
+      color: var(--ink);
+      font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      outline: none;
+    }
+    select {
+      font-family: inherit;
+      font-weight: 800;
+      padding: 9px 10px;
+    }
+    textarea {
+      resize: none;
+      padding: 12px;
+      min-height: 260px;
+    }
+    .catalog-editor { min-height: 360px; }
+    .template-editor { min-height: 650px; background: var(--code); color: #dbeafe; }
+    .meta-card {
+      border: 1px solid var(--line);
+      background: white;
+      border-radius: 12px;
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .meta-path {
+      font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: #334155;
+      word-break: break-all;
+    }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel-2);
+      padding: 5px 8px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #475569;
+    }
+    .chip.good { color: var(--good); background: #ecfdf5; border-color: #bbf7d0; }
+    .chip.warn { color: var(--warn); background: #fff7ed; border-color: #fed7aa; }
+    .code-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: white;
+    }
+    .code-table th,
+    .code-table td {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .code-table th {
+      background: #f2eee8;
+      font-weight: 900;
+    }
+    .code-table tr:last-child td { border-bottom: 0; }
+    .preview-shell {
+      min-width: 0;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      overflow: hidden;
+    }
+    .preview-body {
+      min-height: 0;
+      overflow: auto;
+      padding: 24px;
+      background:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+        #fff;
+      background-size: 24px 24px;
+    }
+    .rendered-doc {
+      max-width: 1040px;
+      display: grid;
+      gap: 16px;
+    }
+    .rendered-doc h1 {
+      font-size: 34px;
+      letter-spacing: -0.04em;
+      line-height: 1.06;
+    }
+    .rendered-doc h2 {
+      font-size: 22px;
+      letter-spacing: -0.02em;
+      margin-top: 4px;
+    }
+    .rendered-doc p {
+      color: #475569;
+      line-height: 1.65;
+      font-size: 15px;
+    }
+    .rendered-doc ul { margin: 0; padding-left: 22px; color: #475569; line-height: 1.65; }
+    .rendered-doc code {
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      border-radius: 5px;
+      padding: 1px 5px;
+      font-size: 0.9em;
+    }
+    .xcon-viewer-host {
+      background: transparent;
+      display: block;
+      position: relative;
+      max-width: 100%;
+      overflow: auto;
+      border-radius: 18px;
+      box-shadow: 0 18px 48px rgba(15, 23, 42, 0.12);
+      isolation: isolate;
+      contain: layout paint;
+    }
+    .lab-xcon-block {
+      width: 100%;
+      overflow: auto;
+      padding: 4px 0;
+      display: block;
+    }
+    .lab-xcon-block > .xcon-viewer-host > [data-xcon-type] {
+      position: absolute;
+    }
+    .workflow-wrap {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.92);
+      padding: 16px;
+      overflow: auto;
+    }
+    .output-tabs {
+      display: flex;
+      gap: 6px;
+    }
+    .tab {
+      border: 1px solid var(--line);
+      background: white;
+      border-radius: 9px;
+      padding: 7px 10px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .tab.is-active {
+      background: #2c65ad;
+      border-color: #2c65ad;
+      color: white;
+    }
+    .side-output { display: none; }
+    .side-output.is-active { display: block; }
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #0f172a;
+      color: #dbeafe;
+      border-radius: 12px;
+      padding: 12px;
+      font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    .diagnostic {
+      border: 1px solid #fecaca;
+      background: #fef2f2;
+      color: var(--bad);
+      border-radius: 12px;
+      padding: 12px;
+      font-weight: 800;
+    }
+    .derived-grid {
+      display: grid;
+      gap: 12px;
+    }
+    [hidden] { display: none !important; }
+    .meta-popup-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(15, 23, 42, 0.58);
+      backdrop-filter: blur(10px);
+    }
+    .meta-popup {
+      width: min(1480px, calc(100vw - 36px));
+      height: min(860px, calc(100vh - 36px));
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 292px minmax(0, 1fr);
+      overflow: hidden;
+      border: 1px solid #2d3f52;
+      border-radius: 14px;
+      background: #0f172a;
+      color: #d8e2ef;
+      box-shadow: 0 32px 90px rgba(0, 0, 0, 0.42);
+    }
+    .meta-popup button {
+      min-height: 30px;
+      border: 1px solid #2d3f52;
+      border-radius: 7px;
+      padding: 0 10px;
+      color: #d8e2ef;
+      background: #182235;
+      cursor: pointer;
+      font-weight: 800;
+    }
+    .meta-popup button:hover {
+      border-color: #60a5fa;
+      background: #1d2b44;
+    }
+    .meta-popup button.primary {
+      border-color: #2563eb;
+      color: #eff6ff;
+      background: #1d4ed8;
+    }
+    .meta-popup-sidebar {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+      border-right: 1px solid #2d3f52;
+      background: #111827;
+    }
+    .meta-popup-brand {
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid #2d3f52;
+      font-weight: 900;
+    }
+    .meta-popup-brand span {
+      display: block;
+      color: #8ea0b8;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .meta-popup-tools {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      padding: 10px 12px;
+      border-bottom: 1px solid #2d3f52;
+    }
+    .meta-popup-tree {
+      min-height: 0;
+      padding: 8px 0;
+      overflow: auto;
+    }
+    .meta-popup-tree-row {
+      min-height: 29px;
+      display: grid;
+      grid-template-columns: 18px minmax(72px, auto) minmax(0, 1fr);
+      gap: 6px;
+      align-items: center;
+      padding: 0 10px;
+      color: #8ea0b8;
+      cursor: pointer;
+      user-select: none;
+    }
+    .meta-popup-tree-row:hover {
+      color: #dbeafe;
+      background: #172033;
+    }
+    .meta-popup-tree-row.selected {
+      color: #ffffff;
+      background: #1e3a6e;
+    }
+    .meta-popup-tree-toggle { color: #8ea0b8; text-align: center; }
+    .meta-popup-tree-code {
+      color: #93c5fd;
+      font: 11px ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    .meta-popup-tree-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .meta-popup-main {
+      min-width: 0;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+      overflow: hidden;
+      background: #0f172a;
+    }
+    .meta-popup-topbar {
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 14px;
+      border-bottom: 1px solid #2d3f52;
+      background: #172033;
+    }
+    .meta-popup-title {
+      min-width: 0;
+      display: grid;
+      gap: 2px;
+    }
+    .meta-popup-title strong { font-size: 16px; }
+    .meta-popup-title span {
+      overflow: hidden;
+      color: #8ea0b8;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font: 12px ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    .meta-popup-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+    .meta-popup-status {
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 14px;
+      border-bottom: 1px solid #2d3f52;
+      color: #86efac;
+      background: #111827;
+    }
+    .meta-popup-path-lab {
+      min-width: 0;
+      display: grid;
+      grid-template-rows: auto minmax(74px, 104px);
+      gap: 8px;
+      padding: 10px 14px;
+      border-bottom: 1px solid #2d3f52;
+      background: #121c2e;
+      overflow: hidden;
+    }
+    .meta-popup-path-head {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: auto minmax(220px, 1fr) repeat(4, auto);
+      gap: 8px;
+      align-items: center;
+    }
+    .meta-popup-path-title {
+      color: #93c5fd;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .meta-popup-path-input {
+      min-width: 0;
+      height: 30px;
+      border: 1px solid #2d3f52;
+      border-radius: 7px;
+      padding: 0 9px;
+      color: #e5edf8;
+      background: #0f172a;
+      font: 12px ui-monospace, SFMono-Regular, Consolas, monospace;
+      outline: none;
+    }
+    .meta-popup-path-body {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      overflow: hidden;
+    }
+    .meta-popup-result {
+      min-height: 0;
+      margin: 0;
+      overflow: auto;
+      border: 1px solid #2d3f52;
+      border-radius: 8px;
+      padding: 8px;
+      color: #dbeafe;
+      background: #0b1220;
+      font: 11px/1.45 ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    .meta-popup-grid-area {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 10px;
+      padding: 12px 14px;
+      overflow: auto;
+    }
+    .meta-popup-top-grids {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 10px;
+      min-width: 0;
+    }
+    .meta-popup-grid-card {
+      min-width: 0;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      border: 1px solid #2d3f52;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #111827;
+    }
+    .meta-popup-grid-card.tall { min-height: 260px; }
+    .meta-popup-grid-head {
+      min-height: 36px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-bottom: 1px solid #2d3f52;
+      background: #172033;
+    }
+    .meta-popup-grid-title {
+      color: #93c5fd;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .meta-popup-count {
+      margin-left: auto;
+      color: #8ea0b8;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .meta-popup-table-wrap {
+      min-width: 0;
+      min-height: 0;
+      overflow: auto;
+      background: #0f172a;
+    }
+    .meta-popup-table {
+      width: 100%;
+      min-width: 520px;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .meta-popup-table th,
+    .meta-popup-table td {
+      border-right: 1px solid #2d3f52;
+      border-bottom: 1px solid #2d3f52;
+      padding: 8px 9px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .meta-popup-table th {
+      color: #93c5fd;
+      background: #1e3050;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .meta-popup-table td {
+      color: #d8e2ef;
+      background: #1c2333;
+    }
+    .meta-popup-table tr:nth-child(even) td { background: #1f2840; }
+    .meta-popup-table code {
+      color: #bfdbfe;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    .meta-popup-pre {
+      min-height: 0;
+      margin: 0;
+      overflow: auto;
+      padding: 10px;
+      color: #dbeafe;
+      background: #0b1220;
+      font: 11px/1.48 ui-monospace, SFMono-Regular, Consolas, monospace;
+    }
+    .meta-popup-foot {
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 14px;
+      border-top: 1px solid #2d3f52;
+      color: #8ea0b8;
+      background: #111827;
+      font-size: 12px;
+    }
+    @media (max-width: 1320px) {
+      .workspace { grid-template-columns: 360px minmax(440px, 1fr); }
+      .preview-shell { grid-column: 1 / -1; min-height: 720px; }
+    }
+    @media (max-width: 840px) {
+      .shell { width: calc(100vw - 12px); }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .workspace { grid-template-columns: 1fr; }
+      .preview-shell { min-height: 620px; }
+      .meta-popup { grid-template-columns: 1fr; }
+      .meta-popup-sidebar { display: none; }
+      .meta-popup-top-grids { grid-template-columns: 1fr; }
+      .meta-popup-path-head { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark">M</div>
+        <div>
+          <h1>Meta Lab</h1>
+          <p class="subtle">Path metadata -> fixture contract -> SUGAR binding -> SKETCH + Workflow document.</p>
+        </div>
+      </div>
+      <nav class="nav" aria-label="Related tools">
+        <a class="button" href="/">Home</a>
+        <a class="button" href="/template-lab">Template Studio</a>
+        <a class="button" href="/xcon-chain/">XCON Chain</a>
+        <a class="button" href="/xcon-workflow/">XCON Workflow</a>
+        <button id="renderButton" class="button primary" type="button">Render Meta Document</button>
+      </nav>
+    </header>
+
+    <main class="workspace">
+      <section class="pane">
+        <div class="pane-header">
+          <div class="pane-title">
+            <strong>Metadata catalog</strong>
+            <span class="subtle">path-based codes</span>
+          </div>
+          <div class="nav">
+            <button id="openMetaPopupButton" class="button" type="button">Meta Popup</button>
+            <button id="resetCatalogButton" class="button" type="button">Reset</button>
+          </div>
+        </div>
+        <div class="pane-body">
+          <div class="form-row">
+            <label for="pathSelect">Active meta path</label>
+            <select id="pathSelect"></select>
+          </div>
+          <div id="metaSummary" class="meta-card"></div>
+          <div class="form-row">
+            <label>Path code rows</label>
+            <div id="codeRows"></div>
+          </div>
+          <div class="form-row">
+            <label for="catalogEditor">Editable meta JSON</label>
+            <textarea id="catalogEditor" class="catalog-editor" spellcheck="false"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="pane">
+        <div class="pane-header">
+          <div class="pane-title">
+            <strong>Template contract</strong>
+            <span class="subtle">Markdown + SUGAR + SKETCH + Workflow</span>
+          </div>
+          <button id="resetTemplateButton" class="button" type="button">Reset</button>
+        </div>
+        <div class="pane-body">
+          <div class="form-row">
+            <label for="templateEditor">Meta-bound document template</label>
+            <textarea id="templateEditor" class="template-editor" spellcheck="false"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="preview-shell">
+        <div class="pane-header">
+          <div class="pane-title">
+            <strong>Rendered experiment</strong>
+            <span id="renderStatus" class="subtle">waiting</span>
+          </div>
+          <div class="output-tabs" role="tablist" aria-label="Meta Lab outputs">
+            <button class="tab is-active" type="button" data-output-tab="previewPanel">Preview</button>
+            <button class="tab" type="button" data-output-tab="fixturePanel">Fixture</button>
+            <button class="tab" type="button" data-output-tab="tracePanel">Trace</button>
+          </div>
+        </div>
+        <div class="preview-body">
+          <div id="previewPanel" class="side-output is-active">
+            <article id="renderedDocument" class="rendered-doc"></article>
+          </div>
+          <div id="fixturePanel" class="side-output">
+            <div class="derived-grid">
+              <div>
+                <label>Resolved fixture passed to Chain/SKETCH/Workflow</label>
+                <pre id="fixtureOutput"></pre>
+              </div>
+              <div>
+                <label>Resolved template source</label>
+                <pre id="sourceOutput"></pre>
+              </div>
+            </div>
+          </div>
+          <div id="tracePanel" class="side-output">
+            <div class="derived-grid">
+              <div>
+                <label>Binding variables</label>
+                <pre id="varsOutput"></pre>
+              </div>
+              <div>
+                <label>Diagnostics and trace</label>
+                <pre id="traceOutput"></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="metaPopup" class="meta-popup-backdrop" hidden>
+    <section class="meta-popup" role="dialog" aria-modal="true" aria-labelledby="metaPopupTitle">
+      <aside class="meta-popup-sidebar" aria-label="Meta path tree">
+        <div class="meta-popup-brand">
+          <div class="mark">M</div>
+          <div>
+            Meta Management
+            <span>Path codes and contracts</span>
+          </div>
+        </div>
+        <div class="meta-popup-tools">
+          <button id="metaPopupReloadButton" type="button">Reload</button>
+          <button id="metaPopupCopyButton" type="button">Copy JSON</button>
+        </div>
+        <div id="metaPopupTree" class="meta-popup-tree"></div>
+      </aside>
+
+      <main class="meta-popup-main">
+        <header class="meta-popup-topbar">
+          <div class="meta-popup-title">
+            <strong id="metaPopupTitle">Meta Management</strong>
+            <span id="metaPopupPath">Select a meta path.</span>
+          </div>
+          <div class="meta-popup-actions">
+            <button id="metaPopupRenderButton" class="primary" type="button">Render</button>
+            <button id="metaPopupCloseButton" type="button">Close</button>
+          </div>
+        </header>
+        <div id="metaPopupStatus" class="meta-popup-status">Local catalog ready.</div>
+
+        <section class="meta-popup-path-lab" aria-label="Path Lab">
+          <div class="meta-popup-path-head">
+            <span class="meta-popup-path-title">Path Lab</span>
+            <input id="metaPopupPathInput" class="meta-popup-path-input" type="text" spellcheck="false" aria-label="Meta path">
+            <button id="metaPopupUidButton" type="button">UID</button>
+            <button id="metaPopupRowButton" type="button">Row</button>
+            <button id="metaPopupRowsButton" type="button">Rows</button>
+            <button id="metaPopupValuesButton" type="button">Values</button>
+          </div>
+          <div class="meta-popup-path-body">
+            <pre id="metaPopupResult" class="meta-popup-result" aria-live="polite">{}</pre>
+          </div>
+        </section>
+
+        <section class="meta-popup-grid-area">
+          <div class="meta-popup-top-grids">
+            <section class="meta-popup-grid-card">
+              <div class="meta-popup-grid-head">
+                <span class="meta-popup-grid-title">Template Row</span>
+                <span id="metaPopupTemplateCount" class="meta-popup-count">1 row</span>
+              </div>
+              <div id="metaPopupTemplateRows" class="meta-popup-table-wrap"></div>
+            </section>
+            <section class="meta-popup-grid-card">
+              <div class="meta-popup-grid-head">
+                <span class="meta-popup-grid-title">Child Code Rows</span>
+                <span id="metaPopupItemCount" class="meta-popup-count">0 rows</span>
+              </div>
+              <div id="metaPopupItemRows" class="meta-popup-table-wrap"></div>
+            </section>
+          </div>
+          <div class="meta-popup-top-grids">
+            <section class="meta-popup-grid-card tall">
+              <div class="meta-popup-grid-head">
+                <span class="meta-popup-grid-title">Fixture JSON</span>
+                <span class="meta-popup-count">resolved data</span>
+              </div>
+              <pre id="metaPopupFixture" class="meta-popup-pre"></pre>
+            </section>
+            <section class="meta-popup-grid-card tall">
+              <div class="meta-popup-grid-head">
+                <span class="meta-popup-grid-title">Workflow Contract</span>
+                <span class="meta-popup-count">node map</span>
+              </div>
+              <pre id="metaPopupWorkflow" class="meta-popup-pre"></pre>
+            </section>
+          </div>
+        </section>
+
+        <footer class="meta-popup-foot">
+          <span>Selected path <strong id="metaPopupFootPath">-</strong></span>
+          <span>Catalog paths <strong id="metaPopupPathCount">0</strong></span>
+        </footer>
+      </main>
+    </section>
+  </div>
+
+  <script type="module">
+    const DEFAULT_CATALOG = {
+      appName: 'LaunchOps',
+      selectedPath: 'Metabase.Apps.LaunchOps.Briefs.MonthlyGrowth',
+      paths: {
+        'Metabase.Apps.LaunchOps.Briefs.MonthlyGrowth': {
+          UID: 2401,
+          PID: 88,
+          PCODE: 'Briefs',
+          CODE: 'MonthlyGrowth',
+          NAME: 'Monthly growth brief',
+          TYPE: 'TABLE',
+          FORMORDER: '010',
+          USE_YN: 'Y',
+          VALUE: 'templates/monthly-growth.md',
+          TARGET: 'template-lab',
+          DESCRIPTION: 'A reusable executive brief driven by fixture, workflow, and dashboard metadata.',
+          items: [
+            { code: 'fixture', name: 'Fixture JSON', type: 'DATA', value: 'record', target: 'record' },
+            { code: 'workflow', name: 'Approval Workflow', type: 'DATA', value: 'workflow.approval', target: 'workflow' },
+            { code: 'dashboard', name: 'Dashboard SKETCH', type: 'CODE', value: 'templates.monthlyGrowth.dashboard', target: 'xcon-sketch', note: 'Visual dashboard block rendered from the same fixture.' },
+            { code: 'publish', name: 'Publish Flow', type: 'CODE', value: 'templates.monthlyGrowth.workflow', target: 'xcon-workflow', note: 'Final workflow stage that releases the reviewed artifact.' }
+          ],
+          fixture: {
+            record: {
+              metrics: { revenue: 1284000, growth: 18, nrr: 118, risk: 3 },
+              channels: [
+                { name: 'Enterprise', revenue: 610000 },
+                { name: 'Partner', revenue: 420000 },
+                { name: 'Marketplace', revenue: 254000 }
+              ],
+              revenueChart: {
+                labels: ['Enterprise', 'Partner', 'Marketplace'],
+                datasets: [{ label: 'Revenue', data: [610, 420, 254], backgroundColor: '#c4622d' }]
+              },
+              teamGrid: [
+                ['Workstream', 'Owner', 'Status'],
+                ['Data room', 'Nia', 'Ready'],
+                ['Email ops', 'Jules', 'Review'],
+                ['Sales route', 'Mika', 'Launch']
+              ],
+              teamColumns: [
+                { id: 'workstream', title: 'Workstream', width: 126 },
+                { id: 'owner', title: 'Owner', width: 74 },
+                { id: 'status', title: 'Status', width: 88 }
+              ]
+            }
+          },
+          workflow: {
+            title: 'Monthly growth approval',
+            steps: {
+              collect: 'Prepare data pack',
+              bind: 'Bind metric fixture',
+              review: 'Finance review',
+              publish: 'Publish executive brief'
+            },
+            network: {
+              nodes: [
+                { id: 'source', label: 'Code path', x: 90, y: 280, color: '#2563eb' },
+                { id: 'fixture', label: 'Fixture', x: 255, y: 280, color: '#14b8a6' },
+                { id: 'chain', label: 'SUGAR', x: 420, y: 165, color: '#8b5cf6' },
+                { id: 'sketch', label: 'SKETCH', x: 420, y: 395, color: '#db2777' },
+                { id: 'workflow', label: 'Workflow', x: 610, y: 280, color: '#f59e0b' }
+              ],
+              links: [
+                { source: 'source', target: 'fixture' },
+                { source: 'fixture', target: 'chain' },
+                { source: 'fixture', target: 'sketch' },
+                { source: 'chain', target: 'workflow', type: 'ref' },
+                { source: 'sketch', target: 'workflow' }
+              ]
+            }
+          }
+        },
+        'Metabase.Apps.LaunchOps.Briefs.RegionalRollout': {
+          UID: 2402,
+          PID: 88,
+          PCODE: 'Briefs',
+          CODE: 'RegionalRollout',
+          NAME: 'Regional rollout plan',
+          TYPE: 'TABLE',
+          FORMORDER: '020',
+          USE_YN: 'Y',
+          VALUE: 'templates/regional-rollout.md',
+          TARGET: 'template-lab',
+          DESCRIPTION: 'A regional launch document that reuses the same template contract with different data.',
+          items: [
+            { code: 'fixture', name: 'Fixture JSON', type: 'DATA', value: 'record', target: 'record' },
+            { code: 'workflow', name: 'Launch Workflow', type: 'DATA', value: 'workflow.rollout', target: 'workflow' },
+            { code: 'dashboard', name: 'Rollout SKETCH', type: 'CODE', value: 'templates.regionalRollout.dashboard', target: 'xcon-sketch', note: 'Regional dashboard view selected by this path.' },
+            { code: 'publish', name: 'Publish Flow', type: 'CODE', value: 'templates.regionalRollout.workflow', target: 'xcon-workflow', note: 'Final reviewed rollout packet handoff.' }
+          ],
+          fixture: {
+            record: {
+              metrics: { revenue: 742000, growth: 11, nrr: 109, risk: 5 },
+              channels: [
+                { name: 'Seoul', revenue: 320000 },
+                { name: 'Busan', revenue: 188000 },
+                { name: 'Daejeon', revenue: 124000 },
+                { name: 'Jeju', revenue: 110000 }
+              ],
+              revenueChart: {
+                labels: ['Seoul', 'Busan', 'Daejeon', 'Jeju'],
+                datasets: [{ label: 'Pipeline', data: [320, 188, 124, 110], backgroundColor: '#2563eb' }]
+              },
+              teamGrid: [
+                ['Region', 'Owner', 'Status'],
+                ['Seoul', 'Mina', 'Ready'],
+                ['Busan', 'Leo', 'Review'],
+                ['Daejeon', 'Ari', 'Blocked'],
+                ['Jeju', 'Nia', 'Launch']
+              ],
+              teamColumns: [
+                { id: 'region', title: 'Region', width: 116 },
+                { id: 'owner', title: 'Owner', width: 80 },
+                { id: 'status', title: 'Status', width: 92 }
+              ]
+            }
+          },
+          workflow: {
+            title: 'Regional rollout approval',
+            steps: {
+              collect: 'Collect local signals',
+              bind: 'Bind regional fixture',
+              review: 'Ops readiness review',
+              publish: 'Publish rollout packet'
+            },
+            network: {
+              nodes: [
+                { id: 'cities', label: 'Regions', x: 90, y: 280, color: '#2563eb' },
+                { id: 'owners', label: 'Owners', x: 255, y: 280, color: '#14b8a6' },
+                { id: 'risks', label: 'Risk map', x: 420, y: 165, color: '#db2777' },
+                { id: 'plan', label: 'Plan', x: 420, y: 395, color: '#8b5cf6' },
+                { id: 'launch', label: 'Launch', x: 610, y: 280, color: '#f59e0b' }
+              ],
+              links: [
+                { source: 'cities', target: 'owners' },
+                { source: 'owners', target: 'risks', type: 'ref' },
+                { source: 'owners', target: 'plan' },
+                { source: 'risks', target: 'launch' },
+                { source: 'plan', target: 'launch' }
+              ]
+            }
+          }
+        },
+        'Metabase.Apps.LaunchOps.Briefs.CustomerHealth': {
+          UID: 2403,
+          PID: 88,
+          PCODE: 'Briefs',
+          CODE: 'CustomerHealth',
+          NAME: 'Customer health dashboard',
+          TYPE: 'TABLE',
+          FORMORDER: '030',
+          USE_YN: 'Y',
+          VALUE: 'templates/customer-health.md',
+          TARGET: 'template-lab',
+          DESCRIPTION: 'A retention and health-score document bound to customer segment metadata.',
+          items: [
+            { code: 'fixture', name: 'Fixture JSON', type: 'DATA', value: 'record', target: 'record' },
+            { code: 'workflow', name: 'Health Review Workflow', type: 'DATA', value: 'workflow.healthReview', target: 'workflow' },
+            { code: 'dashboard', name: 'Health SKETCH', type: 'CODE', value: 'templates.customerHealth.dashboard', target: 'xcon-sketch', note: 'Segment scorecard rendered from health metrics.' },
+            { code: 'publish', name: 'Publish Flow', type: 'CODE', value: 'templates.customerHealth.workflow', target: 'xcon-workflow', note: 'Final stage for sending the health review to CS and Sales.' }
+          ],
+          fixture: {
+            record: {
+              metrics: { revenue: 934000, growth: 7, nrr: 112, risk: 6 },
+              channels: [
+                { name: 'Healthy', revenue: 522000 },
+                { name: 'Watchlist', revenue: 288000 },
+                { name: 'At risk', revenue: 124000 }
+              ],
+              revenueChart: {
+                labels: ['Healthy', 'Watchlist', 'At risk'],
+                datasets: [{ label: 'ARR', data: [522, 288, 124], backgroundColor: '#14b8a6' }]
+              },
+              teamGrid: [
+                ['Segment', 'Owner', 'Status'],
+                ['Enterprise', 'Mina', 'Stable'],
+                ['Growth', 'Theo', 'Watch'],
+                ['Starter', 'Jules', 'Risk']
+              ],
+              teamColumns: [
+                { id: 'segment', title: 'Segment', width: 116 },
+                { id: 'owner', title: 'Owner', width: 80 },
+                { id: 'status', title: 'Status', width: 92 }
+              ]
+            }
+          },
+          workflow: {
+            title: 'Customer health review',
+            steps: {
+              collect: 'Collect account signals',
+              bind: 'Bind segment score fixture',
+              review: 'CS leadership review',
+              publish: 'Publish customer action plan'
+            },
+            network: {
+              nodes: [
+                { id: 'accounts', label: 'Accounts', x: 90, y: 280, color: '#2563eb' },
+                { id: 'health', label: 'Health score', x: 255, y: 280, color: '#14b8a6' },
+                { id: 'risk', label: 'Risk model', x: 420, y: 165, color: '#f97316' },
+                { id: 'plan', label: 'Action plan', x: 420, y: 395, color: '#8b5cf6' },
+                { id: 'publish', label: 'Publish', x: 610, y: 280, color: '#22c55e' }
+              ],
+              links: [
+                { source: 'accounts', target: 'health' },
+                { source: 'health', target: 'risk' },
+                { source: 'health', target: 'plan' },
+                { source: 'risk', target: 'publish' },
+                { source: 'plan', target: 'publish' }
+              ]
+            }
+          }
+        },
+        'Metabase.Apps.LaunchOps.Finance.InvoicePacket': {
+          UID: 2501,
+          PID: 92,
+          PCODE: 'Finance',
+          CODE: 'InvoicePacket',
+          NAME: 'Invoice and quote packet',
+          TYPE: 'TABLE',
+          FORMORDER: '040',
+          USE_YN: 'Y',
+          VALUE: 'templates/invoice-quote.md',
+          TARGET: 'template-lab',
+          DESCRIPTION: 'A quote-to-invoice packet that combines billing rows, totals, and approval flow metadata.',
+          items: [
+            { code: 'fixture', name: 'Fixture JSON', type: 'DATA', value: 'record', target: 'record' },
+            { code: 'workflow', name: 'Billing Workflow', type: 'DATA', value: 'workflow.billing', target: 'workflow' },
+            { code: 'dashboard', name: 'Billing SKETCH', type: 'CODE', value: 'templates.invoicePacket.dashboard', target: 'xcon-sketch', note: 'Invoice summary and payment status visual block.' },
+            { code: 'publish', name: 'Publish Flow', type: 'CODE', value: 'templates.invoicePacket.workflow', target: 'xcon-workflow', note: 'Final step that issues the approved packet to the client.' }
+          ],
+          fixture: {
+            record: {
+              metrics: { revenue: 3650, growth: 12, nrr: 100, risk: 2 },
+              channels: [
+                { name: 'Design', revenue: 1800 },
+                { name: 'Prototype', revenue: 1250 },
+                { name: 'Support', revenue: 600 }
+              ],
+              revenueChart: {
+                labels: ['Design', 'Prototype', 'Support'],
+                datasets: [{ label: 'Amount', data: [1800, 1250, 600], backgroundColor: '#2563eb' }]
+              },
+              teamGrid: [
+                ['Line item', 'Owner', 'Status'],
+                ['Design system', 'Ivy', 'Ready'],
+                ['Prototype pass', 'Noah', 'Review'],
+                ['Launch support', 'Ari', 'Ready']
+              ],
+              teamColumns: [
+                { id: 'lineItem', title: 'Line item', width: 126 },
+                { id: 'owner', title: 'Owner', width: 74 },
+                { id: 'status', title: 'Status', width: 88 }
+              ]
+            }
+          },
+          workflow: {
+            title: 'Invoice packet approval',
+            steps: {
+              collect: 'Prepare quote rows',
+              bind: 'Bind invoice fixture',
+              review: 'Finance and legal review',
+              publish: 'Publish invoice packet'
+            },
+            network: {
+              nodes: [
+                { id: 'quote', label: 'Quote', x: 90, y: 280, color: '#2563eb' },
+                { id: 'invoice', label: 'Invoice', x: 255, y: 280, color: '#14b8a6' },
+                { id: 'legal', label: 'Legal', x: 420, y: 165, color: '#8b5cf6' },
+                { id: 'finance', label: 'Finance', x: 420, y: 395, color: '#db2777' },
+                { id: 'issued', label: 'Issued', x: 610, y: 280, color: '#f59e0b' }
+              ],
+              links: [
+                { source: 'quote', target: 'invoice' },
+                { source: 'invoice', target: 'legal' },
+                { source: 'invoice', target: 'finance' },
+                { source: 'legal', target: 'issued' },
+                { source: 'finance', target: 'issued' }
+              ]
+            }
+          }
+        },
+        'Metabase.Apps.LaunchOps.Content.WeeklyBulletin': {
+          UID: 2601,
+          PID: 94,
+          PCODE: 'Content',
+          CODE: 'WeeklyBulletin',
+          NAME: 'Weekly bulletin template',
+          TYPE: 'TABLE',
+          FORMORDER: '050',
+          USE_YN: 'Y',
+          VALUE: 'templates/weekly-bulletin.md',
+          TARGET: 'template-lab',
+          DESCRIPTION: 'A repeatable bulletin document that binds weekly content, service flow, and publishing metadata.',
+          items: [
+            { code: 'fixture', name: 'Fixture JSON', type: 'DATA', value: 'record', target: 'record' },
+            { code: 'workflow', name: 'Editorial Workflow', type: 'DATA', value: 'workflow.editorial', target: 'workflow' },
+            { code: 'dashboard', name: 'Bulletin SKETCH', type: 'CODE', value: 'templates.weeklyBulletin.dashboard', target: 'xcon-sketch', note: 'Visual bulletin cover and service summary.' },
+            { code: 'publish', name: 'Publish Flow', type: 'CODE', value: 'templates.weeklyBulletin.workflow', target: 'xcon-workflow', note: 'Final editorial handoff before distribution.' }
+          ],
+          fixture: {
+            record: {
+              metrics: { revenue: 531, growth: 9, nrr: 100, risk: 1 },
+              channels: [
+                { name: 'Worship', revenue: 180 },
+                { name: 'Teaching', revenue: 160 },
+                { name: 'Community', revenue: 120 },
+                { name: 'Giving', revenue: 71 }
+              ],
+              revenueChart: {
+                labels: ['Worship', 'Teaching', 'Community', 'Giving'],
+                datasets: [{ label: 'Minutes', data: [18, 32, 24, 7], backgroundColor: '#8b5cf6' }]
+              },
+              teamGrid: [
+                ['Section', 'Owner', 'Status'],
+                ['Songs', 'Hannah', 'Ready'],
+                ['Sermon', 'Rev. Lee', 'Ready'],
+                ['Offering', 'Grace', 'Review']
+              ],
+              teamColumns: [
+                { id: 'section', title: 'Section', width: 116 },
+                { id: 'owner', title: 'Owner', width: 80 },
+                { id: 'status', title: 'Status', width: 92 }
+              ]
+           }
+          },
+          workflow: {
+            title: 'Weekly bulletin publishing',
+            steps: {
+              collect: 'Collect weekly content',
+              bind: 'Bind bulletin fixture',
+              review: 'Pastor and editor review',
+              publish: 'Publish bulletin'
+            },
+            network: {
+              nodes: [
+                { id: 'content', label: 'Content', x: 90, y: 280, color: '#2563eb' },
+                { id: 'fixture', label: 'Fixture', x: 255, y: 280, color: '#14b8a6' },
+                { id: 'editor', label: 'Editor', x: 420, y: 165, color: '#db2777' },
+                { id: 'pastor', label: 'Pastor', x: 420, y: 395, color: '#8b5cf6' },
+                { id: 'publish', label: 'Publish', x: 610, y: 280, color: '#f59e0b' }
+              ],
+              links: [
+                { source: 'content', target: 'fixture' },
+                { source: 'fixture', target: 'editor' },
+                { source: 'fixture', target: 'pastor' },
+                { source: 'editor', target: 'publish' },
+                { source: 'pastor', target: 'publish' }
+              ]
+            }
+          }
+        },
+        'Metabase.Apps.LaunchOps.Operations.CleaningChecklist': {
+          UID: 2701,
+          PID: 96,
+          PCODE: 'Operations',
+          CODE: 'CleaningChecklist',
+          NAME: 'Shared space cleaning checklist',
+          TYPE: 'TABLE',
+          FORMORDER: '060',
+          USE_YN: 'Y',
+          VALUE: 'templates/cleaning-checklist.md',
+          TARGET: 'template-lab',
+          DESCRIPTION: 'An operations checklist template with weekly ownership, table layout, and approval metadata.',
+          items: [
+            { code: 'fixture', name: 'Fixture JSON', type: 'DATA', value: 'record', target: 'record' },
+            { code: 'workflow', name: 'Operations Workflow', type: 'DATA', value: 'workflow.operations', target: 'workflow' },
+            { code: 'dashboard', name: 'Checklist SKETCH', type: 'CODE', value: 'templates.cleaningChecklist.dashboard', target: 'xcon-sketch', note: 'Poster-style checklist and weekly table visual.' },
+            { code: 'publish', name: 'Publish Flow', type: 'CODE', value: 'templates.cleaningChecklist.workflow', target: 'xcon-workflow', note: 'Final approved checklist posting step.' }
+          ],
+          fixture: {
+            record: {
+              metrics: { revenue: 7, growth: 5, nrr: 100, risk: 1 },
+              channels: [
+                { name: 'Lounge', revenue: 2 },
+                { name: 'Kitchen', revenue: 2 },
+                { name: 'Hall', revenue: 2 },
+                { name: 'Windows', revenue: 1 }
+              ],
+              revenueChart: {
+                labels: ['Lounge', 'Kitchen', 'Hall', 'Windows'],
+                datasets: [{ label: 'Tasks', data: [2, 2, 2, 1], backgroundColor: '#3b82f6' }]
+              },
+              teamGrid: [
+                ['Area', 'Owner', 'Status'],
+                ['Lounge / Shared table', 'Ava', 'Tue'],
+                ['Kitchen / Sink', 'Mia', 'Wed'],
+                ['Meeting room reset', 'Liam', 'Thu']
+              ],
+              teamColumns: [
+                { id: 'area', title: 'Area', width: 138 },
+                { id: 'owner', title: 'Owner', width: 74 },
+                { id: 'status', title: 'Status', width: 76 }
+              ]
+            }
+          },
+          workflow: {
+            title: 'Cleaning checklist approval',
+            steps: {
+              collect: 'Collect weekly assignments',
+              bind: 'Bind checklist fixture',
+              review: 'Facilities manager review',
+              publish: 'Post approved checklist'
+            },
+            network: {
+              nodes: [
+                { id: 'areas', label: 'Areas', x: 90, y: 280, color: '#2563eb' },
+                { id: 'owners', label: 'Owners', x: 255, y: 280, color: '#14b8a6' },
+                { id: 'schedule', label: 'Schedule', x: 420, y: 165, color: '#8b5cf6' },
+                { id: 'checklist', label: 'Checklist', x: 420, y: 395, color: '#db2777' },
+                { id: 'publish', label: 'Post', x: 610, y: 280, color: '#f59e0b' }
+              ],
+              links: [
+                { source: 'areas', target: 'owners' },
+                { source: 'owners', target: 'schedule' },
+                { source: 'owners', target: 'checklist' },
+                { source: 'schedule', target: 'publish' },
+                { source: 'checklist', target: 'publish' }
+              ]
+            }
+          }
+        }
+      }
+    };
+
+    const DEFAULT_TEMPLATE = [
+      '# $briefTitle',
+      '',
+      'Meta path: `$metaPath`',
+      '',
+      'This document is generated from a path-based metadata row. The selected row names the fixture, the visual SKETCH block, and the workflow contract that should be used together.',
+      '',
+      '```xcon-chain as briefTitle',
+      '= meta.NAME',
+      '```',
+      '',
+      '```xcon-chain as metaPath',
+      '= meta.path',
+      '```',
+      '',
+      '```xcon-chain as revenueTotal',
+      '= record.metrics.revenue | format "$#,###"',
+      '```',
+      '',
+      '```xcon-chain as growthLabel',
+      '= record.metrics.growth | concat "% growth"',
+      '```',
+      '',
+      '```xcon-chain as topChannels',
+      '= record.channels | sortBy revenue desc | map name | join ", "',
+      '```',
+      '',
+      '```xcon-chain as revenueChart',
+      '= record.revenueChart',
+      '```',
+      '',
+      '```xcon-chain as teamGrid',
+      '= record.teamGrid',
+      '```',
+      '',
+      '```xcon-chain as teamColumns',
+      '= record.teamColumns',
+      '```',
+      '',
+      '```xcon-chain as workflowTitle',
+      '= workflow.title',
+      '```',
+      '',
+      '```xcon-chain as stepCollect',
+      '= workflow.steps.collect',
+      '```',
+      '',
+      '```xcon-chain as stepBind',
+      '= workflow.steps.bind',
+      '```',
+      '',
+      '```xcon-chain as stepReview',
+      '= workflow.steps.review',
+      '```',
+      '',
+      '```xcon-chain as stepPublish',
+      '= workflow.steps.publish',
+      '```',
+      '',
+      '```xcon-chain as riskNodes',
+      '= workflow.network.nodes',
+      '```',
+      '',
+      '```xcon-chain as riskLinks',
+      '= workflow.network.links',
+      '```',
+      '',
+      '## Metadata-bound summary',
+      '',
+      '- Revenue: **$revenueTotal**',
+      '- Growth: **$growthLabel**',
+      '- Top channels: **$topChannels**',
+      '- Contract source: `$metaPath`',
+      '',
+      '```xcon-sketch',
+      'screen "Meta bound dashboard" 920x650 bg #f8fafc',
+      '  hero: panel at 24 24 872 128',
+      '    bg #111827',
+      '    radius 24',
+      '    title: label "$briefTitle" at 28 24 420 32',
+      '      color white',
+      '      font',
+      '        size 24',
+      '        weight 800',
+      '    revenue: label "$revenueTotal" at 28 66 220 44',
+      '      color #fbbf24',
+      '      font',
+      '        size 34',
+      '        weight 800',
+      '    growth: label "$growthLabel" at 266 76 180 28',
+      '      color #a7f3d0',
+      '      font',
+      '        size 18',
+      '        weight 800',
+      '    source: label "$metaPath" at 510 34 320 48',
+      '      color #cbd5e1',
+      '      align right',
+      '      font',
+      '        size 13',
+      '        weight 600',
+      '  chartBlock: panel at 24 182 420 210',
+      '    bg white',
+      '    radius 18',
+      '    border',
+      '      visible true',
+      '      color #d8e0ea',
+      '    chartTitle: label "Revenue by channel" at 20 18 240 24',
+      '      color #172033',
+      '      font 18 800',
+      '    salesChart: chart at 20 58 376 126',
+      '      chartType "bar"',
+      '      chartData $revenueChart',
+      '  tableBlock: panel at 468 182 428 210',
+      '    bg white',
+      '    radius 18',
+      '    border',
+      '      visible true',
+      '      color #d8e0ea',
+      '    tableTitle: label "Data contract rows" at 20 18 240 24',
+      '      color #172033',
+      '      font 18 800',
+      '    sheet: spanGrid at 20 58 388 126',
+      '      backgroundColor white',
+      '      readonly true',
+      '      data $teamGrid',
+      '      columns $teamColumns',
+      '  networkBlock: panel at 24 420 872 190',
+      '    bg white',
+      '    radius 20',
+      '    border',
+      '      visible true',
+      '      color #d8e0ea',
+      '    networkTitle: label "Path metadata processing map" at 20 18 280 24',
+      '      color #172033',
+      '      font 18 800',
+      '    network: networkDiagram at 20 52 832 118',
+      '      backgroundColor #eef6ff',
+      '      nodeRadius 23',
+      '      showLabels true',
+      '      showArrows true',
+      '      nodes $riskNodes',
+      '      links $riskLinks',
+      '```',
+      '',
+      '```xcon-workflow',
+      'workflow "$workflowTitle"',
+      '  collect: note "$stepCollect"',
+      '  bind: note "$stepBind"',
+      '    after collect',
+      '  review: note "$stepReview"',
+      '    after bind',
+      '  publish: note "$stepPublish"',
+      '    after review',
+      '```'
+    ].join('\n');
+
+    let modules = {};
+    let catalog = structuredClone(DEFAULT_CATALOG);
+    let activePath = DEFAULT_CATALOG.selectedPath;
+
+    const pathSelect = document.getElementById('pathSelect');
+    const catalogEditor = document.getElementById('catalogEditor');
+    const templateEditor = document.getElementById('templateEditor');
+    const metaSummary = document.getElementById('metaSummary');
+    const codeRows = document.getElementById('codeRows');
+    const renderedDocument = document.getElementById('renderedDocument');
+    const renderStatus = document.getElementById('renderStatus');
+    const fixtureOutput = document.getElementById('fixtureOutput');
+    const varsOutput = document.getElementById('varsOutput');
+    const traceOutput = document.getElementById('traceOutput');
+    const sourceOutput = document.getElementById('sourceOutput');
+    const metaPopup = document.getElementById('metaPopup');
+    const metaPopupTree = document.getElementById('metaPopupTree');
+    const metaPopupTitle = document.getElementById('metaPopupTitle');
+    const metaPopupPath = document.getElementById('metaPopupPath');
+    const metaPopupPathInput = document.getElementById('metaPopupPathInput');
+    const metaPopupResult = document.getElementById('metaPopupResult');
+    const metaPopupStatus = document.getElementById('metaPopupStatus');
+    const metaPopupTemplateRows = document.getElementById('metaPopupTemplateRows');
+    const metaPopupItemRows = document.getElementById('metaPopupItemRows');
+    const metaPopupTemplateCount = document.getElementById('metaPopupTemplateCount');
+    const metaPopupItemCount = document.getElementById('metaPopupItemCount');
+    const metaPopupFixture = document.getElementById('metaPopupFixture');
+    const metaPopupWorkflow = document.getElementById('metaPopupWorkflow');
+    const metaPopupFootPath = document.getElementById('metaPopupFootPath');
+    const metaPopupPathCount = document.getElementById('metaPopupPathCount');
+
+    init();
+
+    async function init() {
+      modules = await loadModules();
+      catalogEditor.value = JSON.stringify(catalog, null, 2);
+      templateEditor.value = DEFAULT_TEMPLATE;
+      setupTabs();
+      setupEvents();
+      syncPathSelect();
+      await render();
+    }
+
+    async function loadModules() {
+      const loaded = {};
+      const load = async (key, specifier) => {
+        try {
+          loaded[key] = await import(specifier);
+        } catch (error) {
+          loaded[key] = null;
+          console.warn(`Meta Lab could not load ${specifier}`, error);
+        }
+      };
+      await Promise.all([
+        load('viewerCore', '@xcon-viewer/core'),
+        load('viewerRenderer', '@xcon-viewer/viewer'),
+        load('chainCore', '@xcon-chain/core'),
+        load('workflowCore', '@xcon-workflow/core')
+      ]);
+      return loaded;
+    }
+
+    function setupEvents() {
+      document.getElementById('renderButton').addEventListener('click', render);
+      document.getElementById('openMetaPopupButton').addEventListener('click', openMetaPopup);
+      document.getElementById('metaPopupCloseButton').addEventListener('click', closeMetaPopup);
+      document.getElementById('metaPopupReloadButton').addEventListener('click', () => {
+        syncPathSelect();
+        renderMetaPopup();
+      });
+      document.getElementById('metaPopupCopyButton').addEventListener('click', copyActiveMetaJson);
+      document.getElementById('metaPopupRenderButton').addEventListener('click', async () => {
+        const nextPath = metaPopupPathInput.value.trim();
+        if (catalog.paths[nextPath]) {
+          activePath = nextPath;
+          await render();
+        } else {
+          runMetaPopupPathAction('row');
+        }
+      });
+      document.getElementById('metaPopupUidButton').addEventListener('click', () => runMetaPopupPathAction('uid'));
+      document.getElementById('metaPopupRowButton').addEventListener('click', () => runMetaPopupPathAction('row'));
+      document.getElementById('metaPopupRowsButton').addEventListener('click', () => runMetaPopupPathAction('rows'));
+      document.getElementById('metaPopupValuesButton').addEventListener('click', () => runMetaPopupPathAction('values'));
+      metaPopup.addEventListener('click', (event) => {
+        if (event.target === metaPopup) closeMetaPopup();
+      });
+      window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !metaPopup.hidden) closeMetaPopup();
+      });
+      document.getElementById('resetCatalogButton').addEventListener('click', async () => {
+        catalog = structuredClone(DEFAULT_CATALOG);
+        activePath = catalog.selectedPath;
+        catalogEditor.value = JSON.stringify(catalog, null, 2);
+        syncPathSelect();
+        await render();
+      });
+      document.getElementById('resetTemplateButton').addEventListener('click', async () => {
+        templateEditor.value = DEFAULT_TEMPLATE;
+        await render();
+      });
+      pathSelect.addEventListener('change', async () => {
+        activePath = pathSelect.value;
+        await render();
+      });
+    }
+
+    function setupTabs() {
+      document.querySelectorAll('.tab').forEach((button) => {
+        button.addEventListener('click', () => {
+          document.querySelectorAll('.tab').forEach((item) => item.classList.toggle('is-active', item === button));
+          document.querySelectorAll('.side-output').forEach((panel) => panel.classList.toggle('is-active', panel.id === button.dataset.outputTab));
+        });
+      });
+    }
+
+    function parseCatalog() {
+      try {
+        const parsed = JSON.parse(catalogEditor.value);
+        if (!parsed || typeof parsed !== 'object' || !parsed.paths || typeof parsed.paths !== 'object') {
+          throw new Error('Catalog JSON must contain a paths object.');
+        }
+        catalog = parsed;
+        if (!catalog.paths[activePath]) activePath = catalog.selectedPath || Object.keys(catalog.paths)[0];
+        return null;
+      } catch (error) {
+        return error;
+      }
+    }
+
+    function syncPathSelect() {
+      pathSelect.innerHTML = Object.keys(catalog.paths).map((path) => `<option value="${escapeAttr(path)}">${escapeHtml(catalog.paths[path].NAME || path)}</option>`).join('');
+      pathSelect.value = activePath;
+    }
+
+    async function render() {
+      renderStatus.textContent = 'rendering';
+      const catalogError = parseCatalog();
+      if (catalogError) {
+        renderedDocument.innerHTML = `<div class="diagnostic">${escapeHtml(catalogError.message)}</div>`;
+        renderStatus.textContent = 'catalog error';
+        return;
+      }
+      syncPathSelect();
+      const entry = catalog.paths[activePath];
+      if (!entry) {
+        renderedDocument.innerHTML = '<div class="diagnostic">Selected path does not exist in the catalog.</div>';
+        renderStatus.textContent = 'path error';
+        return;
+      }
+
+      renderMetaSummary(entry);
+      renderCodeRows(entry.items || []);
+      renderMetaPopup();
+
+      const context = buildContext(entry);
+      fixtureOutput.textContent = JSON.stringify(context, null, 2);
+
+      try {
+        const result = await renderTemplateDocument(templateEditor.value, context);
+        renderedDocument.innerHTML = result.html;
+        varsOutput.textContent = JSON.stringify(result.vars, null, 2);
+        traceOutput.textContent = [...result.logs, ...result.diagnostics].join('\n') || 'No diagnostics.';
+        sourceOutput.textContent = result.resolvedSource;
+        renderStatus.textContent = result.diagnostics.length ? `${result.diagnostics.length} issue(s)` : 'rendered';
+      } catch (error) {
+        renderedDocument.innerHTML = `<div class="diagnostic">${escapeHtml(error.message)}</div>`;
+        traceOutput.textContent = error.stack || error.message;
+        renderStatus.textContent = 'error';
+      }
+    }
+
+    function buildContext(entry) {
+      return {
+        meta: {
+          path: activePath,
+          UID: entry.UID,
+          PID: entry.PID,
+          PCODE: entry.PCODE,
+          CODE: entry.CODE,
+          NAME: entry.NAME,
+          TYPE: entry.TYPE,
+          FORMORDER: entry.FORMORDER,
+          VALUE: entry.VALUE,
+          TARGET: entry.TARGET,
+          DESCRIPTION: entry.DESCRIPTION,
+          items: entry.items || []
+        },
+        record: entry.fixture?.record || entry.fixture || {},
+        workflow: entry.workflow || {}
+      };
+    }
+
+    function renderMetaSummary(entry) {
+      metaSummary.innerHTML = [
+        `<h3>${escapeHtml(entry.NAME || entry.CODE || 'Untitled meta')}</h3>`,
+        `<div class="meta-path">${escapeHtml(activePath)}</div>`,
+        `<p class="subtle">${escapeHtml(entry.DESCRIPTION || 'No description.')}</p>`,
+        '<div class="chips">',
+        `<span class="chip good">TYPE ${escapeHtml(entry.TYPE || '-')}</span>`,
+        `<span class="chip">UID ${escapeHtml(entry.UID ?? '-')}</span>`,
+        `<span class="chip">FORMORDER ${escapeHtml(entry.FORMORDER || '-')}</span>`,
+        `<span class="chip ${entry.USE_YN === 'Y' ? 'good' : 'warn'}">USE_YN ${escapeHtml(entry.USE_YN || '-')}</span>`,
+        `<span class="chip">TARGET ${escapeHtml(entry.TARGET || '-')}</span>`,
+        '</div>'
+      ].join('');
+    }
+
+    function renderCodeRows(rows) {
+      if (!rows.length) {
+        codeRows.innerHTML = '<p class="subtle">No child code rows.</p>';
+        return;
+      }
+      codeRows.innerHTML = [
+        '<table class="code-table"><thead><tr><th>CODE</th><th>NAME</th><th>TYPE</th><th>VALUE</th><th>TARGET</th></tr></thead><tbody>',
+        ...rows.map((row) => `<tr><td><code>${escapeHtml(row.code || '')}</code></td><td>${escapeHtml(row.name || '')}</td><td>${escapeHtml(row.type || '')}</td><td>${escapeHtml(row.value || '')}</td><td>${escapeHtml(row.target || '')}</td></tr>`),
+        '</tbody></table>'
+      ].join('');
+    }
+
+    function openMetaPopup() {
+      metaPopup.hidden = false;
+      renderMetaPopup();
+      metaPopupPathInput.focus();
+      metaPopupPathInput.select();
+    }
+
+    function closeMetaPopup() {
+      metaPopup.hidden = true;
+    }
+
+    function renderMetaPopup() {
+      if (!metaPopup || metaPopup.hidden) return;
+      const entry = catalog.paths?.[activePath];
+      renderMetaPopupTree();
+      metaPopupPathCount.textContent = String(Object.keys(catalog.paths || {}).length);
+      metaPopupPathInput.value = activePath || '';
+      metaPopupFootPath.textContent = activePath || '-';
+      if (!entry) {
+        metaPopupTitle.textContent = 'Path not found';
+        metaPopupPath.textContent = activePath || '-';
+        metaPopupStatus.textContent = 'Selected path does not exist in the catalog.';
+        metaPopupStatus.className = 'meta-popup-status';
+        metaPopupTemplateRows.innerHTML = '<div class="meta-popup-pre">No row.</div>';
+        metaPopupItemRows.innerHTML = '<div class="meta-popup-pre">No child rows.</div>';
+        metaPopupFixture.textContent = '{}';
+        metaPopupWorkflow.textContent = '{}';
+        metaPopupResult.textContent = JSON.stringify({ action: 'getCodeRow', data: {} }, null, 2);
+        return;
+      }
+      metaPopupTitle.textContent = `${entry.NAME || entry.CODE || 'Untitled'} (${entry.CODE || '-'})`;
+      metaPopupPath.textContent = activePath;
+      metaPopupStatus.textContent = `Loaded ${entry.CODE || entry.NAME || activePath}.`;
+      metaPopupTemplateCount.textContent = '1 row';
+      metaPopupItemCount.textContent = `${(entry.items || []).length} rows`;
+      metaPopupTemplateRows.innerHTML = renderObjectTable([metaTemplateRow(entry)], [
+        'UID', 'PID', 'PCODE', 'CODE', 'NAME', 'TYPE', 'FORMORDER', 'USE_YN', 'VALUE', 'TARGET', 'DESCRIPTION'
+      ]);
+      metaPopupItemRows.innerHTML = renderObjectTable(entry.items || [], ['code', 'name', 'type', 'value', 'target', 'note']);
+      metaPopupFixture.textContent = JSON.stringify(entry.fixture || {}, null, 2);
+      metaPopupWorkflow.textContent = JSON.stringify(entry.workflow || {}, null, 2);
+      runMetaPopupPathAction('row', { quiet: true });
+    }
+
+    function renderMetaPopupTree() {
+      metaPopupTree.innerHTML = '';
+      const root = buildPathTree(Object.keys(catalog.paths || {}));
+      renderPathTreeNode(root, 0);
+    }
+
+    function buildPathTree(paths) {
+      const root = { code: 'Metabase', name: 'Metabase', path: '', children: new Map(), leaf: false };
+      for (const fullPath of paths) {
+        const parts = String(fullPath).split('.').filter(Boolean);
+        let node = root;
+        let path = '';
+        parts.forEach((part, index) => {
+          path = path ? `${path}.${part}` : part;
+          if (!node.children.has(part)) {
+            node.children.set(part, { code: part, name: part, path, children: new Map(), leaf: false });
+          }
+          node = node.children.get(part);
+          if (index === parts.length - 1) {
+            node.leaf = true;
+            node.name = catalog.paths[fullPath]?.NAME || part;
+          }
+        });
+      }
+      return root;
+    }
+
+    function renderPathTreeNode(node, depth) {
+      const children = [...node.children.values()];
+      if (node.path) {
+        const row = document.createElement('div');
+        row.className = `meta-popup-tree-row${node.path === activePath ? ' selected' : ''}`;
+        row.style.paddingLeft = `${10 + depth * 14}px`;
+        row.dataset.path = node.path;
+        row.innerHTML = [
+          `<span class="meta-popup-tree-toggle">${children.length ? 'v' : ''}</span>`,
+          `<span class="meta-popup-tree-code">${escapeHtml(node.code)}</span>`,
+          `<span class="meta-popup-tree-name">${escapeHtml(node.name)}</span>`
+        ].join('');
+        row.addEventListener('click', async () => {
+          if (!catalog.paths[node.path]) return;
+          activePath = node.path;
+          await render();
+        });
+        metaPopupTree.appendChild(row);
+      }
+      children
+        .sort((a, b) => a.code.localeCompare(b.code))
+        .forEach((child) => renderPathTreeNode(child, node.path ? depth + 1 : depth));
+    }
+
+    function metaTemplateRow(entry) {
+      return {
+        UID: entry.UID,
+        PID: entry.PID,
+        PCODE: entry.PCODE,
+        CODE: entry.CODE,
+        NAME: entry.NAME,
+        TYPE: entry.TYPE,
+        FORMORDER: entry.FORMORDER,
+        USE_YN: entry.USE_YN,
+        VALUE: entry.VALUE,
+        TARGET: entry.TARGET,
+        DESCRIPTION: entry.DESCRIPTION
+      };
+    }
+
+    function renderObjectTable(rows, columns) {
+      if (!rows.length) return '<div class="meta-popup-pre">No rows.</div>';
+      return [
+        '<table class="meta-popup-table"><thead><tr>',
+        ...columns.map((column) => `<th>${escapeHtml(column)}</th>`),
+        '</tr></thead><tbody>',
+        ...rows.map((row) => [
+          '<tr>',
+          ...columns.map((column) => `<td>${formatMetaCell(row[column])}</td>`),
+          '</tr>'
+        ].join('')),
+        '</tbody></table>'
+      ].join('');
+    }
+
+    function formatMetaCell(value) {
+      if (value == null) return '';
+      if (typeof value === 'object') return `<code>${escapeHtml(JSON.stringify(value))}</code>`;
+      return escapeHtml(value);
+    }
+
+    function runMetaPopupPathAction(action, options = {}) {
+      const path = metaPopupPathInput.value.trim() || activePath;
+      const entry = catalog.paths?.[path];
+      const data = getMetaPathActionData(action, path, entry);
+      metaPopupResult.textContent = JSON.stringify({ action: `getCode${action[0].toUpperCase()}${action.slice(1)}`, path, data }, null, 2);
+      if (!options.quiet) {
+        metaPopupStatus.textContent = entry ? `Path ${action} completed.` : `Path ${path} was not found.`;
+      }
+    }
+
+    function getMetaPathActionData(action, path, entry) {
+      if (!entry) return action === 'uid' ? -1 : action === 'rows' || action === 'values' ? {} : {};
+      if (action === 'uid') return entry.UID ?? -1;
+      if (action === 'row') return metaTemplateRow(entry);
+      if (action === 'rows') {
+        return Object.fromEntries((entry.items || []).map((row) => [row.code, { ...row }]));
+      }
+      if (action === 'values') {
+        return Object.fromEntries((entry.items || []).map((row) => [row.code, row.value ?? row.target ?? '']));
+      }
+      return { path };
+    }
+
+    async function copyActiveMetaJson() {
+      const entry = catalog.paths?.[activePath] || {};
+      const payload = JSON.stringify({ path: activePath, row: metaTemplateRow(entry), items: entry.items || [], fixture: entry.fixture || {}, workflow: entry.workflow || {} }, null, 2);
+      try {
+        await navigator.clipboard.writeText(payload);
+        metaPopupStatus.textContent = 'Copied active meta JSON to clipboard.';
+      } catch {
+        metaPopupResult.textContent = payload;
+        metaPopupStatus.textContent = 'Clipboard is unavailable. JSON is shown in Path Lab result.';
+      }
+    }
+
+    async function renderTemplateDocument(source, data) {
+      const env = { data, vars: {}, logs: [], diagnostics: [] };
+      collectSugarVariables(source, env);
+      const htmlParts = [];
+      const sourceParts = [];
+      const fencePattern = /```([^\n]*)\n([\s\S]*?)```/g;
+      let lastIndex = 0;
+      let match;
+      while ((match = fencePattern.exec(source)) !== null) {
+        const textPart = source.slice(lastIndex, match.index);
+        const resolvedText = applyVariables(textPart, env.vars, false);
+        htmlParts.push(renderMarkdownText(resolvedText));
+        sourceParts.push(resolvedText);
+        const renderedFence = await renderFence(match[1], match[2], env);
+        htmlParts.push(renderedFence.html);
+        sourceParts.push(renderedFence.source);
+        lastIndex = fencePattern.lastIndex;
+      }
+      const tail = applyVariables(source.slice(lastIndex), env.vars, false);
+      htmlParts.push(renderMarkdownText(tail));
+      sourceParts.push(tail);
+      return {
+        html: htmlParts.join(''),
+        resolvedSource: sourceParts.join('').trim(),
+        vars: env.vars,
+        logs: env.logs,
+        diagnostics: env.diagnostics
+      };
+    }
+
+    async function renderFence(info, content, env) {
+      const [language, ...args] = String(info || '').trim().split(/\s+/).filter(Boolean);
+      const lang = (language || '').toLowerCase();
+      if (lang === 'xcon-chain' || lang === 'chain' || lang === 'sugar') return renderSugarFence(args, content, env);
+      if (lang === 'xcon-sketch' || lang === 'xcons' || lang === 'sketch') return renderSketchFence(content, env);
+      if (lang === 'xcon-workflow' || lang === 'workflow') return renderWorkflowFence(content, env);
+      return { html: `<pre>${escapeHtml(content)}</pre>`, source: `\n\`\`\`${escapeHtml(info)}\n${content}\n\`\`\`\n` };
+    }
+
+    function collectSugarVariables(source, env) {
+      const fencePattern = /```([^\n]*)\n([\s\S]*?)```/g;
+      let match;
+      while ((match = fencePattern.exec(source)) !== null) {
+        const [language, ...args] = String(match[1] || '').trim().split(/\s+/).filter(Boolean);
+        const lang = (language || '').toLowerCase();
+        if (lang !== 'xcon-chain' && lang !== 'chain' && lang !== 'sugar') continue;
+        evaluateSugarAlias(args, match[2], env, { log: false, collectOnly: true });
+      }
+    }
+
+    function renderSugarFence(args, content, env) {
+      return evaluateSugarAlias(args, content, env, { log: true, collectOnly: false });
+    }
+
+    function evaluateSugarAlias(args, content, env, options = {}) {
+      const expression = String(content || '').trim();
+      const alias = getAlias(args);
+      try {
+        const result = evaluateChainExpression(expression, env.data);
+        if (alias) env.vars[alias] = result;
+        if (options.log !== false) env.logs.push(`SUGAR ${alias || '(inline)'} = ${formatResult(result)}`);
+        return { html: '', source: '' };
+      } catch (error) {
+        if (options.collectOnly) return { html: '', source: '' };
+        const message = `SUGAR error: ${error.message}`;
+        env.diagnostics.push(message);
+        return { html: `<div class="diagnostic">${escapeHtml(message)}</div>`, source: `\n<!-- ${message} -->\n` };
+      }
+    }
+
+    function renderSketchFence(content, env) {
+      const source = applyVariables(content, env.vars, true);
+      try {
+        if (!modules.viewerCore || !modules.viewerRenderer) throw new Error('XCON Viewer packages are not available.');
+        const documentModel = modules.viewerCore.parseBySyntax(source, 'sketch');
+        const html = [
+          '<div class="lab-xcon-block">',
+          `<div class="xcon-viewer-host" style="${escapeAttr(xconHostFrameStyle(documentModel))}">`,
+          modules.viewerRenderer.renderToHtml(documentModel, { allowExternalResources: true, allowHtml: false }),
+          '</div>',
+          '</div>'
+        ].join('');
+        env.logs.push('SKETCH block rendered.');
+        return { html, source: `\n\`\`\`xcon-sketch\n${source}\n\`\`\`\n` };
+      } catch (error) {
+        const message = `SKETCH error: ${error.message}`;
+        env.diagnostics.push(message);
+        return { html: `<div class="diagnostic">${escapeHtml(message)}</div>`, source: `\n<!-- ${message} -->\n` };
+      }
+    }
+
+    function renderWorkflowFence(content, env) {
+      const source = applyVariables(content, env.vars, false);
+      try {
+        if (!modules.workflowCore) throw new Error('XCON Workflow package is not available.');
+        const workflow = modules.workflowCore.parseWorkflow(source);
+        const diagnostics = modules.workflowCore.validateWorkflow(workflow);
+        if (diagnostics.length) env.diagnostics.push(...diagnostics.map((item) => `${item.severity || 'info'}: ${item.message || item}`));
+        env.logs.push('Workflow block rendered.');
+        return {
+          html: `<div class="workflow-wrap">${modules.workflowCore.renderWorkflowHtml(workflow, { diagnostics })}</div>`,
+          source: `\n\`\`\`xcon-workflow\n${source}\n\`\`\`\n`
+        };
+      } catch (error) {
+        const message = `Workflow error: ${error.message}`;
+        env.diagnostics.push(message);
+        return { html: `<div class="diagnostic">${escapeHtml(message)}</div>`, source: `\n<!-- ${message} -->\n` };
+      }
+    }
+
+    function evaluateChainExpression(expression, data) {
+      const source = String(expression || '').trim();
+      if (modules.chainCore) {
+        try {
+          return modules.chainCore.isSugarExpression(source)
+            ? modules.chainCore.evaluateSugar(source, data)
+            : modules.chainCore.evaluate(source, data);
+        } catch (error) {
+          console.warn('Falling back to the built-in Meta Lab evaluator.', error);
+        }
+      }
+      return evaluateSugarFallback(source, data);
+    }
+
+    function evaluateSugarFallback(expression, data) {
+      const source = expression.replace(/^=\s*/, '').trim();
+      const parts = splitPipes(source).map((item) => item.trim()).filter(Boolean);
+      if (!parts.length) return '';
+      let value = readValue(parts[0], data);
+      for (const part of parts.slice(1)) {
+        const [name, ...args] = splitArgs(part);
+        value = applyFallbackFunction(value, name, args, data);
+      }
+      return value;
+    }
+
+    function applyFallbackFunction(value, name, args, data) {
+      switch (name) {
+        case 'format':
+          return formatNumber(value, readLiteral(args.join(' ')));
+        case 'concat':
+          return `${formatResult(value)}${formatResult(readValue(args.join(' '), data))}`;
+        case 'default':
+          return value == null || value === '' ? readLiteral(args.join(' ')) : value;
+        case 'map':
+          return Array.isArray(value) ? value.map((item) => getPath(item, args[0])) : [];
+        case 'join':
+          return Array.isArray(value) ? value.join(readLiteral(args.join(' ')) ?? ', ') : formatResult(value);
+        case 'sortBy': {
+          const key = args[0];
+          const order = args[1] || 'asc';
+          const rows = Array.isArray(value) ? [...value] : [];
+          rows.sort((a, b) => {
+            const av = getPath(a, key);
+            const bv = getPath(b, key);
+            return order === 'desc' ? Number(bv) - Number(av) : Number(av) - Number(bv);
+          });
+          return rows;
+        }
+        case 'first':
+          return Array.isArray(value) ? value[0] : value;
+        case 'length':
+          return Array.isArray(value) || typeof value === 'string' ? value.length : 0;
+        default:
+          return value;
+      }
+    }
+
+    function renderMarkdownText(text) {
+      const source = String(text || '');
+      if (!source.trim()) return '';
+      const lines = source.replace(/\r\n?/g, '\n').split('\n');
+      const html = [];
+      let listOpen = false;
+      for (const rawLine of lines) {
+        const line = rawLine.trimEnd();
+        if (!line.trim()) {
+          if (listOpen) {
+            html.push('</ul>');
+            listOpen = false;
+          }
+          continue;
+        }
+        const heading = line.match(/^(#{1,3})\s+(.+)$/);
+        if (heading) {
+          if (listOpen) {
+            html.push('</ul>');
+            listOpen = false;
+          }
+          const level = heading[1].length;
+          html.push(`<h${level}>${inlineMarkdown(heading[2])}</h${level}>`);
+          continue;
+        }
+        const bullet = line.match(/^[-*]\s+(.+)$/);
+        if (bullet) {
+          if (!listOpen) {
+            html.push('<ul>');
+            listOpen = true;
+          }
+          html.push(`<li>${inlineMarkdown(bullet[1])}</li>`);
+          continue;
+        }
+        if (listOpen) {
+          html.push('</ul>');
+          listOpen = false;
+        }
+        html.push(`<p>${inlineMarkdown(line)}</p>`);
+      }
+      if (listOpen) html.push('</ul>');
+      return html.join('');
+    }
+
+    function inlineMarkdown(text) {
+      return escapeHtml(text)
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>');
+    }
+
+    function applyVariables(text, vars, sketchMode) {
+      const source = String(text || '');
+      return source.replace(/\$([A-Za-z_][\w-]*(?:\.[A-Za-z_][\w-]*)*)/g, (match, name, offset) => {
+        if (!Object.prototype.hasOwnProperty.call(vars, name)) return match;
+        const value = vars[name];
+        if (!sketchMode) return formatResult(value);
+        if (isInsideQuotedSketchString(source, offset)) return escapeSketchStringFragment(value);
+        if (value && typeof value === 'object') return JSON.stringify(value);
+        if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+        return JSON.stringify(formatResult(value));
+      });
+    }
+
+    function getAlias(args) {
+      for (let index = 0; index < args.length; index += 1) {
+        const arg = args[index];
+        if (arg === 'as' && args[index + 1]) return args[index + 1].trim();
+        if (arg.startsWith('as=')) return arg.slice(3).trim();
+        if (arg.startsWith('as:')) return arg.slice(3).trim();
+      }
+      return '';
+    }
+
+    function xconHostFrameStyle(documentModel) {
+      const pos = Array.isArray(documentModel?.pos) ? documentModel.pos : documentModel?.pos;
+      const parts = typeof pos === 'string' ? pos.split(',').map(Number) : pos;
+      const width = Number(parts?.[2]) || 900;
+      const height = Number(parts?.[3]) || 650;
+      return `position:relative;display:block;box-sizing:border-box;width:${width}px;max-width:100%;height:${height}px;max-height:none;overflow:auto;isolation:isolate;contain:layout paint;`;
+    }
+
+    function splitPipes(source) {
+      return splitOutsideQuotes(source, '|');
+    }
+
+    function splitArgs(source) {
+      const result = [];
+      let current = '';
+      let quote = '';
+      let escaped = false;
+      for (const char of String(source || '')) {
+        if (escaped) {
+          current += char;
+          escaped = false;
+          continue;
+        }
+        if (char === '\\') {
+          current += char;
+          escaped = true;
+          continue;
+        }
+        if ((char === '"' || char === '`') && !quote) {
+          quote = char;
+          current += char;
+          continue;
+        }
+        if (char === quote) {
+          quote = '';
+          current += char;
+          continue;
+        }
+        if (/\s/.test(char) && !quote) {
+          if (current) {
+            result.push(current);
+            current = '';
+          }
+          continue;
+        }
+        current += char;
+      }
+      if (current) result.push(current);
+      return result;
+    }
+
+    function splitOutsideQuotes(source, separator) {
+      const result = [];
+      let current = '';
+      let quote = '';
+      let escaped = false;
+      for (const char of String(source || '')) {
+        if (escaped) {
+          current += char;
+          escaped = false;
+          continue;
+        }
+        if (char === '\\') {
+          current += char;
+          escaped = true;
+          continue;
+        }
+        if ((char === '"' || char === '`') && !quote) {
+          quote = char;
+          current += char;
+          continue;
+        }
+        if (char === quote) {
+          quote = '';
+          current += char;
+          continue;
+        }
+        if (char === separator && !quote) {
+          result.push(current);
+          current = '';
+          continue;
+        }
+        current += char;
+      }
+      result.push(current);
+      return result;
+    }
+
+    function readValue(token, data) {
+      const source = String(token || '').trim();
+      if (!source) return '';
+      if ((source.startsWith('"') && source.endsWith('"')) || (source.startsWith('`') && source.endsWith('`'))) return readLiteral(source);
+      if (/^-?\d+(\.\d+)?$/.test(source)) return Number(source);
+      return getPath(data, source);
+    }
+
+    function readLiteral(token) {
+      const source = String(token || '').trim();
+      if ((source.startsWith('"') && source.endsWith('"')) || (source.startsWith('`') && source.endsWith('`'))) return source.slice(1, -1);
+      return source;
+    }
+
+    function getPath(root, path) {
+      if (!path) return root;
+      return String(path).split('.').reduce((value, key) => value == null ? undefined : value[key], root);
+    }
+
+    function formatNumber(value, pattern) {
+      const number = Number(value);
+      if (!Number.isFinite(number)) return formatResult(value);
+      const formatted = number.toLocaleString('en-US');
+      if (pattern && String(pattern).includes('#')) return String(pattern).replace(/[#,.]+/, formatted);
+      return formatted;
+    }
+
+    function formatResult(value) {
+      if (value == null) return '';
+      if (Array.isArray(value)) return value.map(formatResult).join(', ');
+      if (typeof value === 'object') return JSON.stringify(value);
+      return String(value);
+    }
+
+    function isInsideQuotedSketchString(source, offset) {
+      const lineStart = source.lastIndexOf('\n', Math.max(0, offset - 1)) + 1;
+      let quote = '';
+      let escaped = false;
+      for (let index = lineStart; index < offset; index += 1) {
+        const char = source[index];
+        if (escaped) {
+          escaped = false;
+          continue;
+        }
+        if (char === '\\') {
+          escaped = true;
+          continue;
+        }
+        if ((char === '"' || char === '`') && !quote) quote = char;
+        else if (char === quote) quote = '';
+      }
+      return Boolean(quote);
+    }
+
+    function escapeSketchStringFragment(value) {
+      return formatResult(value)
+        .replace(/\\/g, '\\\\')
+        .replace(/"/g, '\\"')
+        .replace(/\r?\n/g, '\\n');
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+name: Documentation issue
+description: Report confusing, missing, or outdated documentation.
+title: "[Docs]: "
+labels: ["documentation"]
+body:
+  - type: checkboxes
+    id: existing
+    attributes:
+      label: Existing issue check
+      options:
+        - label: I have searched existing issues and discussions.
+          required: true
+
+  - type: input
+    id: page
+    attributes:
+      label: Page or file
+      description: Link to the page, README section, docs file, spec file, or example.
+      placeholder: https://xconviewer.dev/docs/...
+    validations:
+      required: false
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is confusing, missing, or outdated?
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested
+    attributes:
+      label: Suggested improvement
+      description: Suggest wording, examples, or structure if you have a proposal.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Documentation area
+      multiple: true
+      options:
+        - README
+        - docs/
+        - spec/
+        - examples/
+        - public site
+        - API/package docs
+        - security model
+        - deployment
+        - other
+    validations:
+      required: false

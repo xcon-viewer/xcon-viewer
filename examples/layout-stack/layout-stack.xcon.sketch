@@ -1,0 +1,7 @@
+screen 402x360
+  direction "column"
+  gap 12
+  padding
+    - 24
+    - 16
+  items [{"type":"label","text":"Stack Layout","font":{"size":22,"weight":800}},{"type":"badge","text":"PUBLIC API","backgroundColor":"#DBEAFE","color":"#1D4ED8"},{"type":"button","label":"Continue","backgroundColor":"#111827","color":"#FFFFFF","border":{"radius":8}}]

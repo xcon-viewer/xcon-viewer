@@ -1,0 +1,132 @@
+<Panel border="visible:true; width:1; color:var(--border); radius:10" shadow="opacity:0.08; blur:6" pos="0,0,560,32" al="autoHeight:true; gap:10px; padding:14px 16px" componentsOrder="hdr,h05a,a05,h05b,b05,h05c,b05c">
+  <Label name="hdr" text="05 · Panel" pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+  <Label name="h05a" text="panel · layout &amp; style variants (#05-A)" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" />
+  <Panel name="a05" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:12px; padding:0" componentsOrder="hdr,el,ac,dk,n1,n2">
+    <Label name="hdr" text=" " pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+    <Panel name="el" border="visible:true; width:1; color:var(--border); radius:10" shadow="visible:true; opacity:0.1; blur:16; radius:24" backgroundColor="253,252,250,255" pos="0,0,560,32" al="autoHeight:true; gap:12px; padding:20px" componentsOrder="head,b,div,ft">
+      <Panel name="head" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:10px; padding:0; direction:row; alignItems:center; justifyContent:space-between" componentsOrder="t,badge">
+        <Label name="t" text="Elevated Panel" pos="0,0,560,28" font="family:&apos;Playfair Display&apos;, serif; size:16; weight:700" textAlign="left" color="var(--ink)" />
+        <Label name="badge" text="Active" pos="0,0,560,28" font="size:11; weight:600" textAlign="left" backgroundColor="var(--green-lt)" color="var(--green)" labelPadding="2px 8px" border="visible:false; radius:20px" />
+      </Panel>
+      <Label name="b" text="Use elevated panels to draw attention to key content. The subtle shadow creates a layered feel without overwhelming the composition." pos="0,0,560,28" font="size:13; lineHeight:1.7" textAlign="left" color="var(--ink-2)" />
+      <Label name="div" text=" " pos="0,0,560,28" font="size:1" textAlign="left" color="transparent" labelPadding="0" style="height:1px;min-height:1px;background:var(--border);width:100%;display:block;margin:0;" />
+      <Panel name="ft" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:10px; padding:0; direction:row; alignItems:center; justifyContent:space-between" componentsOrder="meta,btn">
+        <Label name="meta" text="Updated 2 min ago" pos="0,0,560,28" font="size:11" textAlign="left" color="var(--ink-3)" />
+        <Button name="btn" label="View Details" pos="0,0,120,32" font="size:12" border="visible:true; color:var(--border); radius:8" backgroundColor="transparent" color="var(--ink-2)" />
+      </Panel>
+    </Panel>
+    <Panel name="ac" style="border-color:rgba(var(--accent-rgb),0.25);" border="visible:true; width:1; color:var(--border); radius:10" shadow="visible:false" backgroundColor="240,213,196,255" pos="0,0,560,32" al="autoHeight:true; gap:12px; padding:20px" componentsOrder="t,p,x">
+      <Label name="t" text="Promotional Panel" pos="0,0,560,28" font="family:&apos;Playfair Display&apos;, serif; size:16; weight:700" textAlign="left" color="var(--accent-dk)" />
+      <Label name="p" text="Highlight special offers or important notices with accent-colored panels that stand out naturally." pos="0,0,560,28" font="size:13; lineHeight:1.7" textAlign="left" color="var(--accent-dk)" />
+      <Button name="x" label="Claim Offer" pos="0,0,120,34" font="size:12" border="visible:false; radius:8" backgroundColor="var(--accent)" color="#fff" />
+    </Panel>
+    <Panel name="dk" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" backgroundColor="28,23,16,255" pos="0,0,560,32" al="autoHeight:true; gap:12px; padding:20px" componentsOrder="ttl,tx,div,ft">
+      <Label name="ttl" text="Dark Panel" pos="0,0,560,28" font="family:&apos;Playfair Display&apos;, serif; size:16; weight:700" textAlign="left" color="var(--bg)" />
+      <Label name="tx" text="Dark panels create strong contrast and work well for terminal output, code previews, or premium feature announcements." pos="0,0,560,28" font="size:13; lineHeight:1.7" textAlign="left" color="rgba(247,244,239,0.65)" />
+      <Label name="div" text=" " pos="0,0,560,28" font="size:1" textAlign="left" color="transparent" labelPadding="0" style="height:1px;min-height:1px;background:rgba(255,255,255,0.1);width:100%;display:block;margin:0;" />
+      <Panel name="ft" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:10px; padding:0; direction:row; alignItems:center; justifyContent:space-between" componentsOrder="meta,btn">
+        <Label name="meta" text="Pro Feature" pos="0,0,560,28" font="size:11" textAlign="left" color="rgba(247,244,239,0.45)" />
+        <Button name="btn" label="Upgrade" pos="0,0,100,32" font="size:12" border="visible:true; color:255,255,255,0.2; radius:8" backgroundColor="rgba(255,255,255,0.1)" color="rgba(247,244,239,0.8)" />
+      </Panel>
+    </Panel>
+    <Panel name="n1" border="visible:true; color:var(--border); radius:10" backgroundColor="var(--surface2)" shadow="visible:true; opacity:0.08; blur:4; spread:16" pos="0,0,520,88" al="autoHeight:true; gap:6px; padding:18px 20px" style="border-left:4px solid var(--blue);border-radius:0 var(--r) var(--r) 0;" componentsOrder="t,b">
+      <Label name="t" text="ℹ️ System Maintenance Scheduled" pos="0,0,560,28" font="family:&apos;Playfair Display&apos;, serif; size:13; weight:600" textAlign="left" color="var(--ink)" />
+      <Label name="b" text="Scheduled downtime on Saturday, March 30 from 02:00–04:00 UTC. All services will be temporarily unavailable." pos="0,0,560,28" font="size:12; lineHeight:1.7" textAlign="left" color="var(--ink-2)" />
+    </Panel>
+    <Panel name="n2" border="visible:true; color:var(--border); radius:10" backgroundColor="var(--surface2)" shadow="visible:true; opacity:0.08; blur:4; spread:16" pos="0,0,520,88" al="autoHeight:true; gap:6px; padding:18px 20px" style="border-left:4px solid var(--green);border-radius:0 var(--r) var(--r) 0;" componentsOrder="t,b">
+      <Label name="t" text="✅ Deploy Successful" pos="0,0,560,28" font="family:&apos;Playfair Display&apos;, serif; size:13; weight:600" textAlign="left" color="var(--ink)" />
+      <Label name="b" text="v2.4.1 deployed to production in 1m 42s · 0 errors" pos="0,0,560,28" font="size:12; lineHeight:1.7" textAlign="left" color="var(--ink-2)" />
+    </Panel>
+  </Panel>
+  <Label name="h05b" text="panel · stats &amp; collapsible (#05-B)" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" />
+  <Panel name="b05" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:14px; padding:0" componentsOrder="hdr,grid,sub,c1,c2,nested">
+    <Label name="hdr" text=" " pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+    <Panel name="grid" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:10px; padding:0; direction:row" componentsOrder="s1,s2,s3,s4">
+      <Panel name="s1" border="visible:true; color:var(--border); radius:10" backgroundColor="253,252,250,255" shadow="visible:false" pos="0,0,140,120" al="autoHeight:true; gap:4px; padding:20px 24px; flex:1 1 calc(50% - 5px); minWidth:calc(50% - 5px)" componentsOrder="v,l,d">
+        <Label name="v" text="2,847" pos="0,0,560,28" font="family:&apos;Playfair Display&apos;, serif; size:32; weight:700; lineHeight:1" textAlign="left" color="var(--ink)" />
+        <Label name="l" text="Active Users" pos="0,0,560,28" font="size:12" textAlign="left" color="var(--ink-3)" />
+        <Label name="d" text="▲ +12.4%" pos="0,0,560,28" font="size:12; weight:600" textAlign="left" color="var(--green)" />
+      </Panel>
+      <Panel name="s2" border="visible:true; color:var(--border); radius:10" backgroundColor="253,252,250,255" shadow="visible:false" pos="0,0,140,120" al="autoHeight:true; gap:4px; padding:20px 24px; flex:1 1 calc(50% - 5px); minWidth:calc(50% - 5px)" componentsOrder="v,l,d">
+        <Label name="v" text="₩4.2M" pos="0,0,560,28" font="family:&apos;Playfair Display&apos;, serif; size:32; weight:700; lineHeight:1" textAlign="left" color="var(--ink)" />
+        <Label name="l" text="MRR" pos="0,0,560,28" font="size:12" textAlign="left" color="var(--ink-3)" />
+        <Label name="d" text="▲ +8.7%" pos="0,0,560,28" font="size:12; weight:600" textAlign="left" color="var(--green)" />
+      </Panel>
+      <Panel name="s3" border="visible:true; color:var(--border); radius:10" backgroundColor="253,252,250,255" shadow="visible:false" pos="0,0,140,120" al="autoHeight:true; gap:4px; padding:20px 24px; flex:1 1 calc(50% - 5px); minWidth:calc(50% - 5px)" componentsOrder="v,l,d">
+        <Label name="v" text="98.9%" pos="0,0,560,28" font="family:&apos;Playfair Display&apos;, serif; size:32; weight:700; lineHeight:1" textAlign="left" color="var(--ink)" />
+        <Label name="l" text="Uptime" pos="0,0,560,28" font="size:12" textAlign="left" color="var(--ink-3)" />
+        <Label name="d" text="▲ +0.2%" pos="0,0,560,28" font="size:12; weight:600" textAlign="left" color="var(--green)" />
+      </Panel>
+      <Panel name="s4" border="visible:true; color:var(--border); radius:10" backgroundColor="253,252,250,255" shadow="visible:false" pos="0,0,140,120" al="autoHeight:true; gap:4px; padding:20px 24px; flex:1 1 calc(50% - 5px); minWidth:calc(50% - 5px)" componentsOrder="v,l,d">
+        <Label name="v" text="142ms" pos="0,0,560,28" font="family:&apos;Playfair Display&apos;, serif; size:32; weight:700; lineHeight:1" textAlign="left" color="var(--ink)" />
+        <Label name="l" text="Avg. Response" pos="0,0,560,28" font="size:12" textAlign="left" color="var(--ink-3)" />
+        <Label name="d" text="▼ +18ms" pos="0,0,560,28" font="size:12; weight:600" textAlign="left" color="var(--red)" />
+      </Panel>
+    </Panel>
+    <Label name="sub" text="Collapsible Panels" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" style="letter-spacing:2px;text-transform:uppercase;" />
+    <Panel name="c1" border="visible:true; width:1; color:var(--border); radius:10" shadow="visible:false" backgroundColor="253,252,250,255" pos="0,0,560,32" al="autoHeight:true; gap:12px; padding:16px 18px" componentsOrder="hdr,body,ft">
+      <Panel name="hdr" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:10px; padding:0; direction:row; alignItems:center; justifyContent:space-between" componentsOrder="t,ico">
+        <Label name="t" text="Project Details" pos="0,0,560,28" font="family:&apos;Playfair Display&apos;, serif; size:16; weight:700" textAlign="left" />
+        <Label name="ico" text="▴" pos="0,0,560,28" font="size:12" textAlign="left" color="var(--ink-3)" al="flex:0 0 auto" />
+      </Panel>
+      <Label name="body" text="A cross-functional initiative to redesign the onboarding flow, improving activation rates by reducing friction at critical steps. Target completion: Q2 2026." pos="0,0,560,28" font="size:13; lineHeight:1.7" textAlign="left" color="var(--ink-2)" />
+      <Panel name="ft" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0; direction:row" componentsOrder="b1,b2">
+        <Button name="b1" label="View Kanban" pos="0,0,120,32" font="size:12" border="visible:true; color:var(--border); radius:8" backgroundColor="transparent" color="var(--ink-2)" />
+        <Button name="b2" label="Open Project" pos="0,0,120,32" font="size:12" border="visible:false; radius:8" backgroundColor="var(--accent)" color="#fff" />
+      </Panel>
+    </Panel>
+    <Panel name="c2" border="visible:true; width:1; color:var(--border); radius:10" shadow="visible:false" backgroundColor="253,252,250,255" pos="0,0,560,32" al="autoHeight:true; gap:0; padding:12px 16px" componentsOrder="hdr2">
+      <Panel name="hdr2" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:10px; padding:0; direction:row; alignItems:center; justifyContent:space-between" componentsOrder="t2,ico2">
+        <Label name="t2" text="Technical Specifications" pos="0,0,560,28" font="family:&apos;Playfair Display&apos;, serif; size:16; weight:700" textAlign="left" />
+        <Label name="ico2" text="▾" pos="0,0,560,28" font="size:12" textAlign="left" color="var(--ink-3)" al="flex:0 0 auto" />
+      </Panel>
+    </Panel>
+    <Panel name="nested" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:12px; padding:0" componentsOrder="hdr,statN,note">
+      <Label name="hdr" text="Nested stats + notice" pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+      <Panel name="statN" border="visible:true; color:var(--border); radius:10" backgroundColor="253,252,250,255" shadow="visible:false" pos="0,0,140,120" al="autoHeight:true; gap:4px; padding:20px 24px; flex:1 1 calc(50% - 5px); minWidth:calc(50% - 5px)" componentsOrder="v,l,d">
+        <Label name="v" text="2,847" pos="0,0,560,28" font="family:&apos;Playfair Display&apos;, serif; size:32; weight:700; lineHeight:1" textAlign="left" color="var(--ink)" />
+        <Label name="l" text="Active Users" pos="0,0,560,28" font="size:12" textAlign="left" color="var(--ink-3)" />
+        <Label name="d" text="▲ +12.4%" pos="0,0,560,28" font="size:12; weight:600" textAlign="left" color="var(--green)" />
+      </Panel>
+      <Panel name="note" border="visible:true; color:var(--border); radius:10" backgroundColor="var(--surface2)" shadow="visible:true; opacity:0.08; blur:4; spread:16" pos="0,0,520,88" al="autoHeight:true; gap:6px; padding:18px 20px" style="border-left:4px solid var(--blue);border-radius:0 var(--r) var(--r) 0;" componentsOrder="t,b">
+        <Label name="t" text="ℹ️ System Maintenance" pos="0,0,560,28" font="family:&apos;Playfair Display&apos;, serif; size:13; weight:600" textAlign="left" color="var(--ink)" />
+        <Label name="b" text="Scheduled Saturday 02:00-04:00 UTC · service will be temporarily unavailable." pos="0,0,560,28" font="size:12; lineHeight:1.7" textAlign="left" color="var(--ink-2)" />
+      </Panel>
+    </Panel>
+  </Panel>
+  <Label name="h05c" text="panel · hero landing stack — grid overlap + chrome layer (#05-C)" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" />
+  <Panel name="b05c" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:14px; padding:0" componentsOrder="hdr,cap,demo">
+    <Label name="hdr" text=" " pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+    <Label name="cap" text="Structure summary (same as the original landing): ① grid (xa-al-showcase-hero-wrap-grid) overlaps slide (image + foreground) and chrome. ② Foreground: tag → title → sub → CTA in one vertical stack (al: justifyContent center, gap 6px, padBottomForOverlay leaves room for the bottom dock). ③ Chrome: top/bottom flex spacers center the left/right ‹ › controls vertically, with mkHeroShowcaseDock at the bottom (dots · 1/5 · ▶). HTML: .xa-al-panel-root &gt; .xa-al-panel__body &gt; .xa-al-panel__stack." pos="0,0,560,28" font="size:11; lineHeight:1.65" textAlign="left" color="var(--ink-2)" al="width:100%" />
+    <Panel name="demo" border="visible:false; radius:12" shadow="visible:true; opacity:0.12" pos="0,0,560,420" backgroundColor="255,0,255,255" al="width:100%; alignSelf:stretch; fixedHeight:true; padding:0; gap:0; stackClass:xa-al-showcase-hero-wrap-grid" componentsOrder="slide,chrome">
+      <Panel name="slide" border="visible:false; radius:0" shadow="visible:false" pos="0,0,560,420" al="width:100%; alignSelf:stretch; gap:0; padding:0; fixedHeight:true; stackClass:xa-al-banner-hero-slide" componentsOrder="bg,fg">
+        <Image name="bg" src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&amp;q=80" border="visible:false; radius:0" objectFit="fill" pos="0,0,560,420" al="alignSelf:stretch; width:100%; minHeight:100%" />
+        <Panel name="fg" border="visible:false; radius:0" shadow="visible:false" pos="0,0,560,420" style="position:relative;z-index:1;min-height:100%;height:100%;box-sizing:border-box;background:linear-gradient(90deg, rgba(0,0,0,0.74) 0%, rgba(0,0,0,0.22) 52%, rgba(0,0,0,0.45) 100%);" al="width:100%; alignSelf:stretch; gap:6px; padding:clamp(16px, 3.5vh, 36px) clamp(18px, 5vw, 52px) clamp(56px, 11vh, 100px); justifyContent:center; alignItems:flex-start; fixedHeight:true; stackClass:xa-al-banner-hero-fg" componentsOrder="tag,title,sub,cta">
+          <Label name="tag" text="NATURE" pos="0,0,120,22" font="size:10; weight:700; lineHeight:1.15" textAlign="left" color="255,255,255,255" labelPadding="4px 10px" border="visible:true; width:1; color:rgba(255,255,255,0.88); radius:2px" style="text-transform:uppercase;" cssClass="xa-al-banner-hero-tag" al="alignSelf:flex-start; width:auto; flex:0 0 auto" />
+          <Label name="title" text="Beyond
+The Horizon" pos="0,0,560,1" font="family:&apos;Syne&apos;, system-ui, sans-serif; size:32; weight:800; lineHeight:1.02" textAlign="left" color="255,255,255,255" style="text-transform:uppercase;white-space:pre-line;" cssClass="xa-al-banner-hero-title" al="width:100%" />
+          <Label name="sub" text="Beyond the limits, a new world unfolds.
+Start your next journey." pos="0,0,560,1" font="size:14; weight:500; lineHeight:1.45" textAlign="left" color="255,255,255,255" style="opacity:0.92;white-space:pre-line;" cssClass="xa-al-banner-hero-sub" al="width:100%" />
+          <Button name="cta" label="Explore now" pos="0,0,132,38" font="size:13; weight:700" border="visible:false; radius:7" backgroundColor="255,255,255,255" color="17,24,39,255" al="alignSelf:flex-start; width:auto; flex:0 0 auto" />
+        </Panel>
+      </Panel>
+      <Panel name="chrome" border="visible:false; radius:0" shadow="visible:false" pos="0,0,560,420" style="position:relative;background:transparent!important;border:none!important;box-shadow:none!important;pointer-events:none;height:100%;min-height:100%;box-sizing:border-box;" al="width:100%; alignSelf:stretch; direction:column; justifyContent:flex-start; alignItems:stretch; gap:0; padding:0; fixedHeight:true; stackClass:xa-al-showcase-hero-chrome" componentsOrder="arrows,dock">
+        <Panel name="arrows" border="visible:false; radius:0" shadow="visible:false" pos="0,0,560,52" style="position:absolute;top:50%;left:0;width:100%;transform:translateY(-50%);box-sizing:border-box;z-index:5;background:transparent;pointer-events:none;" al="direction:row; justifyContent:space-between; alignItems:center; padding:0 clamp(12px,3vw,18px); width:100%; fixedHeight:true" componentsOrder="prev,next">
+          <Button name="prev" label="‹" pos="0,0,44,44" font="size:22; weight:400" border="visible:false; radius:22" color="255,255,255,255" title="Previous slide" style="pointer-events:auto;background:rgba(0,0,0,0.38)!important;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);" al="alignSelf:center" />
+          <Button name="next" label="›" pos="0,0,44,44" font="size:22; weight:400" border="visible:false; radius:22" color="255,255,255,255" title="Next slide" style="pointer-events:auto;background:rgba(0,0,0,0.38)!important;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);" al="alignSelf:center" />
+        </Panel>
+        <Panel name="dock" border="visible:false; radius:0" shadow="visible:false" pos="0,0,560,48" style="position:absolute;bottom:0;left:0;right:0;width:100%;z-index:4;box-sizing:border-box;background:rgba(0,0,0,0.35)!important;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);pointer-events:auto;min-height:48px;border:none!important;box-shadow:none!important;" al="direction:row; justifyContent:flex-start; alignItems:center; gap:0; padding:0 clamp(16px,3vw,40px); width:100%; minHeight:48px; fixedHeight:true; stackClass:xa-al-showcase-hero-dock" componentsOrder="leftCol,midCol,rightCol">
+          <Panel name="leftCol" border="visible:false; radius:0" shadow="visible:false" pos="0,0,120,48" al="direction:row; justifyContent:center; alignItems:center; flex:0 0 auto; fixedHeight:true; padding:0" componentsOrder="dots">
+            <Label name="dots" text="●   ○   ○   ○   ○" pos="0,0,120,22" font="size:8" textAlign="left" color="255,255,255,255" style="letter-spacing:4px;opacity:0.95;white-space:nowrap;" al="width:100%" />
+          </Panel>
+          <Panel name="midCol" border="visible:false; radius:0" shadow="visible:false" pos="0,0,160,48" al="direction:row; justifyContent:center; alignItems:center; flex:1 1 0; minWidth:0; fixedHeight:true; padding:0" componentsOrder="counter">
+            <Label name="counter" text="1 / 5" pos="0,0,72,22" font="size:14; weight:700" textAlign="center" color="255,255,255,255" style="font-family:Syne,sans-serif;" al="width:100%" />
+          </Panel>
+          <Panel name="rightCol" border="visible:false; radius:0" shadow="visible:false" pos="0,0,120,48" al="direction:row; justifyContent:flex-end; alignItems:center; flex:0 0 auto; fixedHeight:true; padding:0" componentsOrder="pause">
+            <Button name="pause" label="⏸" pos="0,0,28,28" font="size:10; weight:700" border="visible:true; width:1; color:rgba(255,255,255,0.28); radius:14" backgroundColor="transparent" color="255,255,255,255" title="Pause" al="width:auto; flex:0 0 auto" />
+          </Panel>
+        </Panel>
+      </Panel>
+    </Panel>
+  </Panel>
+</Panel>

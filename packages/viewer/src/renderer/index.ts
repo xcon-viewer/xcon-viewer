@@ -429,7 +429,18 @@ select.f-select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(var(-
 .carousel-prev{left:8px}.carousel-next{right:8px}.carousel-prev:hover,.carousel-next:hover{background:rgba(0,0,0,.64)}
 .carousel-dots{text-align:center;margin-top:12px;padding:0 8px 12px;display:flex;align-items:center;justify-content:center;gap:8px}
 .carousel-dot{display:inline-block;width:12px;height:12px;border-radius:50%;border:0;padding:0;background:#ccc;cursor:pointer}.carousel-dot.active,.carousel-dot[aria-current="true"]{background:var(--accent)}
-.xa-chart-container,.xa-code-editor-container,.xa-rich-editor-container,.xa-dataviz-container{min-width:0}
+.xa-chart-container,.xa-code-editor-container,.xa-rich-editor-container,.xa-dataviz-container,.xa-spangrid-container{min-width:0}
+.xa-spangrid-container{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;box-sizing:border-box;color:var(--ink);font-family:var(--font-body)}
+.xa-spangrid-surface{width:100%;height:100%;overflow:auto;background:var(--surface)}
+.xa-spangrid-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px;line-height:1.35}
+.xa-spangrid-table th,.xa-spangrid-table td{border:1px solid var(--border);padding:6px 8px;min-width:72px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:var(--surface);box-sizing:border-box}
+.xa-spangrid-table th{background:var(--surface2);font-weight:700;color:var(--ink)}
+.xa-spangrid-cell--fixed-row,.xa-spangrid-cell--fixed-col{position:sticky;background:var(--surface);box-shadow:0 0 0 1px var(--border);background-clip:padding-box}
+.xa-spangrid-cell--fixed-row{background:var(--surface2);z-index:3}
+.xa-spangrid-cell--fixed-col{z-index:2}
+.xa-spangrid-cell--fixed-corner{z-index:4}
+.xa-spangrid-empty{height:100%;display:flex;align-items:center;justify-content:center;color:var(--ink-3);font-size:13px}
+.xa-spangrid-container--hydrated .xa-spangrid-table{pointer-events:none}
 .xa-frame-hidden-scrollbar{-ms-overflow-style:none;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}.xa-frame-hidden-scrollbar::-webkit-scrollbar{display:none;width:0;height:0;background:transparent}
 .xa-chart-preview,.xa-dataviz-preview{position:absolute;inset:10px;width:calc(100% - 20px);height:calc(100% - 20px);pointer-events:none}
 .xa-code-editor-container textarea{background:#fff;color:#111}
@@ -437,7 +448,7 @@ select.f-select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(var(-
 .xa-dataviz-empty{height:100%;display:flex;align-items:center;justify-content:center;color:#888;font-size:13px}
 .xa-flipbook-container .catalog-app{width:100%;height:100%;position:relative;display:flex;align-items:center;justify-content:center}.xa-flipbook-container .flipbook-viewer{position:relative;display:flex;align-items:center;justify-content:center;min-width:600px;min-height:400px}.xa-flipbook-container .ui-flipbook{position:relative;margin:0 auto;box-shadow:0 4px 20px rgba(0,0,0,.3);border-radius:8px;overflow:visible}.xa-flipbook-container .ui-flipbook .page{background:white;border:1px solid #ddd;box-sizing:border-box;display:flex;align-items:center;justify-content:center;overflow:hidden;width:220px;height:320px}.xa-flipbook-container .ui-flipbook .page img{max-width:100%;max-height:100%;object-fit:contain}.page-content{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;box-sizing:border-box}.flipbook-page-placeholder{padding:20px;text-align:center;color:#666}.flipbook-controls{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);padding:10px;border-radius:5px;display:flex;gap:10px;z-index:1000}.flipbook-control-btn{background:#333;color:white;border:none;padding:8px 12px;border-radius:3px;cursor:pointer;font-size:14px}.flipbook-control-btn:hover{background:#555}.flipbook-page-info{color:white;display:flex;align-items:center;font-size:14px;margin:0 10px}.flipbook-miniatures{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);padding:10px;border-radius:5px;display:none;max-width:80%;overflow-x:auto}.flipbook-miniature{display:inline-block;width:60px;height:80px;margin:0 5px;cursor:pointer;border:2px solid transparent;border-radius:3px;overflow:hidden;background:transparent;padding:0}.flipbook-miniature:hover{border-color:#fff}.flipbook-miniature.active{border-color:#007bff}.flipbook-miniature img{width:100%;height:100%;object-fit:cover}.ui-arrow-control{position:absolute;top:50%;transform:translateY(-50%);width:50px;height:50px;background:rgba(0,0,0,.6);color:white;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:1001;border-radius:25px;font-size:24px;font-weight:bold;transition:all .3s ease;border:2px solid rgba(255,255,255,.3)}.ui-arrow-control:hover{background:rgba(0,0,0,.8);border-color:rgba(255,255,255,.6);transform:translateY(-50%) scale(1.1)}.ui-arrow-next-page{right:10px}.ui-arrow-previous-page{left:10px}.ui-arrow-next-page::before{content:"›"}.ui-arrow-previous-page::before{content:"‹"}
 .xa-network-diagram-container{position:relative;background:linear-gradient(135deg,#f7fafc 0%,#e2e8f0 100%);border:none;border-radius:16px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.1),0 8px 16px rgba(0,0,0,.06);backdrop-filter:blur(10px)}.network-svg{cursor:grab;transition:all .3s ease}.network-svg:active{cursor:grabbing}.network-node{cursor:pointer;stroke:#fff;stroke-width:3px;filter:drop-shadow(0 6px 12px rgba(0,0,0,.15));transition:stroke .2s ease,stroke-width .2s ease,filter .2s ease}.network-node:hover{stroke:var(--xcon-network-accent,#f093fb);stroke-width:4px;filter:drop-shadow(0 12px 24px rgba(0,0,0,.2))}.network-node.root-node{stroke:#fff;stroke-width:5px;filter:drop-shadow(0 8px 16px rgba(102,126,234,.4))}.network-node.expanded{stroke:var(--xcon-network-accent,#f093fb);stroke-width:4px;filter:drop-shadow(0 6px 12px rgba(240,147,251,.3))}.network-link{fill:none;stroke:var(--xcon-network-link,#cbd5e0);stroke-width:3px;stroke-opacity:.7;transition:all .3s ease}.network-link:hover{stroke:var(--xcon-network-primary,#667eea);stroke-width:4px;stroke-opacity:.9}.network-link.ref-link{stroke:var(--xcon-network-ref-link,#a0aec0);stroke-opacity:.5;stroke-width:2px;stroke-dasharray:8,4;animation:dash 2s linear infinite}@keyframes dash{to{stroke-dashoffset:-12}}.network-link.marker-only{stroke:var(--xcon-network-accent,#f093fb);stroke-opacity:.7;stroke-width:3px}.network-label{fill:var(--xcon-network-text,#2d3748);font:12px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;font-weight:600;text-anchor:middle;pointer-events:none;user-select:none;text-shadow:0 2px 4px rgba(255,255,255,.8);transition:all .3s ease}.network-label:hover{fill:var(--xcon-network-primary,#667eea);font-weight:700}.network-label.root-label{font-weight:800;font-size:14px;fill:var(--xcon-network-primary,#667eea);text-shadow:0 3px 6px rgba(0,0,0,.15)}.network-tooltip{position:absolute;background:linear-gradient(135deg,rgba(102,126,234,.95) 0%,rgba(118,75,162,.95) 100%);color:white;padding:16px 20px;border-radius:12px;font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-weight:500;pointer-events:none;opacity:0;transition:all .4s cubic-bezier(.4,0,.2,1);z-index:1000;box-shadow:0 12px 24px rgba(0,0,0,.2);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.3);text-align:center}.network-tooltip.show{opacity:1;transform:translateY(-4px)}.network-tooltip::before{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:8px solid transparent;border-top-color:rgba(102,126,234,.95)}.network-arrow{fill:var(--xcon-network-link,#cbd5e0);transition:all .3s ease}.network-arrow.ref-arrow{fill:var(--xcon-network-ref-link,#a0aec0)}.network-group{cursor:pointer;transition:all .3s ease}.network-border{fill:none;stroke:var(--xcon-network-ref-link,#a0aec0);stroke-width:2px;stroke-opacity:.4;stroke-dasharray:5,5;transition:all .3s ease}.network-border:hover{stroke:var(--xcon-network-primary,#667eea);stroke-opacity:.8;stroke-width:3px}.network-image{pointer-events:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.1))}.loading-spinner{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:18px;color:var(--xcon-network-text,#2d3748);font-weight:500;animation:pulse 2s ease-in-out infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-.xa-map-container{position:relative;background:#f8f9fa;border:1px solid #dee2e6;border-radius:8px;overflow:hidden}.xa-map-static{position:relative;width:100%;height:100%;min-height:180px;background-color:#dfeadf;background-image:linear-gradient(30deg,rgba(255,255,255,.35) 12%,transparent 12.5%,transparent 87%,rgba(255,255,255,.35) 87.5%,rgba(255,255,255,.35)),linear-gradient(150deg,rgba(255,255,255,.35) 12%,transparent 12.5%,transparent 87%,rgba(255,255,255,.35) 87.5%,rgba(255,255,255,.35)),linear-gradient(90deg,rgba(102,126,234,.18) 2px,transparent 2px);background-size:80px 80px,80px 80px,48px 48px}.xa-map-marker{position:absolute;transform:translate(-50%,-100%);min-width:24px;height:24px;border-radius:999px;background:#667eea;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;box-shadow:0 3px 8px rgba(0,0,0,.24)}.xa-map .leaflet-control-container{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif}.xa-map .leaflet-popup-content-wrapper{border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15)}.xa-map .leaflet-popup-content{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;line-height:1.4}
+.xa-map-container{position:relative;background:#eef3ed;border:1px solid #d5dee7;border-radius:10px;overflow:hidden}.xa-map-static{position:relative;width:100%;height:100%;min-height:180px;overflow:hidden;background:#e8efe5}.xa-map-static::before{content:"";position:absolute;inset:0;background-image:linear-gradient(0deg,rgba(132,153,166,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(132,153,166,.18) 1px,transparent 1px),linear-gradient(45deg,rgba(255,255,255,.42) 16%,transparent 16.5%,transparent 83%,rgba(255,255,255,.42) 83.5%);background-size:64px 64px,64px 64px,96px 96px;opacity:.9}.xa-map-static::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 24% 28%,rgba(255,255,255,.46),transparent 28%),radial-gradient(circle at 74% 72%,rgba(255,255,255,.36),transparent 24%);pointer-events:none}.xa-map-static--snapshot::before,.xa-map-static--snapshot::after{display:none}.xa-map-snapshot{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;z-index:1;background:#dfe7dc}.xa-map-layer{position:absolute;display:block;pointer-events:none}.xa-map-water{left:-10%;top:58%;width:120%;height:70px;border-radius:999px;background:linear-gradient(90deg,rgba(126,190,217,.62),rgba(167,213,231,.8),rgba(126,190,217,.58));transform:rotate(-7deg);box-shadow:inset 0 0 0 1px rgba(255,255,255,.45);opacity:.9}.xa-map-park{background:rgba(129,190,112,.34);border:1px solid rgba(86,145,91,.16);border-radius:18px}.xa-map-park--north{left:5%;top:9%;width:28%;height:30%;transform:rotate(-12deg)}.xa-map-park--south{right:8%;bottom:8%;width:30%;height:28%;transform:rotate(8deg)}.xa-map-road{background:rgba(255,255,255,.95);border-radius:999px;box-shadow:0 0 0 1px rgba(151,163,176,.26),0 2px 7px rgba(79,92,111,.1)}.xa-map-road--main{left:-8%;top:47%;width:116%;height:18px;transform:rotate(-13deg)}.xa-map-road--cross{left:20%;top:-8%;width:16px;height:116%;transform:rotate(19deg)}.xa-map-road--vertical{left:63%;top:-10%;width:14px;height:120%;transform:rotate(-4deg)}.xa-map-road--ring{left:55%;top:18%;width:126px;height:88px;border:10px solid rgba(255,255,255,.92);border-radius:999px;background:transparent;box-shadow:0 0 0 1px rgba(151,163,176,.26),0 3px 8px rgba(79,92,111,.1)}.xa-map-label{z-index:5;color:#5f6f5d;background:rgba(255,255,255,.72);border:1px solid rgba(137,154,135,.25);border-radius:999px;padding:3px 7px;font-size:10px;font-weight:700;letter-spacing:.01em;box-shadow:0 2px 6px rgba(74,87,71,.12)}.xa-map-label--north{left:8%;top:12%}.xa-map-label--center{left:42%;top:35%}.xa-map-label--south{right:9%;bottom:14%}.xa-map-attribution{position:absolute;right:8px;bottom:6px;z-index:10;padding:2px 6px;border-radius:999px;background:rgba(255,255,255,.76);color:#6b7280;font-size:9px;box-shadow:0 1px 4px rgba(0,0,0,.1)}.xa-map-marker{position:absolute;z-index:9;transform:translate(-50%,-100%);min-width:24px;height:24px;border-radius:999px;background:#667eea;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;box-shadow:0 3px 8px rgba(0,0,0,.24);border:2px solid rgba(255,255,255,.8)}.xa-map .leaflet-control-container{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif}.xa-map .leaflet-popup-content-wrapper{border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15)}.xa-map .leaflet-popup-content{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;line-height:1.4}
 .xa-calendar-container{position:relative;background:#fff;border:1px solid #dee2e6;border-radius:8px;overflow:hidden;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif}.xa-calendar-static{height:100%;display:flex;flex-direction:column;padding:12px;box-sizing:border-box}.fc-header-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.fc-button-primary{background:#667eea;border:1px solid #667eea;color:#fff;border-radius:4px;padding:5px 10px}.xa-calendar .fc-button-primary:hover{background:#5a67d8;border-color:#5a67d8}.fc-scrollgrid{width:100%;border-collapse:collapse;table-layout:fixed;flex:1}.fc-scrollgrid th{background:#f8f9fa;color:#495057;font-size:12px;border:1px solid #dee2e6;padding:6px}.fc-scrollgrid td{height:34px;border:1px solid #dee2e6;vertical-align:top;padding:2px}.fc-daygrid-day-number{background:none;border:0;color:#495057;font-size:12px;padding:2px 4px}.fc-today{background:rgba(102,126,234,.1)!important}.xa-calendar .fc-theme-standard .fc-scrollgrid{border:1px solid #dee2e6}.xa-calendar .fc-theme-standard .fc-col-header-cell{background:#f8f9fa;border-color:#dee2e6}.xa-calendar .fc-theme-standard .fc-daygrid-day{border-color:#dee2e6}.xa-calendar .fc-button-primary{background:#667eea;border-color:#667eea}.xa-calendar .fc-event{border-radius:4px;border:none;padding:2px 4px}.xa-calendar .fc-event-title{font-weight:500}.xa-calendar .fc-today{background:rgba(102,126,234,.1)!important}
 .xa-map-loading,.xa-calendar-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,.9);padding:20px;border-radius:8px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.1);display:none}.xa-map-loading .spinner,.xa-calendar-loading .spinner{width:40px;height:40px;border:4px solid #f3f3f3;border-top:4px solid #667eea;border-radius:50%;animation:xa-advanced-spin 1s linear infinite;margin:0 auto 10px}@keyframes xa-advanced-spin{to{transform:rotate(360deg)}}
 `.trim();
@@ -1697,6 +1708,13 @@ export const viewerScript = `
       show(0);
     });
   }
+  function hydrateSpanGrids(root) {
+    (root || document).querySelectorAll('[data-xcon-spangrid]').forEach((host) => {
+      if (host.dataset.xconSpangridBound === 'true') return;
+      host.dataset.xconSpangridBound = 'true';
+      host.classList.add('xa-spangrid-container--hydrated');
+    });
+  }
   function hydrate(root) {
     (root || document).querySelectorAll('[data-xcon-carousel="true"]').forEach((banner) => {
       sync(banner);
@@ -1724,6 +1742,7 @@ export const viewerScript = `
     hydrateExtCarousels(root || document);
     hydrateShapeImageAnimations(root || document);
     hydrateFlipbooks(root || document);
+    hydrateSpanGrids(root || document);
   }
   window.xconViewerHydrate = hydrate;
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => hydrate(document));
@@ -1810,6 +1829,7 @@ export function hydrateXconViewer(root: ParentNode = document): void {
   hydrateExtCarousels(root);
   hydrateShapeImageAnimations(root);
   hydrateFlipbooks(root);
+  hydrateSpanGrids(root);
 }
 
 function hydrateTextFields(root: ParentNode = document): void {
@@ -2855,6 +2875,14 @@ function hydrateFlipbooks(root: ParentNode = document): void {
   });
 }
 
+function hydrateSpanGrids(root: ParentNode = document): void {
+  root.querySelectorAll<HTMLElement>('[data-xcon-spangrid]').forEach((host) => {
+    if (host.dataset.xconSpangridBound === 'true') return;
+    host.dataset.xconSpangridBound = 'true';
+    host.classList.add('xa-spangrid-container--hydrated');
+  });
+}
+
 function extCarouselStateFor(carousel: HTMLElement): ExtCarouselRuntimeState {
   let state = extCarouselStates.get(carousel);
   if (!state) {
@@ -3363,12 +3391,14 @@ function renderComponent(
       return renderAdvancedRichEditor(component, attrs);
     case 'dataViz':
       return renderAdvancedDataViz(component, attrs);
+    case 'spanGrid':
+      return renderAdvancedSpanGrid(component, attrs);
     case 'flipbook':
       return renderAdvancedFlipbook(component, attrs, context);
     case 'networkDiagram':
       return renderAdvancedNetworkDiagram(component, attrs);
     case 'map':
-      return renderAdvancedMap(component, attrs);
+      return renderAdvancedMap(component, attrs, context);
     case 'calendar':
       return renderAdvancedCalendar(component, attrs);
     case 'template':
@@ -4089,7 +4119,7 @@ function renderLabel(component: XconObject, attrs: Record<string, string | undef
     'div',
     attrsWithStyle(
       attrsWithClass(attrs, [editorial ? 'xa-al-label--editorial' : '', labelShimmerClass(component)].filter(Boolean).join(' ')),
-      'display:flex!important;flex-direction:column;align-items:stretch;justify-content:flex-start;min-width:0',
+      `display:flex!important;flex-direction:column;align-items:stretch;justify-content:${labelContainerJustify(component)};min-width:0`,
     ),
     mainHtml + hintHtml,
   );
@@ -4908,6 +4938,18 @@ function labelTextStyle(component: XconObject): string {
   ];
   appendCss(declarations, 'line-height', component.get('lineHeight') ?? fontValue(component, 'lineHeight') ?? '1.4');
   return declarations.join(';');
+}
+
+function labelContainerJustify(component: XconObject): string {
+  if (
+    component.contains('textVerticalAlign') ||
+    component.contains('verticalAlign') ||
+    component.contains('textVAlign') ||
+    component.contains('valign')
+  ) {
+    return verticalAlign(component);
+  }
+  return 'flex-start';
 }
 
 function labelJustifyFromTextAlign(value: unknown): string {
@@ -7249,6 +7291,34 @@ function renderAdvancedDataViz(component: XconObject, attrs: Record<string, stri
   return tag('div', rootAttrs, preview + advancedLoading(`dataviz-loading-${key}`, 'dataviz-loading', '데이터 시각화 로딩 중...'));
 }
 
+function renderAdvancedSpanGrid(component: XconObject, attrs: Record<string, string | undefined>): string {
+  const key = componentDomKey(attrs);
+  const data = spanGridData(component);
+  const config = spanGridConfig(component, data);
+  const merges = normalizeSpanGridMerges(config.merges);
+  if (merges.length > 0) config.merges = merges.map(spanGridMergeSnapshot);
+  const rootAttrs = {
+    ...advancedAttrs(attrs, 'xa-spangrid-container', key, 'position:relative;overflow:hidden'),
+    'data-xcon-spangrid': '',
+    'data-xcon-spangrid-data': jsonAttr(data),
+    'data-xcon-spangrid-options': jsonAttr(config),
+  };
+  const surface = tag(
+    'div',
+    {
+      id: `spangrid-${key}`,
+      class: 'xa-spangrid-surface',
+      'data-xcon-spangrid-surface': '',
+      'data-xcon-spangrid-scroll': '',
+      role: 'grid',
+      'aria-readonly': 'true',
+      'aria-label': attr(component.get('ariaLabel') ?? component.get('label') ?? component.get('title') ?? 'SpanGrid'),
+    },
+    renderStaticSpanGrid(data, config),
+  );
+  return tag('div', rootAttrs, surface + advancedLoading(`spangrid-loading-${key}`, 'spangrid-loading', 'SpanGrid loading...', true));
+}
+
 function renderAdvancedFlipbook(component: XconObject, attrs: Record<string, string | undefined>, context: RenderContext): string {
   const key = componentDomKey(attrs);
   const pages = Math.max(1, Number(component.get('pages') ?? 1) || 1);
@@ -7297,12 +7367,12 @@ function renderAdvancedNetworkDiagram(component: XconObject, attrs: Record<strin
   return tag('div', advancedAttrs(attrs, '', key, ''), root);
 }
 
-function renderAdvancedMap(component: XconObject, attrs: Record<string, string | undefined>): string {
+function renderAdvancedMap(component: XconObject, attrs: Record<string, string | undefined>, context: RenderContext): string {
   const key = componentDomKey(attrs);
   const mapBody = tag(
     'div',
     { id: `map-${key}`, class: 'xa-map', style: 'width:100%;height:100%;border-radius:8px;' },
-    renderStaticMap(component),
+    renderStaticMap(component, context),
   );
   return tag('div', advancedAttrs(attrs, '', key, ''), tag('div', { class: 'xa-map-container', style: 'width:100%;height:100%;' }, mapBody + mapCalendarLoading(`map-loading-${key}`, 'xa-map-loading', '지도 로딩 중...')));
 }
@@ -7367,6 +7437,383 @@ function jsonAttr(value: unknown): string {
   } catch {
     return 'null';
   }
+}
+
+function spanGridData(component: XconObject): unknown[][] {
+  const direct = toPlainValue(component.get('data') ?? component.get('cells'));
+  if (Array.isArray(direct)) return normalizeSpanGridRows(direct);
+
+  const snapshot = toPlainValue(component.get('snapshot') ?? component.get('grid'));
+  const snapshotRows = spanGridSnapshotRows(snapshot);
+  if (snapshotRows) return snapshotRows;
+
+  const tabledata = toPlainValue(component.get('tabledata'));
+  if (Array.isArray(tabledata)) return normalizeSpanGridRows(tabledata);
+
+  const dataTemplate = toPlainValue(component.get('dataTemplate'));
+  if (dataTemplate && typeof dataTemplate === 'object' && !Array.isArray(dataTemplate)) {
+    const template = (dataTemplate as Record<string, unknown>).template;
+    if (template && typeof template === 'object' && !Array.isArray(template)) {
+      const rows = (template as Record<string, unknown>).tabledata;
+      if (Array.isArray(rows)) return normalizeSpanGridRows(rows);
+    }
+  }
+
+  if (snapshot && typeof snapshot === 'object' && !Array.isArray(snapshot)) {
+    const rows = (snapshot as Record<string, unknown>).data ?? (snapshot as Record<string, unknown>).rows;
+    if (Array.isArray(rows)) return normalizeSpanGridRows(rows);
+  }
+
+  return [];
+}
+
+function spanGridConfig(component: XconObject, data: unknown[][]): Record<string, unknown> {
+  const options = toPlainValue(component.get('config') ?? component.get('options'));
+  const base = options && typeof options === 'object' && !Array.isArray(options) ? options as Record<string, unknown> : {};
+  const snapshot = toPlainValue(component.get('snapshot') ?? component.get('grid'));
+  const snapshotRecord = objectRecord(snapshot);
+  const pos = rectParts(component.get('pos'));
+  const config: Record<string, unknown> = {
+    readonly: true,
+    ...base,
+    data,
+  };
+  if (pos) {
+    config.width = pos[2];
+    config.height = pos[3];
+  }
+  copySpanGridConfigValue(config, 'columns', toPlainValue(component.get('columns') ?? component.get('cols') ?? snapshotRecord?.columns ?? snapshotRecord?.cols));
+  copySpanGridConfigValue(config, 'rows', toPlainValue(component.get('rows') ?? snapshotRecord?.rows));
+  copySpanGridConfigValue(config, 'snapshot', snapshot);
+  copySpanGridConfigValue(config, 'merges', toPlainValue(component.get('merges') ?? component.get('mergeCells') ?? component.get('spans') ?? snapshotRecord?.merges));
+  copySpanGridConfigValue(config, 'select', toPlainValue(component.get('select')));
+  copySpanGridConfigValue(config, 'fixed', toPlainValue(component.get('fixed') ?? snapshotRecord?.fixed));
+  copySpanGridConfigValue(config, 'fixedRows', component.get('fixedRows') ?? component.get('fixedRowCount'));
+  copySpanGridConfigValue(config, 'fixedColumns', component.get('fixedColumns') ?? component.get('fixedColumnCount'));
+  copySpanGridConfigValue(config, 'gridBorder', toPlainValue(component.get('gridBorder') ?? snapshotRecord?.gridBorder));
+  copySpanGridConfigValue(config, 'zoom', component.get('zoom'));
+  copySpanGridConfigValue(config, 'scrollMode', component.get('scrollMode'));
+  copySpanGridConfigValue(config, 'reserveScrollbarInViewport', component.get('reserveScrollbarInViewport'));
+  config.readonly = true;
+  config.readOnly = true;
+  return config;
+}
+
+function copySpanGridConfigValue(target: Record<string, unknown>, key: string, value: unknown): void {
+  if (value !== undefined && value !== null && value !== '') target[key] = value;
+}
+
+function normalizeSpanGridRows(input: unknown[]): unknown[][] {
+  if (input.length === 0) return [];
+  const first = input[0];
+  if (Array.isArray(first)) return input.map((row) => Array.isArray(row) ? row : [row]);
+  const snapshotRows = spanGridSnapshotRows({ rows: input });
+  if (snapshotRows) return snapshotRows;
+  if (first && typeof first === 'object') {
+    const headers = Object.keys(first as Record<string, unknown>);
+    return [
+      headers,
+      ...input.map((row) => {
+        if (!row || typeof row !== 'object' || Array.isArray(row)) return headers.map(() => '');
+        const record = row as Record<string, unknown>;
+        return headers.map((header) => record[header]);
+      }),
+    ];
+  }
+  return input.map((value) => [value]);
+}
+
+function spanGridSnapshotRows(snapshot: unknown): unknown[][] | undefined {
+  const record = objectRecord(snapshot);
+  const rows = record?.rows;
+  if (!Array.isArray(rows)) return undefined;
+  if (!rows.some((row) => objectRecord(row)?.cells && Array.isArray(objectRecord(row)?.cells))) return undefined;
+  return rows.map((row) => {
+    const rowRecord = objectRecord(row);
+    const cells = rowRecord?.cells;
+    return Array.isArray(cells) ? cells : [];
+  });
+}
+
+type StaticSpanGridMerge = {
+  startRow: number;
+  startCol: number;
+  endRow: number;
+  endCol: number;
+};
+
+function renderStaticSpanGrid(data: unknown[][], config: Record<string, unknown> = {}): string {
+  const rows = normalizeSpanGridRows(data).slice(0, 80);
+  if (rows.length === 0) return tag('div', { class: 'xa-spangrid-empty' }, 'No grid data');
+  const columnCount = Math.max(1, ...rows.map((row) => row.length));
+  const normalized = rows.map((row) => Array.from({ length: columnCount }, (_, index) => row[index] ?? ''));
+  const columnWidths = spanGridColumnPixelWidths(config, columnCount);
+  const rowHeights = spanGridRowPixelHeights(config, rows.length);
+  const columnOffsets = spanGridOffsets(columnWidths);
+  const rowOffsets = spanGridOffsets(rowHeights);
+  const tableWidth = spanGridTotalPixels(columnWidths);
+  const tableHeight = spanGridTotalPixels(rowHeights);
+  const fixed = normalizeSpanGridFixed(config, rows.length, columnCount);
+  const merges = normalizeSpanGridMerges(config.merges).filter((merge) => {
+    return merge.startRow < rows.length && merge.startCol < columnCount;
+  });
+  const mergeByStart = new Map<string, StaticSpanGridMerge>();
+  const covered = new Set<string>();
+  const occupied = new Set<string>();
+  merges.forEach((rawMerge) => {
+    const merge = {
+      startRow: rawMerge.startRow,
+      startCol: rawMerge.startCol,
+      endRow: Math.min(rawMerge.endRow, rows.length - 1),
+      endCol: Math.min(rawMerge.endCol, columnCount - 1),
+    };
+    if (merge.endRow <= merge.startRow && merge.endCol <= merge.startCol) return;
+    const cells: string[] = [];
+    for (let row = merge.startRow; row <= merge.endRow; row += 1) {
+      for (let col = merge.startCol; col <= merge.endCol; col += 1) {
+        cells.push(`${row}:${col}`);
+      }
+    }
+    if (cells.some((cell) => occupied.has(cell))) return;
+    cells.forEach((cell) => occupied.add(cell));
+    mergeByStart.set(`${merge.startRow}:${merge.startCol}`, merge);
+    cells.forEach((cell) => {
+      if (cell !== `${merge.startRow}:${merge.startCol}`) covered.add(cell);
+    });
+  });
+  const colgroup = renderStaticSpanGridColgroup(config, columnCount);
+  const renderCell = (cell: unknown, rowIndex: number, colIndex: number, tagName: 'th' | 'td'): string => {
+    if (covered.has(`${rowIndex}:${colIndex}`)) return '';
+    const merge = mergeByStart.get(`${rowIndex}:${colIndex}`);
+    const attrs: Record<string, string | undefined> = tagName === 'th' ? { scope: 'col' } : {};
+    const classes: string[] = [];
+    const styles: string[] = [];
+    const cellRecord = objectRecord(cell);
+    const gridBorderColor = spanGridBorderColor(config);
+    const inFixedRow = fixed.rows > 0 && rowIndex < fixed.rows;
+    const inFixedColumn = fixed.columns > 0 && colIndex < fixed.columns;
+    if (merge) {
+      const rowSpan = merge.endRow - merge.startRow + 1;
+      const colSpan = merge.endCol - merge.startCol + 1;
+      if (rowSpan > 1) attrs.rowspan = String(rowSpan);
+      if (colSpan > 1) attrs.colspan = String(colSpan);
+    }
+    if (inFixedRow || inFixedColumn) styles.push('position:sticky');
+    if (inFixedRow) {
+      classes.push('xa-spangrid-cell--fixed-row');
+      styles.push(`top:${rowOffsets[rowIndex] ?? 0}px`);
+    }
+    if (inFixedColumn) {
+      classes.push('xa-spangrid-cell--fixed-col');
+      styles.push(`left:${columnOffsets[colIndex] ?? 0}px`);
+    }
+    if (inFixedRow && inFixedColumn) classes.push('xa-spangrid-cell--fixed-corner');
+    if (classes.length > 0) attrs.class = classes.join(' ');
+    if (styles.length > 0) {
+      styles.push(`z-index:${inFixedRow && inFixedColumn ? 4 : inFixedRow ? 3 : 2}`);
+    }
+    if (rowHeights[rowIndex]) styles.push(`height:${rowHeights[rowIndex]}px`);
+    if (gridBorderColor) styles.push(`border-color:${gridBorderColor}`);
+    appendSpanGridCellStyle(styles, cellRecord);
+    if (styles.length > 0) attrs.style = styles.join(';') + ';';
+    return tag(tagName, attrs, escapeHtml(spanGridCellText(cell)));
+  };
+  const header = normalized[0] ?? [];
+  const bodyRows = normalized.length > 1 ? normalized.slice(1) : normalized;
+  const headerHtml = tag('thead', {}, tag('tr', {}, header.map((cell, index) => renderCell(cell, 0, index, 'th')).join('')));
+  const bodyHtml = tag(
+    'tbody',
+    {},
+    bodyRows
+      .map((row, bodyIndex) => {
+        const rowIndex = bodyIndex + 1;
+        return tag('tr', {}, row.map((cell, colIndex) => renderCell(cell, rowIndex, colIndex, 'td')).join(''));
+      })
+      .join(''),
+  );
+  const tableStyles: string[] = [];
+  if (tableWidth > 0) tableStyles.push(`min-width:${tableWidth}px`);
+  if (tableHeight > 0) tableStyles.push(`height:${tableHeight}px`);
+  return tag('table', { class: 'xa-spangrid-table', style: tableStyles.length > 0 ? tableStyles.join(';') + ';' : undefined }, colgroup + headerHtml + bodyHtml);
+}
+
+function normalizeSpanGridMerges(input: unknown): StaticSpanGridMerge[] {
+  if (!Array.isArray(input)) return [];
+  const merges: StaticSpanGridMerge[] = [];
+  input.forEach((raw) => {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return;
+    const record = raw as Record<string, unknown>;
+    const start = objectRecord(record.start);
+    const end = objectRecord(record.end);
+    const startRow = toGridIndex(start?.row ?? record.row ?? record.r ?? record.startRow ?? record.row1);
+    const startCol = toGridIndex(start?.col ?? start?.column ?? record.col ?? record.c ?? record.startCol ?? record.col1);
+    let endRow = toGridIndex(end?.row ?? record.endRow ?? record.row2);
+    let endCol = toGridIndex(end?.col ?? end?.column ?? record.endCol ?? record.col2);
+    const rowSpan = toGridIndex(record.rowspan ?? record.rowSpan ?? record.rs);
+    const colSpan = toGridIndex(record.colspan ?? record.colSpan ?? record.cs);
+    if (!Number.isInteger(endRow) && Number.isInteger(startRow) && Number.isInteger(rowSpan) && rowSpan > 0) {
+      endRow = startRow + rowSpan - 1;
+    }
+    if (!Number.isInteger(endCol) && Number.isInteger(startCol) && Number.isInteger(colSpan) && colSpan > 0) {
+      endCol = startCol + colSpan - 1;
+    }
+    if (![startRow, startCol, endRow, endCol].every(Number.isInteger)) return;
+    const normalizedStartRow = Math.max(0, Math.min(startRow, endRow));
+    const normalizedEndRow = Math.max(0, Math.max(startRow, endRow));
+    const normalizedStartCol = Math.max(0, Math.min(startCol, endCol));
+    const normalizedEndCol = Math.max(0, Math.max(startCol, endCol));
+    merges.push({
+      startRow: normalizedStartRow,
+      startCol: normalizedStartCol,
+      endRow: normalizedEndRow,
+      endCol: normalizedEndCol,
+    });
+  });
+  return merges;
+}
+
+function spanGridMergeSnapshot(merge: StaticSpanGridMerge): Record<string, Record<string, number>> {
+  return {
+    start: { row: merge.startRow, col: merge.startCol },
+    end: { row: merge.endRow, col: merge.endCol },
+  };
+}
+
+function objectRecord(value: unknown): Record<string, unknown> | undefined {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : undefined;
+}
+
+function toGridIndex(value: unknown): number {
+  const number = typeof value === 'number' ? value : Number(String(value ?? '').trim());
+  return Number.isInteger(number) && number >= 0 ? number : Number.NaN;
+}
+
+function renderStaticSpanGridColgroup(config: Record<string, unknown>, columnCount: number): string {
+  const source = Array.isArray(config.columns) ? config.columns : Array.isArray(config.cols) ? config.cols : undefined;
+  if (!source) return '';
+  const columns = source.slice(0, columnCount).map((column) => {
+    const width = spanGridColumnWidth(column);
+    return width ? voidTag('col', { style: `width:${width}` }) : voidTag('col', {});
+  });
+  if (columns.length === 0) return '';
+  return tag('colgroup', {}, columns.join(''));
+}
+
+function spanGridColumnPixelWidths(config: Record<string, unknown>, columnCount: number): number[] {
+  const source = Array.isArray(config.columns) ? config.columns : Array.isArray(config.cols) ? config.cols : [];
+  return Array.from({ length: columnCount }, (_, index) => {
+    const column = source[index];
+    return positivePixelValue(objectRecord(column)?.width ?? objectRecord(column)?.w ?? objectRecord(column)?.size ?? column, 120);
+  });
+}
+
+function spanGridRowPixelHeights(config: Record<string, unknown>, rowCount: number): number[] {
+  const source = Array.isArray(config.rows) ? config.rows : [];
+  return Array.from({ length: rowCount }, (_, index) => {
+    const row = source[index];
+    return positivePixelValue(objectRecord(row)?.height ?? objectRecord(row)?.h ?? objectRecord(row)?.size ?? row, index === 0 ? 32 : 40);
+  });
+}
+
+function spanGridOffsets(values: number[]): number[] {
+  const offsets: number[] = [];
+  let cursor = 0;
+  values.forEach((value, index) => {
+    offsets[index] = cursor;
+    cursor += Math.max(0, value);
+  });
+  return offsets;
+}
+
+function spanGridTotalPixels(values: number[]): number {
+  return values.reduce((sum, value) => sum + Math.max(0, value), 0);
+}
+
+function appendSpanGridCellStyle(styles: string[], cell: Record<string, unknown> | undefined): void {
+  if (!cell) return;
+  const background = safeCssValue(cssColor(cell.backColor ?? cell.backgroundColor ?? cell.bg));
+  const foreground = safeCssValue(cssColor(cell.foreColor ?? cell.color ?? cell.fg));
+  const font = safeCssValue(cell.font);
+  const alignment = spanGridTextAlignment(cell.textAlign ?? cell.align ?? cell.alignment);
+  if (background) styles.push(`background-color:${background}`);
+  if (foreground) styles.push(`color:${foreground}`);
+  if (font) styles.push(`font:${font}`);
+  if (alignment.textAlign) styles.push(`text-align:${alignment.textAlign}`);
+  if (alignment.verticalAlign) styles.push(`vertical-align:${alignment.verticalAlign}`);
+}
+
+function spanGridBorderColor(config: Record<string, unknown>): string | undefined {
+  const border = objectRecord(config.gridBorder);
+  return safeCssValue(cssColor(border?.leftColor ?? border?.topColor ?? border?.rightColor ?? border?.bottomColor ?? border?.color ?? config.borderColor));
+}
+
+function spanGridTextAlignment(value: unknown): { textAlign?: string; verticalAlign?: string } {
+  const text = String(value ?? '').trim().toLowerCase();
+  if (!text) return {};
+  let textAlign: string | undefined;
+  let verticalAlign: string | undefined;
+  if (text.includes('left') || text === 'start') textAlign = 'left';
+  else if (text.includes('right') || text === 'end') textAlign = 'right';
+  else if (text.includes('center') || text.includes('centre')) textAlign = 'center';
+  if (text.includes('top')) verticalAlign = 'top';
+  else if (text.includes('bottom')) verticalAlign = 'bottom';
+  else if (text.includes('middle') || text.includes('center') || text.includes('centre')) verticalAlign = 'middle';
+  return { textAlign, verticalAlign };
+}
+
+function normalizeSpanGridFixed(config: Record<string, unknown>, rowCount: number, columnCount: number): { rows: number; columns: number } {
+  const fixed = objectRecord(config.fixed);
+  const rowIndex = fixed ? gridCountValue(fixed.rowIndex ?? fixed.row ?? fixed.r) : Number.NaN;
+  const columnIndex = fixed ? gridCountValue(fixed.columnIndex ?? fixed.colIndex ?? fixed.column ?? fixed.col ?? fixed.c) : Number.NaN;
+  const rows = gridCountValue(config.fixedRows ?? config.fixedRowCount ?? fixed?.rows ?? fixed?.rowCount ?? fixed?.topRows);
+  const columns = gridCountValue(config.fixedColumns ?? config.fixedColumnCount ?? fixed?.columns ?? fixed?.columnCount ?? fixed?.cols ?? fixed?.colCount ?? fixed?.leftColumns);
+  return {
+    rows: clampGridCount(Number.isInteger(rows) ? rows : Number.isInteger(rowIndex) ? rowIndex + 1 : 0, rowCount),
+    columns: clampGridCount(Number.isInteger(columns) ? columns : Number.isInteger(columnIndex) ? columnIndex + 1 : 0, columnCount),
+  };
+}
+
+function positivePixelValue(value: unknown, fallback: number): number {
+  if (typeof value === 'number') return Number.isFinite(value) && value > 0 ? value : fallback;
+  const text = String(value ?? '').trim();
+  const match = /^(\d+(?:\.\d+)?)(?:px)?$/i.exec(text);
+  if (!match) return fallback;
+  const number = Number(match[1]);
+  return Number.isFinite(number) && number > 0 ? number : fallback;
+}
+
+function gridCountValue(value: unknown): number {
+  if (value === undefined || value === null || value === '') return Number.NaN;
+  const number = typeof value === 'number' ? value : Number(String(value ?? '').trim());
+  return Number.isInteger(number) && number >= 0 ? number : Number.NaN;
+}
+
+function clampGridCount(value: number, max: number): number {
+  return Math.max(0, Math.min(value, Math.max(0, max)));
+}
+
+function spanGridColumnWidth(column: unknown): string | undefined {
+  if (typeof column === 'number' || typeof column === 'string') return cssSize(column);
+  if (!column || typeof column !== 'object' || Array.isArray(column)) return undefined;
+  const record = column as Record<string, unknown>;
+  return cssSize(record.width ?? record.w ?? record.size);
+}
+
+function spanGridCellText(value: unknown): string {
+  if (value === undefined || value === null) return '';
+  const record = objectRecord(value);
+  if (record) {
+    const text = record.text ?? record.value ?? record.label ?? record.name;
+    if (text !== undefined && text !== null) return String(text);
+  }
+  if (typeof value === 'object') {
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return String(value);
+    }
+  }
+  return String(value);
 }
 
 function contextlessRichText(value: unknown): string {
@@ -7582,11 +8029,39 @@ function networkNode(item: unknown, index: number): { id: string; label: string;
   };
 }
 
-function renderStaticMap(component: XconObject): string {
+function renderStaticMap(component: XconObject, context: RenderContext): string {
   const lat = Number(component.get('latitude') ?? 37.5665) || 37.5665;
   const lng = Number(component.get('longitude') ?? 126.978) || 126.978;
   const zoom = Number(component.get('zoom') ?? 10) || 10;
   const tileLayer = String(component.get('tileLayer') ?? 'OpenStreetMap');
+  const rawSnapshot = component.get('snapshotUrl') ?? component.get('staticImage') ?? component.get('mapImage') ?? component.get('image') ?? component.get('src');
+  const snapshotUrl = sanitizeUrl(stripCssUrl(String(rawSnapshot ?? '')), context.options);
+  const snapshotAlt = String(component.get('snapshotAlt') ?? component.get('alt') ?? `Map centered at ${lat}, ${lng}`);
+  const snapshotFit = mapSnapshotFit(component.get('snapshotFit') ?? component.get('objectFit'));
+  const snapshotPosition = safeCssValue(component.get('objectPosition') ?? component.get('snapshotPosition')) ?? 'center';
+  const attributionText = component.get('attribution');
+  const layerHtml = snapshotUrl
+    ? voidTag('img', {
+        class: 'xa-map-snapshot',
+        src: snapshotUrl,
+        alt: snapshotAlt,
+        loading: 'lazy',
+        decoding: 'async',
+        style: `object-fit:${snapshotFit};object-position:${snapshotPosition};`,
+      }) + (attributionText ? tag('span', { class: 'xa-map-attribution' }, escapeHtml(String(attributionText))) : '')
+    : [
+        tag('span', { class: 'xa-map-layer xa-map-water xa-map-water--river', 'aria-hidden': 'true' }, ''),
+        tag('span', { class: 'xa-map-layer xa-map-park xa-map-park--north', 'aria-hidden': 'true' }, ''),
+        tag('span', { class: 'xa-map-layer xa-map-park xa-map-park--south', 'aria-hidden': 'true' }, ''),
+        tag('span', { class: 'xa-map-layer xa-map-road xa-map-road--main', 'aria-hidden': 'true' }, ''),
+        tag('span', { class: 'xa-map-layer xa-map-road xa-map-road--cross', 'aria-hidden': 'true' }, ''),
+        tag('span', { class: 'xa-map-layer xa-map-road xa-map-road--vertical', 'aria-hidden': 'true' }, ''),
+        tag('span', { class: 'xa-map-layer xa-map-road xa-map-road--ring', 'aria-hidden': 'true' }, ''),
+        tag('span', { class: 'xa-map-layer xa-map-label xa-map-label--north' }, 'Park'),
+        tag('span', { class: 'xa-map-layer xa-map-label xa-map-label--center' }, escapeHtml(tileLayer)),
+        tag('span', { class: 'xa-map-layer xa-map-label xa-map-label--south' }, 'District'),
+        tag('span', { class: 'xa-map-attribution' }, 'static map preview'),
+      ].join('');
   const markers = parseArrayValue(component.get('markers')).slice(0, 20);
   const markerHtml = markers.length
     ? markers.map((marker, index) => {
@@ -7600,7 +8075,12 @@ function renderStaticMap(component: XconObject): string {
         return tag('span', { class: 'xa-map-marker', title: label, style: `left:${left}%;top:${top}%;` }, escapeHtml(label.slice(0, 2)));
       }).join('')
     : tag('span', { class: 'xa-map-marker', style: 'left:50%;top:50%;' }, '●');
-  return tag('div', { class: 'xa-map-static', 'data-latitude': String(lat), 'data-longitude': String(lng), 'data-zoom': String(zoom), 'data-tile-layer': tileLayer }, markerHtml);
+  return tag('div', { class: `xa-map-static${snapshotUrl ? ' xa-map-static--snapshot' : ''}`, 'data-latitude': String(lat), 'data-longitude': String(lng), 'data-zoom': String(zoom), 'data-tile-layer': tileLayer }, layerHtml + markerHtml);
+}
+
+function mapSnapshotFit(value: unknown): string {
+  const fit = String(value ?? 'cover').trim().toLowerCase();
+  return ['cover', 'contain', 'fill', 'none', 'scale-down'].includes(fit) ? fit : 'cover';
 }
 
 function renderStaticCalendar(component: XconObject): string {
@@ -9526,7 +10006,7 @@ function cssColorWithOpacity(colorValue: unknown, opacityValue: unknown): string
 }
 
 function verticalAlign(component: XconObject): string {
-  const value = String(component.get('textVerticalAlign') ?? component.get('verticalAlign') ?? 'middle').toLowerCase();
+  const value = String(component.get('textVerticalAlign') ?? component.get('verticalAlign') ?? component.get('textVAlign') ?? component.get('valign') ?? 'middle').toLowerCase();
   if (value === 'top') return 'flex-start';
   if (value === 'bottom') return 'flex-end';
   return 'center';

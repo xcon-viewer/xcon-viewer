@@ -1,0 +1,31 @@
+<Panel border="visible:true; width:1; color:var(--border); radius:10" shadow="opacity:0.08; blur:6" pos="0,0,560,32" al="autoHeight:true; gap:10px; padding:14px 16px" componentsOrder="hdr,h07a,a07,h07b,b07">
+  <Label name="hdr" text="07 · RadioButton" pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+  <Label name="h07a" text="radioButton · list &amp; button group (#07-A)" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" />
+  <Panel name="a07" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:14px; padding:0" componentsOrder="hdr,subN,n1,n2,n3,n4,div,subV,vw,subS,rate">
+    <Label name="hdr" text=" " pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+    <Label name="subN" text="Notification Preference" pos="0,0,560,28" font="size:10; weight:500" textAlign="left" color="var(--ink-3)" style="letter-spacing:2px;text-transform:uppercase;line-height:1.4;margin-top:0;margin-bottom:12px;" />
+    <RadioButton name="n1" checked="true" pos="0,0,520,56" value="all" group="showcase_notif_al" label="All notifications · Receive every update and alert" />
+    <RadioButton name="n2" checked="false" pos="0,0,520,56" value="important" group="showcase_notif_al" label="Important only · Critical alerts and mentions only" />
+    <RadioButton name="n3" checked="false" pos="0,0,520,56" value="none" group="showcase_notif_al" label="No notifications · Fully silent mode" />
+    <RadioButton name="n4" checked="false" pos="0,0,520,56" enabled="false" value="custom" group="showcase_notif_al" label="Custom schedule · Pro plan required" />
+    <Label name="div" text=" " pos="0,0,560,28" font="size:1" textAlign="left" color="transparent" labelPadding="0" style="height:1px;min-height:1px;background:var(--border);width:100%;display:block;margin:12px 0;" />
+    <Label name="subV" text="View Mode" pos="0,0,560,28" font="size:10; weight:500" textAlign="left" color="var(--ink-3)" style="letter-spacing:2px;text-transform:uppercase;line-height:1.4;margin-top:18px;margin-bottom:12px;" />
+    <Panel name="vw" border="visible:false; width:1; color:var(--border); radius:8" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:0; padding:0; direction:row; alignItems:stretch; stackClass:xa-al-rb-btn-group" componentsOrder="v1,v2,v3,v4">
+      <RadioButton name="v1" checked="true" pos="0,0,72,40" value="grid" al="flex:1 1 0; minWidth:0" group="showcase_view_al" label="Grid" variant="segment" />
+      <RadioButton name="v2" checked="false" pos="0,0,72,40" value="list" al="flex:1 1 0; minWidth:0" group="showcase_view_al" label="List" variant="segment" />
+      <RadioButton name="v3" checked="false" pos="0,0,72,40" value="map" al="flex:1 1 0; minWidth:0" group="showcase_view_al" label="Map" variant="segment" />
+      <RadioButton name="v4" checked="false" pos="0,0,72,40" value="timeline" al="flex:1 1 0; minWidth:0" group="showcase_view_al" label="Timeline" variant="segment" />
+    </Panel>
+    <Label name="subS" text="Star Rating" pos="0,0,560,28" font="size:10; weight:500" textAlign="left" color="var(--ink-3)" style="letter-spacing:2px;text-transform:uppercase;line-height:1.4;margin-top:18px;margin-bottom:12px;" />
+    <RadioButton name="rate" checked="false" pos="0,0,520,52" ratingValue="4" al="width:100%" group="showcase_star_al" label="" variant="rating" />
+  </Panel>
+  <Label name="h07b" text="radioButton · plan selection (#07-B)" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" />
+  <Panel name="b07" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:0; padding:0; direction:column; alignItems:stretch; stackClass:xa-al-rb-plan-section" componentsOrder="subP,plans">
+    <Label name="subP" text="Subscription Plan" pos="0,0,560,28" font="size:10; weight:500" textAlign="left" color="var(--ink-3)" style="letter-spacing:2px;text-transform:uppercase;line-height:1.4;margin-top:0;margin-bottom:12px;" />
+    <Panel name="plans" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0; direction:row; alignItems:stretch; stackClass:xa-al-rb-plan-grid xa-al-rb-plan-grid--cards" componentsOrder="p1,p2,p3">
+      <RadioButton name="p1" checked="false" pos="0,0,180,220" value="starter" planName="Starter" planPriceMain="Free" planFeatures="1 project|5GB storage|Community support" al="flex:1 1 0; minWidth:0" group="showcase_plan_al" label="Starter" variant="plan" />
+      <RadioButton name="p2" checked="true" pos="0,0,180,220" value="pro" planName="Pro" planPriceMain="₩29K" planPricePer="/mo" planFeatures="10 projects|50GB storage|Priority support" al="flex:1 1 0; minWidth:0" group="showcase_plan_al" label="Pro" variant="plan" />
+      <RadioButton name="p3" checked="false" pos="0,0,180,220" value="team" planName="Team" planPriceMain="₩89K" planPricePer="/mo" planFeatures="Unlimited projects|500GB storage|Dedicated support" al="flex:1 1 0; minWidth:0" group="showcase_plan_al" label="Team" variant="plan" />
+    </Panel>
+  </Panel>
+</Panel>

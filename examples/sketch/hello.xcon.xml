@@ -1,0 +1,5 @@
+<Form pos="0,0,360,220" backgroundColor="#f8fafc" componentsOrder="title,summary,cta">
+  <Label name="title" xcon-prop-name="title" text="XCON/SKETCH" pos="24,24,312,36" font="size:24; weight:800" textAlign="center" color="#111827" />
+  <Label name="summary" xcon-prop-name="summary" text="Write like a sketch. Render like XCON." pos="32,72,296,44" font="size:13; weight:500" color="#475569" textAlign="center" />
+  <Button name="cta" xcon-prop-name="cta" label="Render Preview" pos="72,142,216,44" backgroundColor="#db2777" color="white" border="radius:12" font="size:14; weight:800" />
+</Form>

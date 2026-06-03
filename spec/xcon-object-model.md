@@ -1,11 +1,12 @@
 # XCON Object Model
 
-The XCON Object Model is the canonical in-memory representation shared by XCON/JSON, XCON/XML, and XCON/TAGLESS.
+The XCON Object Model is the canonical in-memory representation shared by XCON/SKETCH, XCON/JSON, XCON/XML, and XCON/TAGLESS.
 
 ```
-XCON/JSON     \
-XCON/XML       -> XCON Object Model -> Validator -> Viewer/Converter/CLI
-XCON/TAGLESS  /
+XCON/SKETCH   \
+XCON/JSON      \
+XCON/XML        -> XCON Object Model -> Validator -> Viewer/Converter/CLI
+XCON/TAGLESS   /
 ```
 
 The public model is viewer-only. It stores UI documents and renderable component props, but it does not store executable application behavior.

@@ -1,0 +1,25 @@
+screen 402x520
+  backgroundColor "#F8FAFC"
+  panel: panel at 20 40 362 300
+    backgroundColor "#FFFFFF"
+    border
+      width 1
+      color "#E5E7EB"
+      radius 16
+    padding 20
+    title: label "Project Health" at 20 20 300 28
+      font
+        size 20
+        weight 800
+    status: progressBar at 20 72 300 24
+      label "Progress"
+      value 68
+      max 100
+      color "#22C55E"
+    alert: alert at 20 120 300 68
+      severity "warning"
+      message "Two tasks need review."
+      showIcon true
+    action: button "Open" at 20 216 160 44
+      backgroundColor "#2563EB"
+      color "#FFFFFF"

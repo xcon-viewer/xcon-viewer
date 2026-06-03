@@ -1,7 +1,7 @@
 # @xcon-viewer/core
 
 XCON core parser, validator, and object model.  
-Parse JSON, XML, TAGLESS, or SKETCH syntax into a unified XCON Object Model.  
+Parse SKETCH, JSON, XML, or TAGLESS syntax into a unified XCON Object Model.  
 Built for the LLM era — safe, structured, and format-agnostic.
 
 ```ts

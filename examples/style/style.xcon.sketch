@@ -1,0 +1,16 @@
+screen 402x420
+  backgroundColor "#F8FAFC"
+  card: shape "Styled Shape" at 24 48 354 220
+    font
+      family "Inter, Arial, sans-serif"
+      size 28
+      weight 800
+    color "#FFFFFF"
+    textAlign "center"
+    textVerticalAlign "middle"
+    background
+      gradient "linear-gradient(135deg, #0F172A, #2563EB)"
+    border
+      radius 18
+    effects
+      boxShadow "0 16px 40px rgba(15,23,42,.22)"

@@ -1,0 +1,25 @@
+screen 402x820
+  title: label "Checkout" at 24 28 354 34
+    font
+      size 24
+      weight 800
+  address: textarea at 24 88 354 96
+    placeholder "Shipping address"
+    rows null
+  shipping: radioButton at 24 204 260 32
+    label "Standard shipping"
+    group "shipping"
+    value "standard"
+    checked true
+  express: radioButton at 24 244 260 32
+    label "Express shipping"
+    group "shipping"
+    value "express"
+  total: card at 24 304 354 140
+    title "Total"
+    subtitle "$128.00"
+    text "Includes taxes and shipping."
+    padding 16
+  pay: button "Pay now" at 24 476 354 48
+    backgroundColor "#16A34A"
+    color "#FFFFFF"

@@ -260,7 +260,7 @@ h3 {
 
 .live-sketch-surface {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(300px, 390px);
+  grid-template-columns: minmax(430px, 1fr) minmax(430px, 520px);
   gap: 16px;
   align-items: stretch;
   padding: 18px;
@@ -299,14 +299,43 @@ h3 {
 
 .live-sketch-code {
   position: relative;
-  min-height: 260px;
+  min-height: 760px;
+  max-height: 760px;
   margin: 0;
+  padding: 18px 20px 22px;
   border: 0;
   border-radius: 0;
   background: transparent;
   color: #dbeafe;
-  white-space: pre-wrap;
-  overflow: hidden;
+  white-space: pre;
+  overflow: auto;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: #64748b #0f172a;
+}
+
+.live-sketch-code::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.live-sketch-code::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: #0f172a;
+}
+
+.live-sketch-code::-webkit-scrollbar-thumb {
+  border: 2px solid #0f172a;
+  border-radius: 999px;
+  background: #64748b;
+}
+
+.live-sketch-code::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.live-sketch-code::-webkit-scrollbar-corner {
+  background: #0f172a;
 }
 
 .live-sketch-caret {
@@ -336,6 +365,11 @@ h3 {
   height: 220px;
   max-width: 100%;
   overflow: visible;
+}
+
+.live-sketch-preview.is-xconbnb-preview {
+  width: 402px;
+  height: 800px;
 }
 
 .live-sketch-fallback {

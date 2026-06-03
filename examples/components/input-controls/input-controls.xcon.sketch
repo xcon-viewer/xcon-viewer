@@ -1,0 +1,32 @@
+screen 402x680
+  text: textField "Text field" at 24 32 354 44
+    suffix
+      clear true
+  password: passwordField at 24 92 354 44
+    placeholder "Password"
+    showToggle true
+  textarea: textarea at 24 152 354 96
+    placeholder "Textarea"
+    rows null
+  select: select at 24 268 354 44
+    value "pro"
+    options [{"value":"free","label":"Free"},{"value":"pro","label":"Pro"}]
+  slider: slider at 24 332 300 48
+    label "Volume"
+    value 70
+    min 0
+    max 100
+    ticks true
+  switcher: switch at 24 396 260 44
+    title "Notifications"
+    checked true
+    labels
+      on "On"
+      off "Off"
+  color: colorPicker at 24 460 220 40
+    value "#2563EB"
+    alpha true
+  date: datePicker at 24 520 220 40
+    value "2026-05-12"
+  time: timePicker at 24 580 220 40
+    value "09:30"

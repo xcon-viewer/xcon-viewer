@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XCON Viewer — UI document format for the LLM era</title>
+<meta name="description" content="XCON is an embeddable UI renderer that turns LLM-generated SKETCH syntax into charts, grids, and dashboards — streamed inline inside any chat interface.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0a0a0a;--ink2:#1a1a1a;--muted:#6b7280;--faint:#d1d5db;
+  --surface:#fafaf9;--white:#ffffff;
+  --green:#0d9488;--green-light:#ccfbf1;--green-dim:rgba(13,148,136,0.12);
+  --amber:#d97706;--red:#dc2626;--blue:#2563eb;
+  --serif:'DM Serif Display',Georgia,serif;
+  --sans:'DM Sans',system-ui,sans-serif;
+  --mono:'DM Mono',monospace;
+  --ease:cubic-bezier(0.16,1,0.3,1);
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--surface);color:var(--ink);overflow-x:hidden;font-size:15px;line-height:1.6}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:60px;background:rgba(250,250,249,0.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--faint)}
+.nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.nav-x{width:32px;height:32px;border-radius:9px;background:var(--green);display:grid;place-items:center;font-size:15px;font-weight:800;color:#fff;font-family:var(--mono)}
+.nav-name{font-size:15px;font-weight:700;letter-spacing:-0.02em}
+.nav-links{display:flex;align-items:center;gap:6px}
+.nav-links a{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;color:var(--muted);transition:all 0.15s}
+.nav-links a:hover{color:var(--ink);background:var(--faint)}
+.nav-links .npm{background:var(--ink);color:#fff;font-family:var(--mono);font-size:12px}
+.nav-links .npm:hover{background:var(--ink2);color:#fff}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:120px 40px 80px;max-width:1100px;margin:0 auto}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--green-dim);border:1px solid rgba(13,148,136,0.25);color:var(--green);font-size:12px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:6px 14px;border-radius:999px;margin-bottom:36px;opacity:0;animation:fadeUp 0.6s var(--ease) 0.1s both}
+.hero-dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+.hero h1{font-family:var(--serif);font-size:clamp(52px,6vw,84px);line-height:0.96;letter-spacing:-0.03em;color:var(--ink);margin-bottom:28px;opacity:0;animation:fadeUp 0.7s var(--ease) 0.2s both}
+.hero h1 em{font-style:italic;color:var(--green)}
+.hero-sub{font-size:18px;color:var(--muted);line-height:1.65;max-width:560px;margin-bottom:48px;opacity:0;animation:fadeUp 0.7s var(--ease) 0.3s both}
+.hero-sub strong{color:var(--ink);font-weight:600}
+.hero-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;opacity:0;animation:fadeUp 0.7s var(--ease) 0.4s both}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;transition:all 0.2s;cursor:pointer;border:none;font-family:var(--sans)}
+.btn-primary{background:var(--ink);color:#fff;box-shadow:0 4px 16px rgba(10,10,10,0.18)}
+.btn-primary:hover{background:var(--ink2);transform:translateY(-1px);box-shadow:0 8px 24px rgba(10,10,10,0.22)}
+.btn-ghost{background:transparent;color:var(--ink);border:1.5px solid var(--faint)}
+.btn-ghost:hover{border-color:var(--ink);background:var(--white)}
+.btn-npm{background:var(--green);color:#fff;font-family:var(--mono);font-size:13px;box-shadow:0 4px 16px rgba(13,148,136,0.25)}
+.btn-npm:hover{background:#0f766e;transform:translateY(-1px)}
+.hero-scroll{margin-top:80px;display:flex;align-items:center;gap:12px;color:var(--faint);font-size:13px;opacity:0;animation:fadeUp 0.7s var(--ease) 0.6s both}
+.scroll-line{width:40px;height:1px;background:var(--faint)}
+
+/* SECTIONS */
+.section{padding:100px 40px;max-width:1100px;margin:0 auto}
+.section-label{font-size:11px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--green);margin-bottom:20px}
+.section h2{font-family:var(--serif);font-size:clamp(36px,4vw,54px);line-height:1.08;letter-spacing:-0.025em;color:var(--ink);margin-bottom:20px}
+.section h2 em{font-style:italic}
+.section-lead{font-size:17px;color:var(--muted);line-height:1.7;max-width:600px;margin-bottom:60px}
+
+/* PROBLEM CARDS */
+.problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.problem-card{padding:28px;border:1.5px solid var(--faint);border-radius:16px;background:var(--white);position:relative;overflow:hidden}
+.problem-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--faint)}
+.problem-card.red::before{background:var(--red)}
+.problem-card.amber::before{background:var(--amber)}
+.problem-card.blue::before{background:var(--blue)}
+.problem-icon{font-size:28px;margin-bottom:16px}
+.problem-card h3{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:8px;letter-spacing:-0.01em}
+.problem-card p{font-size:14px;color:var(--muted);line-height:1.6}
+.problem-code{display:inline-block;margin-top:10px;padding:4px 8px;border-radius:6px;background:#f1f5f9;font-family:var(--mono);font-size:11px;color:#475569}
+
+/* SOLUTION */
+.solution-wrap{background:var(--ink);border-radius:24px;padding:64px;color:#fff;position:relative;overflow:hidden}
+.solution-wrap::before{content:'';position:absolute;top:-100px;right:-100px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(13,148,136,0.2),transparent 70%)}
+.solution-label{font-size:11px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--green);margin-bottom:20px}
+.solution-wrap h2{font-family:var(--serif);font-size:clamp(32px,3.5vw,50px);line-height:1.1;letter-spacing:-0.025em;color:#fff;margin-bottom:16px}
+.solution-wrap h2 em{font-style:italic;color:#5eead4}
+.solution-wrap p{font-size:16px;color:#9ca3af;line-height:1.7;max-width:520px;margin-bottom:48px}
+.solution-features{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.sol-feat{padding:24px;border:1px solid rgba(255,255,255,0.1);border-radius:14px;background:rgba(255,255,255,0.04)}
+.sol-feat-icon{width:36px;height:36px;border-radius:10px;background:rgba(13,148,136,0.2);display:grid;place-items:center;margin-bottom:14px;font-size:16px}
+.sol-feat h4{font-size:14px;font-weight:700;color:#f9fafb;margin-bottom:6px}
+.sol-feat p{font-size:13px;color:#9ca3af;line-height:1.55}
+
+/* CODE */
+.code-section{padding:80px 40px;max-width:1100px;margin:0 auto}
+.code-compare{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+.code-block{border-radius:16px;overflow:hidden;border:1.5px solid var(--faint)}
+.code-block-head{display:flex;align-items:center;gap:8px;padding:14px 18px;background:#f8fafc;border-bottom:1.5px solid var(--faint)}
+.code-dots{display:flex;gap:5px}
+.code-dot{width:10px;height:10px;border-radius:50%}
+.code-dot.red{background:#fc5c65}
+.code-dot.amber{background:#fed330}
+.code-dot.green{background:#26de81}
+.code-block-label{font-size:12px;font-weight:700;color:var(--muted);margin-left:4px}
+.code-block-label.accent{color:var(--green)}
+pre{margin:0;padding:20px 18px;background:#0f172a;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.75;color:#94a3b8}
+.kw{color:#f472b6}.str{color:#a7f3d0}.cm{color:#475569}.fn{color:#93c5fd}.num{color:#fbbf24}.tag{color:#fca5a5}
+.code-result{border-radius:16px;border:1.5px solid var(--green);background:var(--white);overflow:hidden}
+.code-result-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--green-dim);border-bottom:1px solid rgba(13,148,136,0.2)}
+.code-result-label{font-size:12px;font-weight:700;color:var(--green)}
+.live-badge{font-size:10px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;background:var(--green);color:#fff;padding:3px 8px;border-radius:999px}
+.result-preview{padding:20px;display:flex;flex-direction:column;gap:10px}
+.mini-card{border-radius:10px;background:#111827;padding:16px;color:#fff}
+.mini-card-title{font-size:11px;color:#6b7280;font-weight:600;margin-bottom:4px}
+.mini-card-value{font-size:22px;font-weight:800;color:#fbbf24}
+.mini-card-sub{font-size:11px;color:#a7f3d0;margin-top:2px}
+.mini-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mini-metric{background:#f8fafc;border:1px solid var(--faint);border-radius:8px;padding:10px;text-align:center}
+.mini-metric-v{font-size:16px;font-weight:800;color:var(--ink)}
+.mini-metric-l{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* ECOSYSTEM */
+.eco-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:48px}
+.eco-card{padding:28px;border:1.5px solid var(--faint);border-radius:16px;background:var(--white);transition:all 0.2s}
+.eco-card:hover{border-color:var(--green);box-shadow:0 8px 32px rgba(13,148,136,0.1)}
+.eco-pkg{font-family:var(--mono);font-size:12px;color:var(--green);margin-bottom:12px;font-weight:500}
+.eco-card h3{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:6px}
+.eco-card p{font-size:13px;color:var(--muted);line-height:1.55}
+.eco-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:14px}
+.eco-tag{font-size:11px;font-weight:600;padding:3px 8px;border-radius:999px;background:#f1f5f9;color:#475569}
+
+/* POSITIONING */
+.pos-table{width:100%;border-collapse:collapse;border-radius:16px;overflow:hidden;border:1.5px solid var(--faint)}
+.pos-table th{background:#f8fafc;padding:14px 20px;text-align:left;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;border-bottom:1.5px solid var(--faint)}
+.pos-table td{padding:14px 20px;border-bottom:1px solid #f1f5f9;font-size:14px;color:var(--ink)}
+.pos-table tr:last-child td{border-bottom:0}
+.pos-table td:first-child{font-weight:600}
+.pos-table .xcon{color:var(--green);font-weight:700}
+.check{color:var(--green);font-size:16px}
+.cross{color:var(--red);font-size:16px}
+.partial{color:var(--amber)}
+
+/* HWP */
+.hwp-banner{background:linear-gradient(135deg,#1e3a5f,#1e40af);border-radius:20px;padding:48px;color:#fff;display:grid;grid-template-columns:1fr auto;gap:40px;align-items:center}
+.hwp-banner h3{font-family:var(--serif);font-size:32px;line-height:1.15;margin-bottom:12px}
+.hwp-banner h3 em{font-style:italic;color:#93c5fd}
+.hwp-banner p{font-size:15px;color:#bfdbfe;line-height:1.65;max-width:480px}
+.hwp-badge{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:14px;padding:20px 28px;text-align:center;white-space:nowrap}
+.hwp-badge-title{font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#93c5fd;margin-bottom:8px}
+.hwp-badge-items{display:flex;flex-direction:column;gap:6px}
+.hwp-item{font-size:13px;font-weight:600;color:#fff;display:flex;align-items:center;gap:6px}
+.hwp-arrow{font-size:11px;color:#93c5fd}
+
+/* INSTALL */
+.install-section{background:var(--ink);border-radius:24px;padding:64px;text-align:center;position:relative;overflow:hidden}
+.install-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(13,148,136,0.15),transparent 60%)}
+.install-section h2{font-family:var(--serif);font-size:clamp(32px,4vw,48px);color:#fff;margin-bottom:16px;position:relative}
+.install-section h2 em{font-style:italic;color:#5eead4}
+.install-section p{font-size:16px;color:#6b7280;margin-bottom:40px;position:relative}
+.install-box{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:6px 6px 6px 24px;display:inline-flex;align-items:center;gap:12px;margin:0 auto 32px;position:relative}
+.install-cmd{font-family:var(--mono);font-size:14px;color:#a7f3d0;flex:1;text-align:left}
+.copy-btn{padding:10px 16px;border-radius:10px;background:var(--green);color:#fff;font-size:12px;font-weight:700;cursor:pointer;border:none;font-family:var(--sans);transition:all 0.15s}
+.copy-btn:hover{background:#0f766e}
+.install-links{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;position:relative}
+.install-link{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);color:#d1d5db;font-size:13px;font-weight:600;text-decoration:none;transition:all 0.15s}
+.install-link:hover{border-color:rgba(255,255,255,0.35);color:#fff}
+
+footer{text-align:center;padding:48px 40px;color:var(--muted);font-size:13px;border-top:1px solid var(--faint)}
+footer a{color:var(--green);text-decoration:none;font-weight:600}
+.divider{width:100%;height:1px;background:var(--faint);max-width:1100px;margin:0 auto}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.reveal{opacity:0;transform:translateY(32px);transition:opacity 0.7s var(--ease),transform 0.7s var(--ease)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+@media(max-width:768px){
+  nav{padding:0 20px}
+  .hero,.section,.code-section{padding-left:20px;padding-right:20px}
+  .hero{padding-top:90px}
+  .problem-grid,.eco-grid,.solution-features{grid-template-columns:1fr}
+  .code-compare{grid-template-columns:1fr}
+  .hwp-banner{grid-template-columns:1fr}
+  .install-box{flex-direction:column;padding:16px}
+  .nav-links .btn-ghost{display:none}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="https://xconviewer.dev" target="_blank">
+    <div class="nav-x">X</div>
+    <span class="nav-name">XCON Viewer</span>
+  </a>
+  <div class="nav-links">
+    <a href="https://xconviewer.dev/docs" target="_blank">Docs</a>
+    <a href="https://xconviewer.dev/play" target="_blank">Playground</a>
+    <a href="https://github.com/xcon-viewer/xcon-viewer" target="_blank">GitHub</a>
+    <a href="https://www.npmjs.com/search?q=%40xcon-viewer" target="_blank" class="npm">npm install</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-eyebrow"><div class="hero-dot"></div> UI document format for the LLM era</div>
+  <h1>LLMs now generate<br><em>real UI,</em> not just text.</h1>
+  <p class="hero-sub">
+    <strong>XCON Viewer</strong> is an embeddable renderer that turns LLM-generated SKETCH syntax into charts, grids, dashboards, and cards — streamed inline inside any chat interface. One npm install. Safe by design.
+  </p>
+  <div class="hero-actions">
+    <a href="https://xconviewer.dev/play" target="_blank" class="btn btn-primary">Try playground &rarr;</a>
+    <a href="https://xconviewer.dev/docs" target="_blank" class="btn btn-ghost">Read the docs</a>
+    <a href="https://www.npmjs.com/search?q=%40xcon-viewer" target="_blank" class="btn btn-npm">npm install @xcon-viewer/core</a>
+  </div>
+  <div class="hero-scroll"><div class="scroll-line"></div> Scroll to explore</div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section reveal">
+  <div class="section-label">The Problem</div>
+  <h2>LLM responses are<br><em>stuck in plain text.</em></h2>
+  <p class="section-lead">Your AI app answers brilliantly — but every response looks the same. A wall of markdown. No charts. No cards. No dashboards. The gap between what AI knows and what it can show is still wide open.</p>
+  <div class="problem-grid">
+    <div class="problem-card red">
+      <div class="problem-icon">📄</div>
+      <h3>Markdown only gets you so far</h3>
+      <p>Headings and bullet points are not dashboards. Users expect their AI-powered tools to visualize data — not just describe it.</p>
+      <span class="problem-code"># Revenue\n- MRR: $124K... </span>
+    </div>
+    <div class="problem-card amber">
+      <div class="problem-icon">🔓</div>
+      <h3>Raw HTML from LLMs is dangerous</h3>
+      <p>Letting LLMs generate HTML means XSS risks, inconsistent output, and no sandboxing. You cannot safely render untrusted HTML from AI responses.</p>
+      <span class="problem-code">&lt;script&gt;...&lt;/script&gt; ← blocked</span>
+    </div>
+    <div class="problem-card blue">
+      <div class="problem-icon">🏝️</div>
+      <h3>Canvas tools don't embed</h3>
+      <p>Claude Artifacts, ChatGPT Canvas — great products, but locked to their own platform. You cannot embed them in your own LLM app.</p>
+      <span class="problem-code">// embed not supported</span>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section reveal">
+  <div class="solution-wrap">
+    <div class="solution-label">The Solution</div>
+    <h2>Markdown for UI.<br><em>Built for LLMs.</em></h2>
+    <p>XCON is what Markdown is for text — but for UI. A structured, text-based format that LLMs generate naturally, renders safely, and embeds anywhere.</p>
+    <div class="solution-features">
+      <div class="sol-feat">
+        <div class="sol-feat-icon">🧩</div>
+        <h4>One npm install, any framework</h4>
+        <p>React, Vue, vanilla JS, markdown-it, remark, Vite plugin — XCON drops into your existing stack without replacing anything.</p>
+      </div>
+      <div class="sol-feat">
+        <div class="sol-feat-icon">🔒</div>
+        <h4>Safe by design</h4>
+        <p>Strict viewer-only boundary. No script execution, no event handlers, no raw HTML injection. Share UI from untrusted sources safely.</p>
+      </div>
+      <div class="sol-feat">
+        <div class="sol-feat-icon">⚡</div>
+        <h4>Streams as it generates</h4>
+        <p>Best-effort partial rendering during streaming. The UI builds up in real time as the LLM outputs tokens — not after it finishes.</p>
+      </div>
+      <div class="sol-feat">
+        <div class="sol-feat-icon">📐</div>
+        <h4>Four syntaxes, one model</h4>
+        <p>SKETCH for LLMs and Markdown. JSON for APIs. XML for tooling. TAGLESS for transport. All parse to the same object model.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="code-section reveal">
+  <div style="max-width:1100px;margin:0 auto">
+    <div class="section-label" style="margin-bottom:16px">How it works</div>
+    <h2 style="font-family:var(--serif);font-size:clamp(28px,3vw,42px);letter-spacing:-0.025em;margin-bottom:40px">LLM outputs SKETCH.<br>XCON renders it instantly.</h2>
+    <div class="code-compare">
+      <div>
+        <div class="code-block">
+          <div class="code-block-head">
+            <div class="code-dots"><div class="code-dot red"></div><div class="code-dot amber"></div><div class="code-dot green"></div></div>
+            <span class="code-block-label">LLM output — streamed as text</span>
+          </div>
+          <pre><span class="cm"># Monthly Revenue</span>
+
+MRR is up <span class="num">18%</span> this month.
+
+<span class="tag">```xcon-sketch</span>
+<span class="kw">screen</span> <span class="str">"Revenue"</span> 720x200 bg #f8fafc
+  hero: <span class="kw">panel</span> at 24 24 672 152
+    bg #111827
+    radius 22
+    mrr: <span class="kw">label</span> <span class="str">"$124,800"</span> at 28 48 200 44
+      <span class="fn">color</span> #fbbf24
+      <span class="fn">font</span> 34 800
+    growth: <span class="kw">label</span> <span class="str">"+18% MoM"</span> at 240 62 160 24
+      <span class="fn">color</span> #a7f3d0
+    cta: <span class="kw">button</span> <span class="str">"Export"</span> at 554 56 100 40
+      bg #2563eb
+      <span class="fn">color</span> white
+      radius 10
+<span class="tag">```</span></pre>
+        </div>
+        <div style="margin-top:20px" class="code-block">
+          <div class="code-block-head">
+            <div class="code-dots"><div class="code-dot red"></div><div class="code-dot amber"></div><div class="code-dot green"></div></div>
+            <span class="code-block-label accent">Embed — 3 lines</span>
+          </div>
+          <pre><span class="kw">import</span> xcon <span class="kw">from</span> <span class="str">'@xcon-viewer/markdown-it'</span>
+
+<span class="cm">// Add to your markdown pipeline</span>
+md.<span class="fn">use</span>(xcon)
+
+<span class="cm">// xcon fences now render inline.</span></pre>
+        </div>
+      </div>
+      <div>
+        <div class="code-result">
+          <div class="code-result-head">
+            <span class="code-result-label">Rendered output — live</span>
+            <span class="live-badge">live</span>
+          </div>
+          <div class="result-preview">
+            <p style="font-size:14px;color:#374151;margin-bottom:4px">MRR is up <strong>18%</strong> this month.</p>
+            <div class="mini-card">
+              <div class="mini-card-title">MONTHLY REVENUE</div>
+              <div class="mini-card-value">$124,800</div>
+              <div class="mini-card-sub">+18% MoM &middot; NRR 118%</div>
+              <div style="margin-top:10px;display:flex;gap:8px">
+                <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:6px;padding:8px">
+                  <div style="font-size:10px;color:#6b7280;margin-bottom:2px">NEW MRR</div>
+                  <div style="font-size:14px;font-weight:800;color:#93c5fd">$38,400</div>
+                </div>
+                <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:6px;padding:8px">
+                  <div style="font-size:10px;color:#6b7280;margin-bottom:2px">CHURN</div>
+                  <div style="font-size:14px;font-weight:800;color:#fca5a5">2.1%</div>
+                </div>
+                <div style="flex:1;background:#2563eb;border-radius:6px;padding:8px;display:grid;place-items:center">
+                  <div style="font-size:12px;font-weight:700;color:white">Export</div>
+                </div>
+              </div>
+            </div>
+            <div class="mini-metrics">
+              <div class="mini-metric"><div class="mini-metric-v" style="color:#059669">$77.4K</div><div class="mini-metric-l">Enterprise</div></div>
+              <div class="mini-metric"><div class="mini-metric-v" style="color:#d97706">$47.4K</div><div class="mini-metric-l">Growth</div></div>
+              <div class="mini-metric"><div class="mini-metric-v">118%</div><div class="mini-metric-l">NRR</div></div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:16px;padding:16px 20px;border-radius:12px;background:#f0fdf4;border:1px solid #bbf7d0">
+          <p style="font-size:13px;color:#166534;font-weight:600;margin-bottom:4px">&#10003; Script execution blocked</p>
+          <p style="font-size:13px;color:#166534;font-weight:600;margin-bottom:4px">&#10003; Streamed partial rendering</p>
+          <p style="font-size:13px;color:#166534;font-weight:600">&#10003; Same output in React, Vue, vanilla</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section reveal">
+  <div class="section-label">Package Ecosystem</div>
+  <h2>Everything you need,<br><em>nothing you don't.</em></h2>
+  <p class="section-lead">XCON is modular. Use only what your stack needs — from a single markdown-it plugin to a full React integration with template studio.</p>
+  <div class="eco-grid">
+    <div class="eco-card"><div class="eco-pkg">@xcon-viewer/core</div><h3>Parser &amp; Object Model</h3><p>JSON, XML, TAGLESS, SKETCH — all four syntaxes parse to one shared model. Validate, convert, serialize.</p><div class="eco-tags"><span class="eco-tag">TypeScript</span><span class="eco-tag">Zero deps</span><span class="eco-tag">Schema</span></div></div>
+    <div class="eco-card"><div class="eco-pkg">@xcon-viewer/viewer</div><h3>Secure Renderer</h3><p>Viewer-only renderer and Web Component. Blocks scripts, filters CSS, blocks external resources by default.</p><div class="eco-tags"><span class="eco-tag">Web Component</span><span class="eco-tag">XSS safe</span></div></div>
+    <div class="eco-card"><div class="eco-pkg">@xcon-viewer/react &middot; vue</div><h3>Framework Wrappers</h3><p>React and Vue wrappers for the viewer. Drop-in components that work with your existing component system.</p><div class="eco-tags"><span class="eco-tag">React</span><span class="eco-tag">Vue</span><span class="eco-tag">SSR ready</span></div></div>
+    <div class="eco-card"><div class="eco-pkg">@xcon-viewer/markdown-it &middot; remark</div><h3>Markdown Integration</h3><p>Render xcon fenced blocks inline with your Markdown pipeline. Works with any markdown-it or remark setup.</p><div class="eco-tags"><span class="eco-tag">markdown-it</span><span class="eco-tag">remark</span><span class="eco-tag">MDX</span></div></div>
+    <div class="eco-card"><div class="eco-pkg">@xcon-viewer/vite-plugin</div><h3>Vite Plugin</h3><p>Import .xcon, .xcon.json, .xcon.sketch files as modules. First-class static analysis and HMR.</p><div class="eco-tags"><span class="eco-tag">Vite</span><span class="eco-tag">HMR</span><span class="eco-tag">Static</span></div></div>
+    <div class="eco-card"><div class="eco-pkg">xcon-chain &middot; xcon-workflow</div><h3>Template Studio</h3><p>Data binding with SUGAR expressions + workflow diagrams. Build data-driven documents with Markdown templates.</p><div class="eco-tags"><span class="eco-tag">SUGAR</span><span class="eco-tag">Templates</span><span class="eco-tag">HWP export</span></div></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section reveal">
+  <div class="section-label">Competitive Positioning</div>
+  <h2>Where <em>XCON fits</em><br>in the landscape.</h2>
+  <p class="section-lead" style="margin-bottom:40px">XCON fills a specific gap — safe, embeddable UI rendering for LLM-generated content. Not a design tool. Not a canvas. A renderer you embed.</p>
+  <table class="pos-table">
+    <thead><tr><th>Solution</th><th>Embeddable</th><th>LLM-friendly</th><th>Script-safe</th><th>Markdown native</th><th>Streams</th></tr></thead>
+    <tbody>
+      <tr><td class="xcon">XCON Viewer &#10022;</td><td><span class="check">&#10003;</span></td><td><span class="check">&#10003;</span></td><td><span class="check">&#10003;</span></td><td><span class="check">&#10003;</span></td><td><span class="check">&#10003;</span></td></tr>
+      <tr><td>Claude Artifacts</td><td><span class="cross">&#10007;</span></td><td><span class="check">&#10003;</span></td><td><span class="check">&#10003;</span></td><td><span class="cross">&#10007;</span></td><td><span class="partial">△</span></td></tr>
+      <tr><td>ChatGPT Canvas</td><td><span class="cross">&#10007;</span></td><td><span class="check">&#10003;</span></td><td><span class="partial">△</span></td><td><span class="cross">&#10007;</span></td><td><span class="partial">△</span></td></tr>
+      <tr><td>Raw HTML from LLM</td><td><span class="check">&#10003;</span></td><td><span class="partial">△</span></td><td><span class="cross">&#10007;</span></td><td><span class="partial">△</span></td><td><span class="cross">&#10007;</span></td></tr>
+      <tr><td>react-markdown</td><td><span class="check">&#10003;</span></td><td><span class="check">&#10003;</span></td><td><span class="check">&#10003;</span></td><td><span class="check">&#10003;</span></td><td><span class="cross">&#10007;</span> text only</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="divider"></div>
+
+<div class="section reveal">
+  <div class="section-label">Korea-first advantage</div>
+  <div class="hwp-banner">
+    <div>
+      <h3>LLM can't read HWP.<br><em>XCON bridges the gap.</em></h3>
+      <p>HWP is Korea's dominant document format — used daily by government, legal, and enterprise. But LLMs can't generate or parse it natively. XCON sits in the middle: Markdown + SKETCH that LLMs understand, with HWP/HWPX export for the Korean market. No other open-source tool does this.</p>
+    </div>
+    <div class="hwp-badge">
+      <div class="hwp-badge-title">Document pipeline</div>
+      <div class="hwp-badge-items">
+        <div class="hwp-item">HWP / HWPX <span class="hwp-arrow">&rarr;</span> Markdown</div>
+        <div class="hwp-item">LLM generates SKETCH</div>
+        <div class="hwp-item">XCON renders UI inline</div>
+        <div class="hwp-item">Export &rarr; HWP / PDF / HTML</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section">
+  <div class="install-section reveal">
+    <h2>Start in <em>minutes.</em></h2>
+    <p>One install. Drop into any LLM app, chat interface, or Markdown pipeline.</p>
+    <div class="install-box">
+      <code class="install-cmd">npm install @xcon-viewer/core @xcon-viewer/viewer</code>
+      <button class="copy-btn" onclick="navigator.clipboard.writeText('npm install @xcon-viewer/core @xcon-viewer/viewer');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',2000)">Copy</button>
+    </div>
+    <div class="install-links">
+      <a href="https://xconviewer.dev/docs" target="_blank" class="install-link">&#128218; Documentation</a>
+      <a href="https://xconviewer.dev/play" target="_blank" class="install-link">&#9654; Live Playground</a>
+      <a href="https://github.com/xcon-viewer/xcon-viewer" target="_blank" class="install-link">&#9734; GitHub</a>
+      <a href="https://xconviewer.dev/template-lab" target="_blank" class="install-link">&#127912; Template Studio</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>XCON Viewer &middot; MIT License &middot; <a href="https://xconviewer.dev" target="_blank">xconviewer.dev</a> &middot; <a href="https://github.com/xcon-viewer/xcon-viewer" target="_blank">GitHub</a></p>
+  <p style="margin-top:6px;color:#9ca3af">The UI document format built for the LLM era.</p>
+</footer>
+
+<script>
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => entry.target.classList.add('visible'), i * 80);
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

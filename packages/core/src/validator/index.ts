@@ -65,6 +65,7 @@ const publicComponentTypes = new Set([
   'codeEditor',
   'richEditor',
   'dataViz',
+  'spanGrid',
   'flipbook',
   'networkDiagram',
   'map',

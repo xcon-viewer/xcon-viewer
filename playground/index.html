@@ -446,10 +446,10 @@
       <section class="pane">
         <div class="pane-head">
           <div class="tabs" role="tablist" aria-label="Syntax">
-            <button class="tab" data-syntax="json" aria-pressed="true">JSON</button>
+            <button class="tab" data-syntax="sketch" aria-pressed="true">SKETCH</button>
+            <button class="tab" data-syntax="json" aria-pressed="false">JSON</button>
             <button class="tab" data-syntax="xml" aria-pressed="false">XML</button>
             <button class="tab" data-syntax="tagless" aria-pressed="false">TAGLESS</button>
-            <button class="tab" data-syntax="sketch" aria-pressed="false">SKETCH</button>
           </div>
           <div class="toolbar">
             <button id="format">Format</button>
@@ -465,7 +465,7 @@
         <div class="pane-head">
           <div class="preview-title">
             <strong>Preview</strong>
-            <span id="syntax-label" class="status-text">json</span>
+            <span id="syntax-label" class="status-text">sketch</span>
           </div>
           <div class="theme-panel" aria-label="Preview theme controls">
             <span class="theme-panel__label">Theme</span>
@@ -528,7 +528,8 @@
     viewerStyle.textContent = viewerCss;
     document.head.appendChild(viewerStyle);
 
-    const defaultDocument = {
+    const defaultDocument = '../examples/showcase/p_xconbnb_main.xcon.sketch';
+    const fallbackDocument = {
       type: 'form',
       pos: [0, 0, 402, 520],
       backgroundColor: '#F8FAFC',
@@ -536,14 +537,14 @@
         title: {
           type: 'label',
           pos: [24, 32, 354, 34],
-          text: 'One screen. Four syntaxes.',
+          text: 'XconBnB showcase',
           font: { size: 22, weight: 800 },
           color: '#111827'
         },
         body: {
           type: 'textView',
           pos: [24, 88, 354, 86],
-          text: 'Edit JSON, XML, TAGLESS, or SKETCH. The preview renders the same XCON Object Model.',
+          text: 'The default showcase SKETCH could not be loaded. Open the examples gallery or paste an XCON document to continue.',
           color: '#475467',
           font: { size: 14, lineHeight: 1.5 }
         },
@@ -612,12 +613,12 @@
         '--font-body': 'Outfit, Inter, system-ui, sans-serif'
       }
     };
-    let syntax = 'json';
-    let lastDocument = fromJSONObject(defaultDocument);
+    let syntax = 'sketch';
+    let lastDocument = fromJSONObject(fallbackDocument);
     let renderTimer = 0;
 
-    source.value = readSharedSource() ?? JSON.stringify(defaultDocument, null, 2);
-    syntax = readSharedSyntax() ?? 'json';
+    source.value = readSharedSource() ?? '';
+    syntax = readSharedSyntax() ?? 'sketch';
     setActiveTab(syntax);
     initPaneSplitter();
     initThemeControls();
@@ -639,7 +640,34 @@
 
     async function loadInitialSource() {
       if (await loadSourceFromUrl()) return;
+      if (source.value.trim()) {
+        scheduleRender();
+        return;
+      }
+      if (await loadDefaultDocument()) return;
+      source.value = serializeBySyntax(lastDocument, 'sketch', true);
       scheduleRender();
+    }
+
+    async function loadDefaultDocument() {
+      try {
+        const url = resolveSourceUrl(defaultDocument);
+        const response = await fetch(url.href, {
+          headers: { accept: 'text/plain, application/json, application/xml, */*' }
+        });
+        if (!response.ok) throw new Error(`Failed to load ${url.pathname}: ${response.status} ${response.statusText}`);
+
+        const text = await response.text();
+        source.value = text;
+        setActiveTab(syntaxFromSourcePath(url.pathname, text));
+        lastDocument = deserialize(text);
+        writeStatus(`Loaded ${url.pathname}.`, 'ok');
+        scheduleRender();
+        return true;
+      } catch (error) {
+        writeStatus(error.message, 'error');
+        return false;
+      }
     }
 
     async function loadSourceFromUrl() {

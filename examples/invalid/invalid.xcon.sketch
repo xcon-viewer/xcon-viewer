@@ -1,0 +1,13 @@
+screen 0x0
+  onClick "runRuntimeAction"
+  actions {"save":{"type":"httpRequest","url":"/api/save"}}
+  database {"Product":{"fields":{"id":"string"}}}
+  unsafe: image at 0 0 0 0
+    src "javascript:alert(1)"
+  list: list at 0 0 0 0
+    actionRef "loadRows"
+    backend
+      method "GET"
+      path "/api/products"
+  cta: button "Save" at 0 0 0 0
+    onClick_ref "save"

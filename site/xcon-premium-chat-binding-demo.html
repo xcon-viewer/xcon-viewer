@@ -1,0 +1,1583 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>XCON Premium Chat + Binding Workflow Demo</title>
+  <style>
+    :root {
+      --bg: #070b13;
+      --bg2: #0b1220;
+      --panel: rgba(15, 23, 42, 0.78);
+      --panel2: rgba(30, 41, 59, 0.72);
+      --paper: #f8fafc;
+      --line: rgba(148, 163, 184, 0.22);
+      --line2: rgba(96, 165, 250, 0.3);
+      --text: #f8fafc;
+      --ink: #101827;
+      --muted: #94a3b8;
+      --soft: #cbd5e1;
+      --blue: #60a5fa;
+      --deep-blue: #2563eb;
+      --cyan: #22d3ee;
+      --green: #34d399;
+      --amber: #fbbf24;
+      --red: #fb7185;
+      --purple: #a78bfa;
+      --orange: #c4622b;
+      --shadow: 0 30px 100px rgba(0, 0, 0, 0.45);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      --font: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+      margin: 0;
+      background:
+        radial-gradient(circle at 10% 8%, rgba(96, 165, 250, 0.21), transparent 28rem),
+        radial-gradient(circle at 88% 8%, rgba(244, 114, 182, 0.14), transparent 30rem),
+        radial-gradient(circle at 50% 110%, rgba(52, 211, 153, 0.12), transparent 34rem),
+        var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      content: "";
+      background-image:
+        linear-gradient(rgba(148, 163, 184, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, 0.07) 1px, transparent 1px);
+      background-size: 34px 34px;
+      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.96), rgba(0, 0, 0, 0.22));
+    }
+
+    button,
+    select,
+    input {
+      font: inherit;
+    }
+
+    .page {
+      width: min(1780px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 24px 0 34px;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      min-height: calc(100vh - 48px);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.74), rgba(2, 6, 23, 0.56));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(2, 6, 23, 0.42);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      flex: 0 0 auto;
+      place-items: center;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      box-shadow: 0 14px 40px rgba(37, 99, 235, 0.35);
+      font-weight: 950;
+    }
+
+    .brand h1 {
+      margin: 0;
+      color: #ffffff;
+      font-size: clamp(22px, 2.2vw, 34px);
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+    }
+
+    .brand p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .btn {
+      display: inline-flex;
+      min-height: 42px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 15px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: rgba(15, 23, 42, 0.65);
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 850;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(96, 165, 250, 0.56);
+      background: rgba(30, 41, 59, 0.86);
+    }
+
+    .btn.primary {
+      border-color: rgba(96, 165, 250, 0.58);
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      box-shadow: 0 14px 38px rgba(37, 99, 235, 0.32);
+    }
+
+    .btn.gold {
+      border-color: rgba(251, 191, 36, 0.55);
+      background: linear-gradient(135deg, #c4622b, #f59e0b);
+      color: white;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(390px, 0.8fr) minmax(650px, 1.25fr) minmax(360px, 0.72fr);
+      min-height: 0;
+    }
+
+    .column {
+      min-height: 0;
+      border-right: 1px solid var(--line);
+    }
+
+    .column:last-child {
+      border-right: 0;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 58px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(15, 23, 42, 0.44);
+    }
+
+    .panel-title {
+      margin: 0;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 950;
+    }
+
+    .panel-sub {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      padding: 0 11px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.7);
+      color: #bfdbfe;
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .pill.done {
+      border-color: rgba(52, 211, 153, 0.45);
+      background: rgba(16, 185, 129, 0.14);
+      color: #86efac;
+    }
+
+    .chat-column {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+    }
+
+    .chat-messages {
+      display: grid;
+      align-content: start;
+      gap: 18px;
+      min-height: 0;
+      overflow: auto;
+      padding: 22px;
+      scroll-behavior: smooth;
+    }
+
+    .message {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+    }
+
+    .avatar {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: white;
+      font-size: 12px;
+      font-weight: 950;
+    }
+
+    .message.ai .avatar {
+      background: linear-gradient(135deg, #c4622b, #f59e0b);
+    }
+
+    .bubble {
+      padding: 15px 16px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(15, 23, 42, 0.66);
+      color: #dbeafe;
+      line-height: 1.58;
+      font-size: 14px;
+    }
+
+    .message.user .bubble {
+      border-color: rgba(251, 191, 36, 0.26);
+      background: rgba(251, 191, 36, 0.08);
+      color: #fde68a;
+    }
+
+    .stream-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+      color: #93c5fd;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .raw-stream {
+      min-height: 260px;
+      max-height: 580px;
+      margin: 0;
+      overflow: auto;
+      border: 1px solid rgba(96, 165, 250, 0.2);
+      border-radius: 14px;
+      background: #020617;
+      color: #dbeafe;
+      padding: 14px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      line-height: 1.55;
+      white-space: pre;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    .raw-stream,
+    .source-code,
+    .runtime-box,
+    .alias-list,
+    .event-log {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(96, 165, 250, 0.62) rgba(15, 23, 42, 0.38);
+    }
+
+    .raw-stream::-webkit-scrollbar,
+    .source-code::-webkit-scrollbar,
+    .runtime-box::-webkit-scrollbar,
+    .alias-list::-webkit-scrollbar,
+    .event-log::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    .raw-stream::-webkit-scrollbar-track,
+    .source-code::-webkit-scrollbar-track,
+    .runtime-box::-webkit-scrollbar-track,
+    .alias-list::-webkit-scrollbar-track,
+    .event-log::-webkit-scrollbar-track {
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.48);
+      box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.08);
+    }
+
+    .raw-stream::-webkit-scrollbar-thumb,
+    .source-code::-webkit-scrollbar-thumb,
+    .runtime-box::-webkit-scrollbar-thumb,
+    .alias-list::-webkit-scrollbar-thumb,
+    .event-log::-webkit-scrollbar-thumb {
+      border: 2px solid rgba(2, 6, 23, 0.92);
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(96, 165, 250, 0.72), rgba(124, 58, 237, 0.72));
+    }
+
+    .raw-stream::-webkit-scrollbar-thumb:hover,
+    .source-code::-webkit-scrollbar-thumb:hover,
+    .runtime-box::-webkit-scrollbar-thumb:hover,
+    .alias-list::-webkit-scrollbar-thumb:hover,
+    .event-log::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, rgba(147, 197, 253, 0.9), rgba(129, 140, 248, 0.9));
+    }
+
+    .raw-stream::-webkit-scrollbar-corner,
+    .source-code::-webkit-scrollbar-corner,
+    .runtime-box::-webkit-scrollbar-corner,
+    .alias-list::-webkit-scrollbar-corner,
+    .event-log::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+
+    .bubble h3 {
+      margin: 0 0 9px;
+      color: white;
+      font-size: 18px;
+    }
+
+    .bubble ul {
+      margin: 9px 0 0 18px;
+      padding: 0;
+    }
+
+    .bubble li {
+      margin: 5px 0;
+    }
+
+    .inline-artifact {
+      margin-top: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(96, 165, 250, 0.32);
+      border-radius: 16px;
+      background: rgba(2, 6, 23, 0.45);
+    }
+
+    .inline-artifact-head {
+      display: flex;
+      justify-content: space-between;
+      padding: 9px 12px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+      color: #bfdbfe;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .inline-artifact-body {
+      padding: 12px;
+    }
+
+    .composer {
+      display: flex;
+      gap: 10px;
+      padding: 18px 22px;
+      border-top: 1px solid var(--line);
+      background: rgba(2, 6, 23, 0.36);
+    }
+
+    .composer input {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(248, 250, 252, 0.08);
+      color: white;
+      padding: 0 14px;
+      outline: none;
+    }
+
+    .composer input::placeholder {
+      color: #64748b;
+    }
+
+    .artifact-column {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      background:
+        linear-gradient(rgba(96, 165, 250, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(96, 165, 250, 0.06) 1px, transparent 1px),
+        rgba(2, 6, 23, 0.26);
+      background-size: 28px 28px;
+    }
+
+    .artifact-stage {
+      min-height: 0;
+      overflow: auto;
+      padding: 28px;
+    }
+
+    .artifact-card {
+      width: min(960px, 100%);
+      margin: 0 auto;
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      border-radius: 28px;
+      background: rgba(248, 250, 252, 0.98);
+      color: var(--ink);
+      box-shadow: 0 30px 100px rgba(0, 0, 0, 0.32);
+    }
+
+    .artifact-card.is-partial {
+      outline: 1px dashed rgba(96, 165, 250, 0.4);
+      outline-offset: 8px;
+    }
+
+    .artifact-empty {
+      display: grid;
+      place-items: center;
+      width: min(760px, 100%);
+      min-height: 420px;
+      margin: 0 auto;
+      border: 1px dashed rgba(148, 163, 184, 0.34);
+      border-radius: 28px;
+      background: rgba(15, 23, 42, 0.34);
+      color: #94a3b8;
+      text-align: center;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    .artifact-empty strong {
+      display: block;
+      margin-bottom: 8px;
+      color: #dbeafe;
+      font-size: 18px;
+    }
+
+    .artifact-pending {
+      display: grid;
+      place-items: center;
+      min-height: 150px;
+      border: 1px dashed rgba(148, 163, 184, 0.35);
+      border-radius: 18px;
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .artifact-hero {
+      padding: 26px;
+      background: #111827;
+      color: white;
+    }
+
+    .artifact-hero-top {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .artifact-hero h2 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: -0.04em;
+    }
+
+    .artifact-hero p {
+      margin: 6px 0 0;
+      color: #cbd5e1;
+      font-size: 14px;
+    }
+
+    .hero-metric {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .hero-metric strong {
+      display: block;
+      color: var(--amber);
+      font-size: 38px;
+      letter-spacing: -0.05em;
+    }
+
+    .hero-metric span {
+      color: #86efac;
+      font-weight: 900;
+    }
+
+    .progress-track {
+      height: 9px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.25);
+    }
+
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #2563eb, #22c55e);
+      transition: width 420ms ease;
+    }
+
+    .artifact-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      padding: 22px;
+    }
+
+    .artifact-section {
+      min-height: 210px;
+      padding: 18px;
+      border: 1px solid #dbeafe;
+      background: white;
+    }
+
+    .artifact-section.wide {
+      grid-column: 1 / -1;
+    }
+
+    .artifact-section h3 {
+      margin: 0 0 14px;
+      font-size: 18px;
+    }
+
+    .bars {
+      display: flex;
+      align-items: end;
+      gap: 14px;
+      height: 126px;
+      padding: 14px 8px 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .bar-wrap {
+      display: grid;
+      width: 48px;
+      gap: 6px;
+      align-items: end;
+      justify-items: center;
+      color: #64748b;
+      font-size: 10px;
+    }
+
+    .bar {
+      width: 26px;
+      height: 20px;
+      min-height: 20px;
+      border-radius: 6px 6px 0 0;
+      background: linear-gradient(180deg, #c4622b, #f59e0b);
+      transition: height 420ms ease;
+    }
+
+    .grid-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      overflow: hidden;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 13px;
+    }
+
+    .grid-table th,
+    .grid-table td {
+      padding: 11px 12px;
+      border-right: 1px solid #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+    }
+
+    .grid-table th:last-child,
+    .grid-table td:last-child {
+      border-right: 0;
+    }
+
+    .grid-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .grid-table th {
+      background: #f1f5f9;
+      color: #334155;
+      font-size: 12px;
+    }
+
+    .workflow-lane {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .lane-card {
+      padding: 14px;
+      border: 1px solid #dbeafe;
+      border-radius: 15px;
+      background: #eff6ff;
+    }
+
+    .lane-card.is-done {
+      border-color: #bbf7d0;
+      background: #f0fdf4;
+    }
+
+    .lane-card b {
+      display: block;
+      margin-bottom: 5px;
+      color: #0f172a;
+    }
+
+    .lane-card span {
+      color: #475569;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .inspector-column {
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+      padding: 12px 14px 0;
+      align-self: start;
+      align-items: center;
+    }
+
+    .tab {
+      min-width: 0;
+      height: 32px;
+      padding: 0 6px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.72);
+      color: var(--muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 950;
+      line-height: 1;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .tab.active {
+      border-color: rgba(96, 165, 250, 0.58);
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.72), rgba(124, 58, 237, 0.56));
+      color: #f8fbff;
+      box-shadow: 0 10px 26px rgba(37, 99, 235, 0.18);
+    }
+
+    .inspector-body {
+      display: grid;
+      grid-template-rows: 220px minmax(0, 1fr);
+      min-height: 0;
+      padding: 14px;
+      gap: 14px;
+      overflow: hidden;
+    }
+
+    pre {
+      overflow: auto;
+      margin: 0;
+      border-radius: 16px;
+      background: #020617;
+      color: #c7d2fe;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.58;
+      white-space: pre;
+    }
+
+    .source-code {
+      min-height: 0;
+      height: 100%;
+      max-height: none;
+      box-sizing: border-box;
+      padding: 16px;
+      border: 1px solid rgba(96, 165, 250, 0.18);
+    }
+
+    @media (max-width: 1240px) {
+      .tabs {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .runtime-box {
+      display: grid;
+      gap: 10px;
+      min-height: 0;
+      overflow: auto;
+      align-content: start;
+    }
+
+    .runtime-card {
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(15, 23, 42, 0.62);
+    }
+
+    .runtime-card strong {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      color: white;
+      font-size: 13px;
+    }
+
+    .alias-list {
+      display: grid;
+      gap: 8px;
+      max-height: 150px;
+      overflow: auto;
+    }
+
+    .alias {
+      display: grid;
+      grid-template-columns: 0.7fr 1fr;
+      gap: 10px;
+      padding: 8px 10px;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 11px;
+      background: rgba(2, 6, 23, 0.45);
+      color: #dbeafe;
+      font-size: 12px;
+    }
+
+    .alias code {
+      color: #93c5fd;
+      font-family: var(--mono);
+    }
+
+    .event-log {
+      display: grid;
+      gap: 8px;
+      max-height: 150px;
+      overflow: auto;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .event-log li {
+      padding: 8px 10px;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 11px;
+      background: rgba(2, 6, 23, 0.42);
+      color: #cbd5e1;
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+
+    .footer-strip {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1px;
+      border-top: 1px solid var(--line);
+      background: var(--line);
+    }
+
+    .family-step {
+      min-height: 92px;
+      padding: 16px;
+      background: rgba(15, 23, 42, 0.86);
+    }
+
+    .family-step b {
+      display: block;
+      margin-bottom: 6px;
+      color: white;
+    }
+
+    .family-step span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .caret {
+      display: inline-block;
+      width: 8px;
+      height: 16px;
+      margin-left: 2px;
+      vertical-align: -3px;
+      background: #bfdbfe;
+      animation: blink 0.9s infinite;
+    }
+
+    @keyframes blink {
+      0%, 45% { opacity: 1; }
+      46%, 100% { opacity: 0; }
+    }
+
+    @media (max-width: 1340px) {
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .column {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .chat-messages,
+      .artifact-stage {
+        max-height: none;
+      }
+
+      .footer-strip,
+      .artifact-content,
+      .workflow-lane {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark">X</div>
+          <div>
+            <h1>Premium Chat + Binding Workflow</h1>
+            <p>ChatGPT-style Markdown response, XCON/SKETCH artifact, chain aliases, fixture data, and workflow replay.</p>
+          </div>
+        </div>
+        <div class="toolbar">
+          <button class="btn" id="clearBtn" type="button">Clear</button>
+          <button class="btn primary" id="replayBtn" type="button">Replay chat</button>
+          <button class="btn gold" id="workflowBtn" type="button">Run workflow</button>
+        </div>
+      </header>
+
+      <section class="workspace">
+        <section class="column chat-column" aria-label="Chat simulation">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">AI conversation</h2>
+              <span class="panel-sub">Markdown answer with inline XCON artifact</span>
+            </div>
+            <span class="pill" id="chatStatus">waiting</span>
+          </div>
+          <div class="chat-messages" id="chatMessages"></div>
+          <div class="composer">
+            <input id="composerInput" value="Create this month's revenue command center." aria-label="Chat prompt" />
+            <button class="btn primary" id="sendBtn" type="button">Send</button>
+          </div>
+        </section>
+
+        <section class="column artifact-column" aria-label="Live rendered artifact">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Live artifact preview</h2>
+              <span class="panel-sub">Same SKETCH source; only fixture changes during workflow</span>
+            </div>
+            <span class="pill done" id="renderStatus">ready</span>
+          </div>
+          <div class="artifact-stage">
+            <div id="artifactMount" class="artifact-card"></div>
+          </div>
+        </section>
+
+        <aside class="column inspector-column" aria-label="Binding runtime inspector">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Binding runtime</h2>
+              <span class="panel-sub">raw stream, fixture, chain, workflow</span>
+            </div>
+            <span class="pill" id="runtimeStatus">idle</span>
+          </div>
+          <div class="tabs" role="tablist" aria-label="Runtime source tabs">
+            <button class="tab active" type="button" data-tab="stream">Stream</button>
+            <button class="tab" type="button" data-tab="fixture">Fixture</button>
+            <button class="tab" type="button" data-tab="chain">Chain</button>
+            <button class="tab" type="button" data-tab="workflow">Workflow</button>
+          </div>
+          <div class="inspector-body">
+            <pre class="source-code"><code id="sourceCode"></code></pre>
+            <div class="runtime-box">
+              <div class="runtime-card">
+                <strong><span>Progress</span><span id="progressText">0%</span></strong>
+                <div class="progress-track"><div class="progress-fill" id="runtimeProgress"></div></div>
+              </div>
+              <div class="runtime-card">
+                <strong><span>Chain aliases</span><span id="aliasCount">0</span></strong>
+                <div class="alias-list" id="aliasList"></div>
+              </div>
+              <div class="runtime-card">
+                <strong><span>Event log</span><span id="eventCount">0</span></strong>
+                <ul class="event-log" id="eventLog"></ul>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <footer class="footer-strip" aria-label="XCON family flow">
+        <div class="family-step"><b>Markdown</b><span>Readable answer stays in the chat thread.</span></div>
+        <div class="family-step"><b>XCON/SKETCH</b><span>Structured UI renders as a real document artifact.</span></div>
+        <div class="family-step"><b>xcon-chain</b><span>Aliases derive UI values from JSON fixture data.</span></div>
+        <div class="family-step"><b>xcon-workflow</b><span>Workflow replay mutates fixture state, not visual nodes.</span></div>
+        <div class="family-step"><b>Viewer</b><span>The same artifact updates from the binding contract.</span></div>
+      </footer>
+    </div>
+  </main>
+
+  <script>
+    const baseFixture = {
+      record: {
+        title: "Monthly revenue command center",
+        subtitle: "Enterprise upgrades drove most of this month's expansion.",
+        revenue: 124800,
+        growth: 18,
+        healthScore: 87,
+        progress: 0,
+        status: "Waiting for workflow",
+        channels: [
+          { name: "Enterprise", revenue: 62000 },
+          { name: "Growth", revenue: 38400 },
+          { name: "Starter", revenue: 24400 }
+        ],
+        teams: [
+          { team: "Sales", owner: "Mina", status: "Ready" },
+          { team: "Product", owner: "Leo", status: "Review" },
+          { team: "Ops", owner: "Ari", status: "Launch" }
+        ],
+        actions: [
+          { title: "Prepare data pack", state: "draft" },
+          { title: "Finance review", state: "review" },
+          { title: "Publish executive brief", state: "publish" }
+        ]
+      }
+    };
+
+    const finalPatch = {
+      progress: 100,
+      status: "Workflow complete. Executive brief is ready.",
+      revenue: 128400,
+      growth: 21,
+      healthScore: 93,
+      channels: [
+        { name: "Enterprise", revenue: 68000 },
+        { name: "Growth", revenue: 41100 },
+        { name: "Starter", revenue: 19300 }
+      ],
+      teams: [
+        { team: "Sales", owner: "Mina", status: "Ready" },
+        { team: "Product", owner: "Leo", status: "Approved" },
+        { team: "Ops", owner: "Ari", status: "Launch" }
+      ],
+      actions: [
+        { title: "Prepare data pack", state: "done" },
+        { title: "Finance review", state: "done" },
+        { title: "Publish executive brief", state: "ready" }
+      ]
+    };
+
+    const markdownAnswer = [
+      "Good news - MRR crossed $124K this month, with expansion strongest in Enterprise and Growth plans.",
+      "",
+      "### Monthly revenue summary",
+      "- Revenue is **$124,800** before workflow reconciliation.",
+      "- Growth is **18% MoM** and trending upward.",
+      "- The artifact below is rendered from Markdown + XCON/SKETCH.",
+      "- The workflow will update fixture data only; chain aliases recompute the visible document."
+    ].join("\\n");
+
+    const sketchSource = [
+      "```xcon-sketch",
+      String.raw`screen "Revenue Command Center" 960x720 bg #f8fafc
+  hero: panel at 24 24 912 140
+    bg #111827
+    radius 24
+    title: label "$title" at 28 24 420 32
+    revenue: label "$revenueTotal" at 28 68 200 42
+    growth: label "$growthLabel" at 254 78 160 26
+    score: label "$healthScore" at 760 28 120 70
+  chartBlock: panel at 24 190 430 250
+    title: label "Revenue by channel" at 20 18 220 24
+    chart: chart at 20 58 380 160
+  teamGrid: panel at 482 190 430 250
+    title: label "Operating plan" at 20 18 220 24
+    sheet: spanGrid at 20 58 380 160
+  workflow: panel at 24 466 912 170
+    title: label "$workflowStatus" at 22 20 540 28
+    progress: shape at 22 62 $workflowWidth 8
+    lane1: note "$actionOne" at 22 92 190 52
+    lane2: note "$actionTwo" at 232 92 190 52
+    lane3: note "$actionThree" at 442 92 220 52`,
+      "```"
+    ].join("\n");
+
+    const chainSource = [
+      "```xcon-chain as title",
+      String.raw`= record.title`,
+      "```",
+      "",
+      "```xcon-chain as revenueTotal",
+      String.raw`= record.revenue | format "$#,###"`,
+      "```",
+      "",
+      "```xcon-chain as growthLabel",
+      String.raw`= record.growth | concat "% MoM"`,
+      "```",
+      "",
+      "```xcon-chain as workflowStatus",
+      String.raw`= record.status`,
+      "```",
+      "",
+      "```xcon-chain as workflowWidth",
+      String.raw`= record.progress | multiply 8.4`,
+      "```"
+    ].join("\n");
+
+    const workflowSource = [
+      "```xcon-workflow",
+      String.raw`workflow "Revenue briefing run"
+  collect: note "collect latest metrics"
+  normalize: workqueue
+    concurrency 3
+    data record.channels
+    after collect
+  reconcile: note "reconcile fixture"
+    after normalize
+  publish: note "publish command center"
+    after reconcile`,
+      "```"
+    ].join("\n");
+
+    const fixtureSource = [
+      "```xcon-chain-fixture",
+      JSON.stringify(baseFixture, null, 2),
+      "```"
+    ].join("\n");
+
+    const fullResponse = `${markdownAnswer}\n\n${fixtureSource}\n\n${chainSource}\n\n${workflowSource}\n\n${sketchSource}`;
+
+    const steps = [
+      { label: "Collect prompt", percent: 12, delay: 700 },
+      { label: "Stream Markdown", percent: 25, delay: 900 },
+      { label: "Emit chain aliases", percent: 42, delay: 850 },
+      { label: "Emit SKETCH artifact", percent: 58, delay: 850 },
+      { label: "Run workflow queue", percent: 76, delay: 900 },
+      { label: "Recompute fixture", percent: 92, delay: 800 },
+      { label: "Render final document", percent: 100, delay: 500 }
+    ];
+
+    const state = {
+      fixture: structuredClone(baseFixture),
+      events: [],
+      phase: -1,
+      running: false,
+      activeTab: "stream",
+      streamText: "",
+      assistantText: "",
+      partialSketch: "",
+      fixtureReady: false,
+      chainReady: false,
+      workflowReady: false,
+      sketchStarted: false,
+      sketchComplete: false,
+      fixtureSourceText: "",
+      chainSourceText: "",
+      workflowSourceText: "",
+      timer: null
+    };
+
+    const nodes = {
+      chatMessages: document.querySelector("#chatMessages"),
+      composerInput: document.querySelector("#composerInput"),
+      sendBtn: document.querySelector("#sendBtn"),
+      replayBtn: document.querySelector("#replayBtn"),
+      clearBtn: document.querySelector("#clearBtn"),
+      workflowBtn: document.querySelector("#workflowBtn"),
+      artifactMount: document.querySelector("#artifactMount"),
+      sourceCode: document.querySelector("#sourceCode"),
+      runtimeStatus: document.querySelector("#runtimeStatus"),
+      chatStatus: document.querySelector("#chatStatus"),
+      renderStatus: document.querySelector("#renderStatus"),
+      progressText: document.querySelector("#progressText"),
+      runtimeProgress: document.querySelector("#runtimeProgress"),
+      aliasList: document.querySelector("#aliasList"),
+      aliasCount: document.querySelector("#aliasCount"),
+      eventLog: document.querySelector("#eventLog"),
+      eventCount: document.querySelector("#eventCount")
+    };
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function formatCurrency(value) {
+      return `$${Number(value || 0).toLocaleString("en-US")}`;
+    }
+
+    function cloneFixture() {
+      return structuredClone(baseFixture);
+    }
+
+    function currentRecord() {
+      return state.fixture.record;
+    }
+
+    function aliases() {
+      const record = currentRecord();
+      return {
+        title: record.title,
+        revenueTotal: formatCurrency(record.revenue),
+        growthLabel: `${record.growth}% MoM`,
+        healthScore: `${record.healthScore}`,
+        topChannels: record.channels.map((item) => item.name).join(", "),
+        workflowStatus: record.status,
+        workflowWidth: Math.round((record.progress / 100) * 840),
+        actionOne: record.actions[0]?.title || "",
+        actionTwo: record.actions[1]?.title || "",
+        actionThree: record.actions[2]?.title || ""
+      };
+    }
+
+    function getClosedFence(text, languages) {
+      const names = Array.isArray(languages) ? languages : [languages];
+      const pattern = new RegExp("```(?:" + names.join("|") + ")(?:[^\\n]*)\\n([\\s\\S]*?)\\n```");
+      const match = text.match(pattern);
+      return match ? match[1].trim() : "";
+    }
+
+    function getFenceRange(text, startLanguage, endLanguage) {
+      const start = text.indexOf("```" + startLanguage);
+      if (start < 0) return "";
+      const end = text.indexOf("```" + endLanguage, start + startLanguage.length + 3);
+      if (end < 0) return "";
+      return text.slice(start, end).trim();
+    }
+
+    function getChainSection(text) {
+      const workflowStart = text.indexOf("```xcon-workflow");
+      const scanText = workflowStart >= 0 ? text.slice(0, workflowStart) : text;
+      const pattern = /```xcon-chain(?!-fixture)(?:[^\n]*)\n[\s\S]*?\n```/g;
+      const source = Array.from(scanText.matchAll(pattern))
+        .map((match) => match[0].trim())
+        .join("\n\n");
+      return {
+        source,
+        complete: workflowStart >= 0 && Boolean(source)
+      };
+    }
+
+    function getSketchProgress(text) {
+      const start = text.indexOf("```xcon-sketch");
+      if (start < 0) return { body: "", complete: false };
+      const bodyStart = text.indexOf("\n", start);
+      if (bodyStart < 0) return { body: "", complete: false };
+      const close = text.indexOf("\n```", bodyStart + 1);
+      if (close < 0) return { body: text.slice(bodyStart + 1), complete: false };
+      return { body: text.slice(bodyStart + 1, close), complete: true };
+    }
+
+    function applyStreamArtifacts() {
+      const fixtureBody = getClosedFence(state.streamText, ["xcon-chain-fixture", "json-fixture"]);
+      if (fixtureBody) {
+        try {
+          state.fixture = JSON.parse(fixtureBody);
+          state.fixtureReady = true;
+          state.fixtureSourceText = fixtureBody;
+        } catch {
+          state.fixtureSourceText = fixtureBody;
+        }
+      }
+
+      const chainSection = getChainSection(state.streamText);
+      state.chainReady = chainSection.complete;
+      state.chainSourceText = chainSection.source;
+
+      const workflowBody = getClosedFence(state.streamText, "xcon-workflow");
+      if (workflowBody) {
+        state.workflowReady = true;
+        state.workflowSourceText = "```xcon-workflow\n" + workflowBody + "\n```";
+      }
+
+      const sketch = getSketchProgress(state.streamText);
+      state.sketchStarted = Boolean(sketch.body);
+      state.sketchComplete = sketch.complete;
+      state.partialSketch = sketch.body;
+    }
+
+    function renderEmptyArtifact() {
+      nodes.artifactMount.className = "artifact-empty";
+      nodes.artifactMount.innerHTML = `
+        <div>
+          <strong>Waiting for XCON/SKETCH</strong>
+          <span>The center artifact stays blank until the streamed response starts a SKETCH fence.</span>
+        </div>
+      `;
+    }
+
+    function renderArtifact() {
+      if (!state.sketchStarted) {
+        renderEmptyArtifact();
+        return;
+      }
+      const record = currentRecord();
+      const a = aliases();
+      const maxRevenue = Math.max(...record.channels.map((item) => item.revenue), 1);
+      const showHero = state.partialSketch.includes("hero:");
+      const showChart = state.partialSketch.includes("chartBlock");
+      const showGrid = state.partialSketch.includes("teamGrid");
+      const showWorkflow = state.partialSketch.includes("workflow:");
+      nodes.artifactMount.className = `artifact-card${state.sketchComplete ? "" : " is-partial"}`;
+      nodes.artifactMount.innerHTML = `
+        ${showHero ? `
+          <section class="artifact-hero">
+            <div class="artifact-hero-top">
+              <div>
+                <h2>${escapeHtml(a.title)}</h2>
+                <p>${escapeHtml(record.subtitle)}</p>
+              </div>
+              <div class="hero-metric">
+                <strong>${escapeHtml(a.revenueTotal)}</strong>
+                <span>${escapeHtml(a.growthLabel)}</span>
+              </div>
+            </div>
+            <div class="progress-track"><div class="progress-fill" style="width:${record.progress}%"></div></div>
+          </section>
+        ` : `<div class="artifact-pending">Streaming SKETCH screen...</div>`}
+        <section class="artifact-content">
+          <div class="artifact-section">
+            <h3>Revenue by channel</h3>
+            ${showChart ? `
+              <div class="bars">
+                ${record.channels.map((item) => `
+                  <div class="bar-wrap">
+                    <div class="bar" style="height:${Math.max(22, Math.round((item.revenue / maxRevenue) * 112))}px"></div>
+                    <span>${escapeHtml(item.name)}</span>
+                  </div>
+                `).join("")}
+              </div>
+            ` : `<div class="artifact-pending">Chart block arriving...</div>`}
+          </div>
+          <div class="artifact-section">
+            <h3>Operating plan</h3>
+            ${showGrid ? `
+              <table class="grid-table">
+                <thead><tr><th>Team</th><th>Owner</th><th>Status</th></tr></thead>
+                <tbody>
+                  ${record.teams.map((row) => `
+                    <tr><td>${escapeHtml(row.team)}</td><td>${escapeHtml(row.owner)}</td><td>${escapeHtml(row.status)}</td></tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            ` : `<div class="artifact-pending">Grid block arriving...</div>`}
+          </div>
+          ${showWorkflow ? `
+            <div class="artifact-section wide">
+              <h3>${escapeHtml(a.workflowStatus)}</h3>
+              <div class="workflow-lane">
+                ${record.actions.map((item) => `
+                  <div class="lane-card ${item.state === "done" || item.state === "ready" ? "is-done" : ""}">
+                    <b>${escapeHtml(item.title)}</b>
+                    <span>${escapeHtml(item.state)}</span>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+          ` : `<div class="artifact-section wide"><div class="artifact-pending">Workflow lane arriving...</div></div>`}
+        </section>
+      `;
+    }
+
+    function renderMarkdown(text, includeArtifact) {
+      const lines = text.split("\\n");
+      const html = [];
+      let listOpen = false;
+      for (const line of lines) {
+        if (!line.trim()) {
+          if (listOpen) {
+            html.push("</ul>");
+            listOpen = false;
+          }
+          continue;
+        }
+        if (line.startsWith("### ")) {
+          if (listOpen) {
+            html.push("</ul>");
+            listOpen = false;
+          }
+          html.push(`<h3>${escapeHtml(line.slice(4))}</h3>`);
+          continue;
+        }
+        if (line.startsWith("- ")) {
+          if (!listOpen) {
+            html.push("<ul>");
+            listOpen = true;
+          }
+          html.push(`<li>${escapeHtml(line.slice(2)).replaceAll("**", "")}</li>`);
+          continue;
+        }
+        if (!line.startsWith("```")) {
+          if (listOpen) {
+            html.push("</ul>");
+            listOpen = false;
+          }
+          html.push(`<p>${escapeHtml(line).replaceAll("**", "")}</p>`);
+        }
+      }
+      if (listOpen) html.push("</ul>");
+      if (includeArtifact) {
+        html.push(`
+          <div class="inline-artifact">
+            <div class="inline-artifact-head"><span>Live XCON/SKETCH artifact</span><span>${currentRecord().progress}%</span></div>
+            <div class="inline-artifact-body"><div class="artifact-card">${nodes.artifactMount.innerHTML}</div></div>
+          </div>
+        `);
+      }
+      return html.join("");
+    }
+
+    function appendUserMessage(text) {
+      const article = document.createElement("article");
+      article.className = "message user";
+      article.innerHTML = `<div class="avatar">U</div><div class="bubble">${escapeHtml(text)}</div>`;
+      nodes.chatMessages.appendChild(article);
+      nodes.chatMessages.scrollTop = nodes.chatMessages.scrollHeight;
+    }
+
+    function appendAssistantShell() {
+      const article = document.createElement("article");
+      article.className = "message ai";
+      article.innerHTML = `
+        <div class="avatar">AI</div>
+        <div class="bubble">
+          <div class="stream-label"><span>Raw LLM response stream</span><span id="streamState">streaming</span></div>
+          <pre class="raw-stream" id="assistantRaw"></pre>
+        </div>
+      `;
+      nodes.chatMessages.appendChild(article);
+      nodes.chatMessages.scrollTop = nodes.chatMessages.scrollHeight;
+      return article.querySelector("#assistantRaw");
+    }
+
+    function renderInspector() {
+      const sourceByTab = {
+        stream: state.streamText,
+        fixture: state.fixtureReady ? JSON.stringify(state.fixture, null, 2) : "",
+        chain: state.chainReady ? state.chainSourceText : "",
+        workflow: state.workflowReady ? state.workflowSourceText : ""
+      };
+      const placeholderByTab = {
+        stream: "waiting for the Markdown + XCON/SKETCH response stream...",
+        fixture: "fixture data will appear here.",
+        chain: "xcon-chain aliases will appear here.",
+        workflow: "xcon-workflow source will appear here."
+      };
+      document.querySelectorAll(".tab").forEach((tab) => {
+        tab.classList.toggle("active", tab.dataset.tab === state.activeTab);
+      });
+      nodes.sourceCode.textContent = sourceByTab[state.activeTab] || placeholderByTab[state.activeTab] || "";
+
+      const aliasEntries = state.chainReady ? Object.entries(aliases()) : [];
+      nodes.aliasCount.textContent = String(aliasEntries.length);
+      nodes.aliasList.innerHTML = aliasEntries.map(([key, value]) => (
+        `<div class="alias"><code>${escapeHtml(key)}</code><span>${escapeHtml(value)}</span></div>`
+      )).join("");
+
+      nodes.eventCount.textContent = String(state.events.length);
+      nodes.eventLog.innerHTML = state.events.length
+        ? state.events.map((item) => `<li>${escapeHtml(item)}</li>`).join("")
+        : `<li>waiting for workflow events</li>`;
+
+      const progress = currentRecord().progress;
+      nodes.progressText.textContent = `${progress}%`;
+      nodes.runtimeProgress.style.width = `${progress}%`;
+      nodes.runtimeStatus.textContent = state.running ? "running" : state.workflowReady ? "ready" : "idle";
+      nodes.chatStatus.textContent = state.running ? "streaming" : "ready";
+      nodes.renderStatus.textContent = !state.sketchStarted ? "waiting" : state.sketchComplete ? "rendered" : "partial";
+    }
+
+    function renderAll() {
+      renderArtifact();
+      renderInspector();
+    }
+
+    function resetDemo({ clearChat = true } = {}) {
+      clearTimeout(state.timer);
+      state.fixture = cloneFixture();
+      state.events = [];
+      state.phase = -1;
+      state.running = false;
+      state.streamText = "";
+      state.assistantText = "";
+      state.partialSketch = "";
+      state.fixtureReady = false;
+      state.chainReady = false;
+      state.workflowReady = false;
+      state.sketchStarted = false;
+      state.sketchComplete = false;
+      state.fixtureSourceText = "";
+      state.chainSourceText = "";
+      state.workflowSourceText = "";
+      nodes.workflowBtn.disabled = true;
+      if (clearChat) nodes.chatMessages.innerHTML = "";
+      renderAll();
+    }
+
+    async function typeInto(target, text, options = {}, afterTick) {
+      const step = options.step ?? 6;
+      const delay = options.delay ?? 18;
+      const sketchStep = options.sketchStep ?? step;
+      const sketchDelay = options.sketchDelay ?? delay;
+      const sketchLeadDelay = options.sketchLeadDelay ?? 0;
+      const sketchStart = text.indexOf("```xcon-sketch");
+      let sketchLeadWaited = false;
+      let index = 0;
+      while (index < text.length && state.running) {
+        const inSketch = sketchStart >= 0 && index >= sketchStart;
+        if (inSketch && !sketchLeadWaited && sketchLeadDelay > 0) {
+          sketchLeadWaited = true;
+          await new Promise((resolve) => setTimeout(resolve, sketchLeadDelay));
+        }
+        index += inSketch ? sketchStep : step;
+        const chunk = text.slice(0, index);
+        target(chunk);
+        if (afterTick) afterTick(chunk);
+        await new Promise((resolve) => setTimeout(resolve, inSketch ? sketchDelay : delay));
+      }
+      target(text);
+      if (afterTick) afterTick(text);
+    }
+
+    async function runChat() {
+      resetDemo();
+      state.running = true;
+      nodes.replayBtn.disabled = true;
+      nodes.workflowBtn.disabled = true;
+      appendUserMessage(nodes.composerInput.value.trim() || "Create this month's revenue command center.");
+      const assistantRaw = appendAssistantShell();
+
+      state.events = ["chat:prompt accepted"];
+      renderAll();
+      await new Promise((resolve) => setTimeout(resolve, 450));
+
+      await typeInto(
+        (chunk) => {
+          state.streamText = chunk;
+          state.assistantText = chunk;
+          assistantRaw.textContent = chunk;
+          assistantRaw.scrollTop = assistantRaw.scrollHeight;
+          applyStreamArtifacts();
+          renderAll();
+        },
+        fullResponse,
+        {
+          step: 26,
+          delay: 9,
+          sketchStep: 9,
+          sketchDelay: 28,
+          sketchLeadDelay: 650
+        },
+        () => {
+          nodes.chatMessages.scrollTop = nodes.chatMessages.scrollHeight;
+        }
+      );
+
+      state.running = false;
+      nodes.replayBtn.disabled = false;
+      nodes.workflowBtn.disabled = !state.workflowReady;
+      state.events = ["stream:complete", "sketch:artifact rendered", ...state.events].slice(0, 12);
+      const streamState = document.querySelector("#streamState");
+      if (streamState) streamState.textContent = "complete";
+      renderAll();
+    }
+
+    async function runWorkflow() {
+      if (!state.workflowReady) return;
+      clearTimeout(state.timer);
+      state.running = true;
+      nodes.workflowBtn.disabled = true;
+      nodes.replayBtn.disabled = true;
+      state.events = ["workflow:start", ...state.events].slice(0, 12);
+
+      for (let i = 0; i < steps.length; i += 1) {
+        const step = steps[i];
+        currentRecord().progress = step.percent;
+        currentRecord().status = step.label;
+        if (i === 2) currentRecord().growth = 19;
+        if (i === 3) currentRecord().channels[1].revenue += 1200;
+        if (i === 4) currentRecord().teams[1].status = "Approved";
+        if (i === 5) Object.assign(currentRecord(), finalPatch);
+        state.events = [`${new Date().toLocaleTimeString()} ${step.label}`, ...state.events].slice(0, 12);
+        renderAll();
+        await new Promise((resolve) => setTimeout(resolve, step.delay));
+      }
+
+      Object.assign(currentRecord(), finalPatch);
+      state.events = ["workflow:complete", ...state.events].slice(0, 12);
+      state.running = false;
+      nodes.workflowBtn.disabled = false;
+      nodes.replayBtn.disabled = false;
+      renderAll();
+    }
+
+    document.querySelectorAll(".tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        state.activeTab = tab.dataset.tab;
+        renderInspector();
+      });
+    });
+
+    nodes.sendBtn.addEventListener("click", runChat);
+    nodes.replayBtn.addEventListener("click", runChat);
+    nodes.clearBtn.addEventListener("click", () => resetDemo());
+    nodes.workflowBtn.addEventListener("click", runWorkflow);
+
+    nodes.composerInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") runChat();
+    });
+
+    resetDemo();
+  </script>
+</body>
+</html>

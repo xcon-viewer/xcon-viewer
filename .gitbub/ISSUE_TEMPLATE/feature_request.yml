@@ -1,0 +1,79 @@
+name: Feature request
+description: Suggest a focused improvement for XCON Viewer.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please describe the use case first. Feature requests that preserve the safe viewer boundary are easier to evaluate.
+
+  - type: checkboxes
+    id: existing
+    attributes:
+      label: Existing request check
+      options:
+        - label: I have searched existing issues and discussions.
+          required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      multiple: true
+      options:
+        - Core parser / object model
+        - Viewer renderer / Web Component
+        - CLI
+        - React wrapper
+        - Vue wrapper
+        - Markdown integration
+        - Vite plugin
+        - GitHub Action
+        - Public site / docs
+        - Examples
+        - New syntax
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do, and why is the current behavior insufficient?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the behavior or API you want.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What workarounds or alternative designs have you considered?
+    validations:
+      required: false
+
+  - type: textarea
+    id: example
+    attributes:
+      label: Example
+      description: Add a minimal XCON, Markdown, CLI, or API example if useful.
+      render: text
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety model
+      options:
+        - label: This feature can preserve XCON Viewer's no-script, viewer-only security model.
+          required: true

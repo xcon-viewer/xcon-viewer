@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HTML/CSS Artifact Simulation - XCON Viewer</title>
+  <meta name="description" content="A ChatGPT-style demo where the assistant answers directly with HTML and CSS while the chat renders the artifact." />
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    :root {
+      --sim-bg: #f7f3ee;
+      --sim-panel: rgba(255, 255, 255, 0.94);
+      --sim-line: #d8e0ea;
+      --sim-muted: #64748b;
+      --sim-ink: #111827;
+      --sim-blue: #2563eb;
+      --sim-orange: #c4622d;
+      --sim-grid: rgba(58, 107, 170, 0.14);
+      --sim-shadow: 0 24px 70px rgba(17, 24, 39, 0.14);
+    }
+
+    body {
+      min-height: 100vh;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 16% 20%, rgba(37, 99, 235, 0.10), transparent 32%),
+        radial-gradient(circle at 86% 8%, rgba(196, 98, 45, 0.12), transparent 28%),
+        var(--sim-bg);
+    }
+
+    .site-header {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(18px);
+    }
+
+    .simulation-shell {
+      height: calc(100vh - 64px);
+      padding: 14px;
+      box-sizing: border-box;
+      display: grid;
+      grid-template-columns: minmax(560px, 0.95fr) minmax(520px, 0.86fr);
+      gap: 14px;
+    }
+
+    .chat-panel,
+    .source-panel {
+      min-width: 0;
+      min-height: 0;
+      border: 1px solid var(--sim-line);
+      border-radius: 18px;
+      background: var(--sim-panel);
+      box-shadow: var(--sim-shadow);
+      overflow: hidden;
+      display: grid;
+    }
+
+    .chat-panel {
+      grid-template-rows: auto minmax(0, 1fr) auto;
+    }
+
+    .source-panel {
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    .panel-toolbar {
+      min-height: 60px;
+      padding: 12px 16px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--sim-line);
+      background: rgba(255, 255, 255, 0.76);
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .panel-title strong {
+      color: var(--sim-ink);
+      font-size: 16px;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .panel-title span {
+      color: var(--sim-muted);
+      font-size: 12px;
+      line-height: 1.2;
+    }
+
+    .sim-actions {
+      display: flex;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    .sim-button {
+      height: 36px;
+      padding: 0 14px;
+      border: 1px solid var(--sim-line);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--sim-ink);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .sim-button.primary {
+      border-color: transparent;
+      background: var(--sim-blue);
+      color: #fff;
+    }
+
+    .sim-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.62;
+    }
+
+    .chat-scroll {
+      min-height: 0;
+      overflow: auto;
+      padding: 18px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(17, 24, 39, 0.28) transparent;
+    }
+
+    .chat-scroll::-webkit-scrollbar,
+    .source-scroller::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    .chat-scroll::-webkit-scrollbar-thumb,
+    .source-scroller::-webkit-scrollbar-thumb {
+      border-radius: 999px;
+      background: rgba(100, 116, 139, 0.42);
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+
+    .chat-scroll::-webkit-scrollbar-track,
+    .source-scroller::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .chat-messages {
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      justify-content: flex-end;
+    }
+
+    .chat-composer {
+      border-top: 1px solid var(--sim-line);
+      padding: 12px 16px 16px;
+      background: rgba(255, 255, 255, 0.82);
+    }
+
+    .composer-box {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 42px;
+      gap: 10px;
+      align-items: end;
+      border: 1px solid var(--sim-line);
+      border-radius: 18px;
+      background: #fff;
+      padding: 10px;
+      box-shadow: 0 14px 36px rgba(17, 24, 39, 0.08);
+    }
+
+    .composer-input {
+      min-height: 42px;
+      max-height: 110px;
+      resize: none;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--sim-ink);
+      font: 14px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 10px 4px;
+      box-sizing: border-box;
+    }
+
+    .composer-send {
+      width: 42px;
+      height: 42px;
+      border: 0;
+      border-radius: 14px;
+      background: var(--sim-blue);
+      color: #fff;
+      font-size: 18px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 10px 22px rgba(37, 99, 235, 0.24);
+    }
+
+    .composer-send.is-sending {
+      transform: translateY(1px);
+      opacity: 0.82;
+    }
+
+    .message {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: var(--sim-orange);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .message.assistant .avatar {
+      background: #f4dccf;
+      color: var(--sim-orange);
+    }
+
+    .avatar.is-thinking {
+      animation: avatarPulse 1.15s ease-in-out infinite;
+    }
+
+    .bubble {
+      border: 1px solid var(--sim-line);
+      border-radius: 16px;
+      padding: 14px 16px;
+      background: #fff;
+      color: var(--sim-ink);
+      line-height: 1.55;
+      font-size: 14px;
+      box-shadow: 0 12px 28px rgba(17, 24, 39, 0.05);
+    }
+
+    .message.user .bubble {
+      background: #fff7ed;
+      border-color: #fed7aa;
+      font-weight: 650;
+    }
+
+    .message.user .bubble {
+      min-height: 48px;
+    }
+
+    .thinking-dots {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 22px;
+    }
+
+    .thinking-dots span {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--sim-muted);
+      animation: dotPulse 1.2s ease-in-out infinite;
+    }
+
+    .thinking-dots span:nth-child(2) {
+      animation-delay: 160ms;
+    }
+
+    .thinking-dots span:nth-child(3) {
+      animation-delay: 320ms;
+    }
+
+    .artifact-shell {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .artifact-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--sim-line);
+      color: var(--sim-muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .artifact-frame {
+      display: block;
+      width: 100%;
+      height: 410px;
+      border: 0;
+      background: #f8fafc;
+    }
+
+    .typing-caret {
+      display: inline-block;
+      width: 7px;
+      height: 1.1em;
+      margin-left: 2px;
+      vertical-align: -0.16em;
+      background: var(--sim-blue);
+      animation: blink 850ms steps(1) infinite;
+    }
+
+    .source-scroller {
+      min-height: 0;
+      overflow: auto;
+      background: #0f172a;
+      color: #dbeafe;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(226, 232, 240, 0.36) transparent;
+    }
+
+    .source-stream {
+      min-height: 100%;
+      margin: 0;
+      padding: 18px 20px;
+      box-sizing: border-box;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font: 12px/1.7 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    .source-status {
+      min-width: 84px;
+      height: 32px;
+      display: inline-grid;
+      place-items: center;
+      padding: 0 12px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #26437d;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    @keyframes avatarPulse {
+      50% {
+        transform: scale(1.04);
+        box-shadow: 0 0 0 8px rgba(196, 98, 45, 0.12);
+      }
+    }
+
+    @keyframes dotPulse {
+      0%, 80%, 100% {
+        opacity: 0.36;
+        transform: translateY(0);
+      }
+      40% {
+        opacity: 1;
+        transform: translateY(-3px);
+      }
+    }
+
+    @media (max-width: 1120px) {
+      body {
+        overflow: auto;
+      }
+
+      .simulation-shell {
+        height: auto;
+        min-height: calc(100vh - 64px);
+        grid-template-columns: 1fr;
+      }
+
+      .chat-panel,
+      .source-panel {
+        min-height: 640px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/">
+      <span class="brand-mark">X</span>
+      <span>XCON Viewer</span>
+    </a>
+    <nav>
+      <a href="/docs">Docs</a>
+      <a href="/spec">Spec</a>
+      <a href="/examples">Examples</a>
+      <a href="/play">Play</a>
+      <a href="/template-lab">Template Studio</a>
+    </nav>
+  </header>
+
+  <main class="simulation-shell">
+    <section class="chat-panel" aria-label="Rendered ChatGPT conversation">
+      <div class="panel-toolbar">
+        <div class="panel-title">
+          <strong>HTML/CSS artifact simulation</strong>
+          <span>ChatGPT-style prompt composer + rendered HTML/CSS</span>
+        </div>
+        <div class="sim-actions">
+          <button id="clearButton" class="sim-button" type="button">Clear</button>
+          <button id="replayButton" class="sim-button primary" type="button">Replay</button>
+        </div>
+      </div>
+
+      <div id="chatScroll" class="chat-scroll" aria-live="polite">
+        <div id="chatMessages" class="chat-messages"></div>
+      </div>
+      <form id="chatComposer" class="chat-composer">
+        <div class="composer-box">
+          <textarea id="composerInput" class="composer-input" rows="1" aria-label="Message input" placeholder="Ask a normal question"></textarea>
+          <button id="sendButton" class="composer-send" type="submit" aria-label="Send message">↑</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="source-panel" aria-label="Raw HTML and CSS source stream">
+      <div class="panel-toolbar">
+        <div class="panel-title">
+          <strong>HTML + CSS source</strong>
+          <span>raw assistant response</span>
+        </div>
+        <span id="sourceStatus" class="source-status">waiting</span>
+      </div>
+      <div id="sourceScroller" class="source-scroller">
+        <pre id="sourceStream" class="source-stream"></pre>
+      </div>
+    </section>
+  </main>
+
+  <template id="artifactFrameTemplate">
+    <iframe id="artifactFrame" class="artifact-frame" sandbox="" title="HTML/CSS artifact preview"></iframe>
+  </template>
+
+  <script type="module">
+    const chatMessages = document.getElementById('chatMessages');
+    const chatComposer = document.getElementById('chatComposer');
+    const composerInput = document.getElementById('composerInput');
+    const sendButton = document.getElementById('sendButton');
+    const sourceStream = document.getElementById('sourceStream');
+    const sourceScroller = document.getElementById('sourceScroller');
+    const sourceStatus = document.getElementById('sourceStatus');
+    const chatScroll = document.getElementById('chatScroll');
+    const replayButton = document.getElementById('replayButton');
+    const clearButton = document.getElementById('clearButton');
+    const userTypingDelayMs = 42;
+    const thinkingDelayMs = 1250;
+    const htmlChunkDelayMs = 18;
+    let runToken = 0;
+    let assistantFrameCounter = 0;
+
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    const conversationTurns = [
+      {
+        prompt: "What's the weather like in Seoul today?",
+        response: [
+          '<!doctype html>',
+          '<html lang="en">',
+          '<head>',
+          '  <meta charset="utf-8">',
+          '  <meta name="viewport" content="width=device-width, initial-scale=1">',
+          '  <title>Seoul Weather Brief</title>',
+          '  <style>',
+          '    :root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #172033; background: #f8fafc; }',
+          '    * { box-sizing: border-box; }',
+          '    body { margin: 0; min-height: 100vh; padding: 24px; background: linear-gradient(#dbe8f8 1px, transparent 1px), linear-gradient(90deg, #dbe8f8 1px, transparent 1px), #f8fafc; background-size: 24px 24px; }',
+          '    .card { width: min(720px, 100%); margin: 0 auto; padding: 24px; border: 1px solid #d8e0ea; border-radius: 26px; background: white; box-shadow: 0 22px 55px rgba(15,23,42,.10); }',
+          '    .hero { display: grid; grid-template-columns: 1fr 128px; gap: 24px; align-items: center; padding: 28px; border-radius: 24px; background: #111827; color: white; }',
+          '    h1 { margin: 0 0 14px; font-size: 28px; line-height: 1.1; }',
+          '    .temp { color: #fbbf24; font-size: 54px; font-weight: 850; line-height: 1; }',
+          '    .condition { color: #a7f3d0; font-size: 18px; font-weight: 800; }',
+          '    .badge { display: grid; place-items: center; min-height: 96px; border-radius: 24px; background: #1f2937; color: #93c5fd; text-align: center; font-weight: 800; }',
+          '    .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 18px; }',
+          '    .slot { padding: 14px 12px; border-radius: 16px; background: #f8fafc; text-align: center; color: #475569; font-weight: 750; }',
+          '    .tips { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }',
+          '    .tip { padding: 18px; border: 1px solid #d8e0ea; border-radius: 18px; background: #fff; }',
+          '    .tip strong { display: block; margin-bottom: 8px; }',
+          '    @media (max-width: 680px) { .hero, .tips { grid-template-columns: 1fr; } .grid { grid-template-columns: 1fr 1fr; } }',
+          '  </style>',
+          '</head>',
+          '<body>',
+          '  <main class="card" aria-label="Seoul Weather Brief">',
+          '    <section class="hero">',
+          '      <div>',
+          '        <h1>Seoul Weather Brief</h1>',
+          '        <div class="temp">22°C</div>',
+          '        <p class="condition">Partly cloudy · low rain risk</p>',
+          '        <p>Best walking window: <strong>2 PM to 5 PM</strong>. Bring a light jacket after sunset.</p>',
+          '      </div>',
+          '      <aside class="badge"><span>PM 2-5<br>best window</span></aside>',
+          '    </section>',
+          '    <section class="grid" aria-label="Hourly outlook">',
+          '      <div class="slot">09:00<br>17°C</div>',
+          '      <div class="slot">12:00<br>22°C</div>',
+          '      <div class="slot">15:00<br>24°C</div>',
+          '      <div class="slot">19:00<br>18°C</div>',
+          '    </section>',
+          '    <section class="tips">',
+          '      <article class="tip"><strong>Before leaving</strong>Light jacket, sunglasses, and water.</article>',
+          '      <article class="tip"><strong>Simple day plan</strong>Cafe in the morning, outdoor walk in the afternoon, indoor dinner after sunset.</article>',
+          '    </section>',
+          '  </main>',
+          '</body>',
+          '</html>'
+        ].join('\n')
+      },
+      {
+        prompt: 'Where should I take a walk before lunch?',
+        response: [
+          '<!doctype html>',
+          '<html lang="en">',
+          '<head>',
+          '  <meta charset="utf-8">',
+          '  <meta name="viewport" content="width=device-width, initial-scale=1">',
+          '  <title>Seoul Walk Window</title>',
+          '  <style>',
+          '    :root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #172033; background: #f8fafc; }',
+          '    * { box-sizing: border-box; }',
+          '    body { margin: 0; min-height: 100vh; padding: 24px; background: linear-gradient(#dbe8f8 1px, transparent 1px), linear-gradient(90deg, #dbe8f8 1px, transparent 1px), #f8fafc; background-size: 24px 24px; }',
+          '    .route { width: min(720px, 100%); margin: 0 auto; padding: 24px; border: 1px solid #d8e0ea; border-radius: 26px; background: white; box-shadow: 0 22px 55px rgba(15,23,42,.10); }',
+          '    .header { display: flex; justify-content: space-between; gap: 18px; align-items: center; padding: 24px; border-radius: 22px; background: #0f172a; color: white; }',
+          '    h1 { margin: 0 0 8px; font-size: 26px; }',
+          '    .path { color: #bfdbfe; font-weight: 800; }',
+          '    .time { color: #fbbf24; font-size: 28px; font-weight: 900; white-space: nowrap; }',
+          '    .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; }',
+          '    .map, .tips { min-height: 236px; padding: 22px; border-radius: 22px; border: 1px solid #d8e0ea; background: #fff; }',
+          '    .map { position: relative; overflow: hidden; background: #ecfdf5; border-color: #bbf7d0; }',
+          '    .dot { position: absolute; display: grid; place-items: center; width: 84px; height: 28px; border-radius: 999px; color: white; font-weight: 850; }',
+          '    .start { left: 34px; top: 38px; background: #22c55e; }',
+          '    .cafe { right: 34px; top: 88px; background: #fff; color: #166534; }',
+          '    .finish { right: 54px; bottom: 38px; background: #2563eb; }',
+          '    .line { position: absolute; left: 82px; top: 108px; width: 180px; height: 8px; border-radius: 8px; background: #16a34a; transform: rotate(16deg); }',
+          '    .tips h2 { margin: 0 0 16px; font-size: 20px; }',
+          '    .tips p { margin: 10px 0; color: #475569; }',
+          '    .button { display: inline-block; margin-top: 16px; padding: 12px 18px; border-radius: 12px; background: #2563eb; color: white; font-weight: 850; }',
+          '    @media (max-width: 680px) { .header, .layout { display: block; } .time { margin-top: 12px; } .tips { margin-top: 14px; } }',
+          '  </style>',
+          '</head>',
+          '<body>',
+          '  <main class="route" aria-label="Seoul Walk Window">',
+          '    <section class="header">',
+          '      <div>',
+          '        <h1>Lunch-before walk</h1>',
+          '        <div class="path">Cheonggyecheon → Deoksugung stone-wall road</div>',
+          '      </div>',
+          '      <div class="time">35-45 min</div>',
+          '    </section>',
+          '    <section class="layout">',
+          '      <div class="map" aria-label="Route map preview">',
+          '        <span class="dot start">Start</span>',
+          '        <span class="line"></span>',
+          '        <span class="dot cafe">Cafe stop</span>',
+          '        <span class="dot finish">Finish</span>',
+          '      </div>',
+          '      <article class="tips">',
+          '        <h2>Why this route</h2>',
+          '        <p>Shaded paths before noon make it comfortable.</p>',
+          '        <p>Coffee stops and indoor fallback spots are easy to find.</p>',
+          '        <p>Subway return options are close to both ends.</p>',
+          '        <span class="button">Open route</span>',
+          '      </article>',
+          '    </section>',
+          '  </main>',
+          '</body>',
+          '</html>'
+        ].join('\n')
+      },
+      {
+        prompt: 'Can you summarize my afternoon in one card?',
+        response: [
+          '<!doctype html>',
+          '<html lang="en">',
+          '<head>',
+          '  <meta charset="utf-8">',
+          '  <meta name="viewport" content="width=device-width, initial-scale=1">',
+          '  <title>Afternoon Plan Card</title>',
+          '  <style>',
+          '    :root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #172033; background: #f8fafc; }',
+          '    * { box-sizing: border-box; }',
+          '    body { margin: 0; min-height: 100vh; padding: 24px; background: linear-gradient(#dbe8f8 1px, transparent 1px), linear-gradient(90deg, #dbe8f8 1px, transparent 1px), #f8fafc; background-size: 24px 24px; }',
+          '    .plan { width: min(720px, 100%); margin: 0 auto; padding: 24px; border: 1px solid #d8e0ea; border-radius: 26px; background: white; box-shadow: 0 22px 55px rgba(15,23,42,.10); }',
+          '    .hero { display: flex; justify-content: space-between; gap: 18px; align-items: center; padding: 24px; border-radius: 22px; background: #111827; color: white; }',
+          '    h1 { margin: 0 0 8px; font-size: 26px; }',
+          '    .badge { padding: 10px 14px; border-radius: 999px; background: #1f2937; color: #fbbf24; font-weight: 850; white-space: nowrap; }',
+          '    .timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 18px; }',
+          '    .slot { min-height: 110px; padding: 18px; border-radius: 20px; }',
+          '    .slot strong { display: block; margin-bottom: 12px; font-size: 22px; }',
+          '    .blue { background: #eff6ff; color: #1e40af; }',
+          '    .green { background: #ecfdf5; color: #065f46; }',
+          '    .orange { background: #fff7ed; color: #9a3412; }',
+          '    .bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }',
+          '    .card { min-height: 128px; padding: 20px; border: 1px solid #d8e0ea; border-radius: 20px; background: #fff; }',
+          '    .dark { background: #0f172a; color: white; }',
+          '    .dark p { color: #cbd5e1; }',
+          '    .cta { display: inline-block; padding: 10px 16px; border-radius: 12px; background: #2563eb; color: white; font-weight: 850; }',
+          '    @media (max-width: 680px) { .hero, .timeline, .bottom { display: block; } .badge, .slot, .card { margin-top: 14px; } }',
+          '  </style>',
+          '</head>',
+          '<body>',
+          '  <main class="plan" aria-label="Afternoon Plan Card">',
+          '    <section class="hero">',
+          '      <div>',
+          '        <h1>Afternoon plan</h1>',
+          '        <p>Weather-aware schedule for Seoul</p>',
+          '      </div>',
+          '      <div class="badge">light jacket after 18:30</div>',
+          '    </section>',
+          '    <section class="timeline">',
+          '      <article class="slot blue"><strong>13:00</strong>Lunch + cafe</article>',
+          '      <article class="slot green"><strong>15:00</strong>Walk window</article>',
+          '      <article class="slot orange"><strong>18:30</strong>Indoor dinner</article>',
+          '    </section>',
+          '    <section class="bottom">',
+          '      <article class="card"><h2>Bring</h2><p>Light jacket, transit card, and water.</p></article>',
+          '      <article class="card dark"><h2>Best move</h2><p>Put outdoor plans in mid-afternoon, then move indoors after sunset.</p><span class="cta">Save plan</span></article>',
+          '    </section>',
+          '  </main>',
+          '</body>',
+          '</html>'
+        ].join('\n')
+      }
+    ];
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function sanitizeHtmlCssSource(source) {
+      return String(source ?? '')
+        .replace(/<script[\s\S]*?<\/script>/gi, '')
+        .replace(/\son[a-z]+\s*=\s*"[^"]*"/gi, '')
+        .replace(/\son[a-z]+\s*=\s*'[^']*'/gi, '');
+    }
+
+    function buildSandboxDocument(source) {
+      const safeSource = sanitizeHtmlCssSource(source);
+      if (/<html[\s>]/i.test(safeSource)) return safeSource;
+      return [
+        '<!doctype html>',
+        '<html lang="en">',
+        '<head>',
+        '  <meta charset="utf-8">',
+        '  <meta name="viewport" content="width=device-width, initial-scale=1">',
+        '</head>',
+        '<body>',
+        safeSource,
+        '</body>',
+        '</html>'
+      ].join('\n');
+    }
+
+    function updateArtifactPreview(artifactFrame, source) {
+      artifactFrame.srcdoc = buildSandboxDocument(source);
+    }
+
+    function createArtifactFrame() {
+      const artifactFrame = document.createElement('iframe');
+      if (!document.getElementById('artifactFrame')) artifactFrame.id = 'artifactFrame';
+      artifactFrame.className = 'artifact-frame';
+      artifactFrame.setAttribute('sandbox', '');
+      artifactFrame.title = 'HTML/CSS artifact preview';
+      return artifactFrame;
+    }
+
+    function scrollChatToBottom() {
+      chatScroll.scrollTop = chatScroll.scrollHeight;
+    }
+
+    function appendUserMessage(text) {
+      const message = document.createElement('article');
+      message.className = 'message user';
+      message.innerHTML = `
+        <div class="avatar">YOU</div>
+        <div class="bubble">${escapeHtml(text)}</div>
+      `;
+      chatMessages.appendChild(message);
+      scrollChatToBottom();
+      return message;
+    }
+
+    function appendAssistantMessage() {
+      const message = document.createElement('article');
+      message.className = 'message assistant';
+      const artifactFrame = createArtifactFrame();
+      const shell = document.createElement('div');
+      shell.className = 'bubble artifact-shell';
+      shell.innerHTML = '<div class="artifact-meta"><span>Rendered HTML/CSS response</span><span>streaming</span></div>';
+      shell.appendChild(artifactFrame);
+      message.innerHTML = '<div id="assistantAvatar" class="avatar assistant-avatar"><span class="thinking-dots"><span></span><span></span><span></span></span></div>';
+      message.appendChild(shell);
+      chatMessages.appendChild(message);
+      scrollChatToBottom();
+      return { message, artifactFrame, shell, avatar: message.querySelector('#assistantAvatar') };
+    }
+
+    async function streamComposerInput(token, prompt) {
+      composerInput.value = '';
+      composerInput.focus();
+      for (let index = 0; index <= prompt.length; index += 1) {
+        if (token !== runToken) return false;
+        composerInput.value = prompt.slice(0, index);
+        composerInput.scrollTop = composerInput.scrollHeight;
+        await sleep(userTypingDelayMs);
+      }
+      return true;
+    }
+
+    async function sendPromptFromComposer(token) {
+      if (token !== runToken) return false;
+      sendButton.classList.add('is-sending');
+      await sleep(160);
+      appendUserMessage(composerInput.value);
+      composerInput.value = '';
+      sendButton.classList.remove('is-sending');
+      sourceStatus.textContent = 'thinking';
+      sourceStream.textContent = '';
+      await sleep(thinkingDelayMs);
+      return true;
+    }
+
+    async function streamAssistantResponse(token, response) {
+      const assistant = appendAssistantMessage();
+      assistant.avatar.classList.add('is-thinking');
+      sourceStatus.textContent = 'streaming';
+      let index = 0;
+      while (index < response.length) {
+        if (token !== runToken) return false;
+        const step = Math.min(response.length - index, 18 + Math.floor(Math.random() * 18));
+        index += step;
+        const slice = response.slice(0, index);
+        sourceStream.textContent = slice;
+        sourceScroller.scrollTop = sourceScroller.scrollHeight;
+        updateArtifactPreview(assistant.artifactFrame, slice);
+        scrollChatToBottom();
+        await sleep(htmlChunkDelayMs);
+      }
+      updateArtifactPreview(assistant.artifactFrame, response);
+      assistant.avatar.classList.remove('is-thinking');
+      assistant.avatar.textContent = 'AI';
+      assistant.shell.querySelector('.artifact-meta span:last-child').textContent = 'rendered';
+      sourceStatus.textContent = 'rendered';
+      return true;
+    }
+
+    async function runScenario() {
+      const token = ++runToken;
+      replayButton.disabled = true;
+      clearButton.disabled = true;
+      sendButton.disabled = true;
+      chatMessages.innerHTML = '';
+      sourceStream.textContent = '';
+      sourceStatus.textContent = 'waiting';
+      composerInput.value = '';
+
+      for (const turn of conversationTurns) {
+        await streamComposerInput(token, turn.prompt);
+        if (token !== runToken) return;
+        if (!(await sendPromptFromComposer(token))) return;
+        await streamAssistantResponse(token, turn.response);
+        if (token !== runToken) return;
+        await sleep(950);
+      }
+
+      replayButton.disabled = false;
+      clearButton.disabled = false;
+      sendButton.disabled = false;
+    }
+
+    replayButton.addEventListener('click', () => runScenario());
+    clearButton.addEventListener('click', () => {
+      runToken += 1;
+      chatMessages.innerHTML = '';
+      sourceStream.textContent = '';
+      sourceStatus.textContent = 'waiting';
+      composerInput.value = '';
+      replayButton.disabled = false;
+      clearButton.disabled = false;
+      sendButton.disabled = false;
+    });
+
+    chatComposer.addEventListener('submit', (event) => {
+      event.preventDefault();
+      if (sendButton.disabled) return;
+      runScenario();
+    });
+
+    runScenario();
+  </script>
+</body>
+</html>

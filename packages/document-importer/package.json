@@ -1,0 +1,64 @@
+{
+  "name": "@xcon-viewer/document-importer",
+  "version": "0.1.6",
+  "type": "module",
+  "description": "Document-to-XCON Markdown importer for Template Lab.",
+  "keywords": [
+    "xcon",
+    "xcon-viewer",
+    "document",
+    "markdown",
+    "kordoc"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xcon-viewer/xcon-viewer.git",
+    "directory": "packages/document-importer"
+  },
+  "homepage": "https://xconviewer.dev",
+  "bugs": {
+    "url": "https://github.com/xcon-viewer/xcon-viewer/issues"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup && tsc -b tsconfig.json --force --emitDeclarationOnly",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run test && npm run build"
+  },
+  "peerDependencies": {
+    "kordoc": ">=2.9.0",
+    "pdfjs-dist": ">=4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "kordoc": {
+      "optional": true
+    },
+    "pdfjs-dist": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^3.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

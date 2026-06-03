@@ -229,6 +229,59 @@
       font-size: inherit;
     }
 
+    .markdown-math-inline {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.12em;
+      padding: 1px 5px;
+      border-radius: 6px;
+      background: rgba(196, 98, 45, 0.08);
+      color: var(--ink);
+      font-family: "Cambria Math", "STIX Two Math", "Times New Roman", serif;
+      font-size: 1.04em;
+      line-height: 1.25;
+      white-space: nowrap;
+    }
+
+    .markdown-math-block {
+      display: block;
+      overflow-x: auto;
+      margin: 18px 0 22px;
+      padding: 18px 20px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface-2);
+      color: var(--ink);
+      font-family: "Cambria Math", "STIX Two Math", "Times New Roman", serif;
+      font-size: 1.24em;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .markdown-frac {
+      display: inline-grid;
+      grid-template-rows: auto auto;
+      align-items: center;
+      justify-items: center;
+      min-width: 1.8em;
+      margin: 0 0.12em;
+      vertical-align: middle;
+    }
+
+    .markdown-frac-num {
+      width: 100%;
+      padding: 0 0.18em 0.08em;
+      border-bottom: 1px solid currentColor;
+      font-size: 0.82em;
+      line-height: 1.12;
+    }
+
+    .markdown-frac-den {
+      padding: 0.08em 0.18em 0;
+      font-size: 0.82em;
+      line-height: 1.12;
+    }
+
     .markdown-xcon-block {
       margin: 22px 0;
       max-width: 100%;
@@ -360,7 +413,7 @@
         const title = titleFromSource(source) || sourcePath.split('/').pop() || 'Markdown';
         document.title = `${title} - XCON Markdown Viewer`;
         documentTitle.textContent = title;
-        markdownDocument.innerHTML = markdown.render(source);
+        markdownDocument.innerHTML = renderMarkdownWithMath(markdown, source);
         hydrateXconViewer(markdownDocument);
       } catch (error) {
         showError(error instanceof Error ? error.message : String(error));
@@ -375,6 +428,182 @@
     function showError(message) {
       documentTitle.textContent = 'Markdown load failed';
       markdownDocument.innerHTML = `<div class="error">${escapeHtml(message)}</div>`;
+    }
+
+    function renderMarkdownWithMath(markdownRenderer, markdownSource) {
+      const prepared = prepareMarkdownMath(String(markdownSource || ''));
+      return restoreMarkdownMath(markdownRenderer.render(prepared.source), prepared.tokens);
+    }
+
+    function prepareMarkdownMath(markdownSource) {
+      const tokens = [];
+      const output = [];
+      const lines = String(markdownSource || '').split('\n');
+      let inFence = false;
+      let fenceMarker = '';
+
+      for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+        const line = lines[lineIndex];
+        const fenceMatch = line.match(/^\s*(```|~~~)/);
+        if (fenceMatch) {
+          if (!inFence) {
+            inFence = true;
+            fenceMarker = fenceMatch[1];
+          } else if (fenceMatch[1] === fenceMarker) {
+            inFence = false;
+            fenceMarker = '';
+          }
+          output.push(line);
+          continue;
+        }
+
+        if (inFence) {
+          output.push(line);
+          continue;
+        }
+
+        const trimmed = line.trim();
+        if (trimmed.startsWith('$$')) {
+          const collected = [];
+          let rest = trimmed.slice(2);
+          let closed = false;
+          const sameLineEnd = rest.lastIndexOf('$$');
+          if (sameLineEnd >= 0) {
+            collected.push(rest.slice(0, sameLineEnd));
+            closed = true;
+          } else {
+            if (rest) collected.push(rest);
+            while (lineIndex + 1 < lines.length) {
+              lineIndex += 1;
+              const nextLine = lines[lineIndex];
+              const endIndex = nextLine.indexOf('$$');
+              if (endIndex >= 0) {
+                collected.push(nextLine.slice(0, endIndex));
+                closed = true;
+                break;
+              }
+              collected.push(nextLine);
+            }
+          }
+          if (closed) {
+            output.push('', createMathToken(tokens, collected.join('\n'), true), '');
+          } else {
+            output.push(line);
+          }
+          continue;
+        }
+
+        output.push(replaceInlineMath(line, tokens));
+      }
+
+      return { source: output.join('\n'), tokens };
+    }
+
+    function replaceInlineMath(line, tokens) {
+      let output = '';
+      let index = 0;
+      while (index < line.length) {
+        const start = line.indexOf('$', index);
+        if (start < 0) {
+          output += line.slice(index);
+          break;
+        }
+        if (line[start - 1] === '\\' || line[start + 1] === '$') {
+          output += line.slice(index, start + 1);
+          index = start + 1;
+          continue;
+        }
+        let end = start + 1;
+        while (end < line.length) {
+          const char = line[end];
+          if (char === '$' && line[end - 1] !== '\\') break;
+          end += 1;
+        }
+        if (end >= line.length) {
+          output += line.slice(index);
+          break;
+        }
+        const expression = line.slice(start + 1, end).trim();
+        if (!expression) {
+          output += line.slice(index, end + 1);
+        } else {
+          output += line.slice(index, start);
+          output += createMathToken(tokens, expression, false);
+        }
+        index = end + 1;
+      }
+      return output;
+    }
+
+    function createMathToken(tokens, expression, display) {
+      const marker = `@@XCON_MATH_${tokens.length}@@`;
+      tokens.push({
+        marker,
+        display,
+        html: renderMathExpression(expression, display)
+      });
+      return marker;
+    }
+
+    function restoreMarkdownMath(html, tokens) {
+      let output = String(html || '');
+      for (const token of tokens) {
+        const marker = escapeRegExp(token.marker);
+        if (token.display) {
+          output = output.replace(new RegExp(`<p>\\s*${marker}\\s*</p>`, 'g'), token.html);
+        }
+        output = output.replace(new RegExp(marker, 'g'), token.html);
+      }
+      return output;
+    }
+
+    function renderMathExpression(expression, display) {
+      const body = renderTexLite(expression);
+      const tag = display ? 'div' : 'span';
+      const className = display ? 'markdown-math-block' : 'markdown-math-inline';
+      return `<${tag} class="${className}" role="img" aria-label="${escapeHtml(expression)}">${body}</${tag}>`;
+    }
+
+    function renderTexLite(expression) {
+      let html = escapeHtml(String(expression || '').trim())
+        .replace(/\\left\s*/g, '')
+        .replace(/\\right\s*/g, '');
+
+      for (let pass = 0; pass < 6; pass += 1) {
+        html = html.replace(/\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}/g, (_match, numerator, denominator) => (
+          `<span class="markdown-frac"><span class="markdown-frac-num">${renderTexLite(numerator)}</span><span class="markdown-frac-den">${renderTexLite(denominator)}</span></span>`
+        ));
+        html = html.replace(/\\sqrt\s*\{([^{}]+)\}/g, (_match, value) => `√<span class="markdown-radicand">${renderTexLite(value)}</span>`);
+      }
+
+      html = html
+        .replace(/\\(sum|prod|int)\s*_\{([^{}]+)\}\s*\^\{([^{}]+)\}/g, (_match, name, sub, sup) => `${mathSymbol(name)}<sub>${renderTexLite(sub)}</sub><sup>${renderTexLite(sup)}</sup>`)
+        .replace(/\^\{([^{}]+)\}/g, (_match, value) => `<sup>${renderTexLite(value)}</sup>`)
+        .replace(/_\{([^{}]+)\}/g, (_match, value) => `<sub>${renderTexLite(value)}</sub>`)
+        .replace(/\^([A-Za-z0-9+\-=]+)/g, (_match, value) => `<sup>${escapeHtml(value)}</sup>`)
+        .replace(/_([A-Za-z0-9+\-=]+)/g, (_match, value) => `<sub>${escapeHtml(value)}</sub>`)
+        .replace(/\\([A-Za-z]+)\b/g, (_match, name) => mathSymbol(name) || `\\${name}`)
+        .replace(/\\,/g, '&thinsp;')
+        .replace(/\\;/g, '&emsp;');
+
+      return html;
+    }
+
+    function mathSymbol(name) {
+      const symbols = {
+        alpha: 'α', beta: 'β', gamma: 'γ', delta: 'δ', epsilon: 'ε',
+        theta: 'θ', lambda: 'λ', mu: 'μ', pi: 'π', sigma: 'σ',
+        phi: 'φ', omega: 'ω', Gamma: 'Γ', Delta: 'Δ', Theta: 'Θ',
+        Lambda: 'Λ', Pi: 'Π', Sigma: 'Σ', Phi: 'Φ', Omega: 'Ω',
+        sum: '∑', prod: '∏', int: '∫', infty: '∞', approx: '≈',
+        neq: '≠', le: '≤', ge: '≥', times: '×', cdot: '·',
+        pm: '±', to: '→', rightarrow: '→', leftarrow: '←'
+      };
+      return symbols[name] || '';
+    }
+
+    function escapeRegExp(value) {
+      return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
     function escapeHtml(value) {

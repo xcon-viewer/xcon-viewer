@@ -66,14 +66,14 @@
           <h3>Is XCON just JSON?</h3>
           <p>No. The name is an homage to JSON, but XCON is a viewer-oriented
             UI document format with four syntax representations:
-            JSON, XML, TAGLESS, and SKETCH. All four parse into the same object model.</p>
+            SKETCH, JSON, XML, and TAGLESS. All four parse into the same object model.</p>
         </article>
         <article class="card">
           <h3>Why four syntaxes? Isn't that too many?</h3>
           <p>Each syntax serves a different role.
-            LLMs generate SKETCH. APIs consume JSON. Tools edit XML.
-            TAGLESS handles transport edge cases.
-            You don't need to use all four — pick what fits your workflow.</p>
+            LLMs generate SKETCH. APIs consume JSON. XML and TAGLESS handle
+            compatibility, metadata, and transport edge cases.
+            Most docs should start with SKETCH or JSON.</p>
         </article>
         <article class="card">
           <h3>Why XML too?</h3>

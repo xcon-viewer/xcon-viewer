@@ -6,12 +6,27 @@ import {
   resolvePublicPath,
   shouldServeMarkdownViewer,
 } from './site-routes.mjs';
+import { createTemplateExportHandler } from './template-export-api.mjs';
+import { createTemplateImportHandler } from './template-import-api.mjs';
 
 const port = Number(process.env.PORT || process.argv[2] || 4173);
+const handleTemplateExport = createTemplateExportHandler();
+const handleTemplateImport = createTemplateImportHandler();
 
-createServer((request, response) => {
+createServer(async (request, response) => {
   const url = new URL(request.url || '/', `http://${request.headers.host || 'localhost'}`);
   const pathname = decodeURIComponent(url.pathname);
+
+  if (pathname === '/api/export') {
+    await handleTemplateExport(request, response);
+    return;
+  }
+
+  if (pathname === '/api/import/document') {
+    await handleTemplateImport(request, response);
+    return;
+  }
+
   const filePath = resolvePublicPath(pathname);
 
   if (!filePath || !existsSync(filePath) || !statSync(filePath).isFile()) {

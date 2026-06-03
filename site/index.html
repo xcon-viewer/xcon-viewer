@@ -35,14 +35,17 @@
     "
   />
 
-  <meta name="author" content="XamongNine">
+  <meta name="author" content="XCON Viewer Project">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="XCON Viewer - Write UI in Markdown">
   <meta property="og:description" content="AI-friendly UI documents with live rendering and Figma sync.">
   <meta property="og:image" content="https://xconviewer.dev/images/og-image.png">
-  <meta property="og:url" content="https://xconviewer.dev">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:url" content="https://xconviewer.dev/">
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
@@ -51,7 +54,7 @@
   <meta name="twitter:image" content="https://xconviewer.dev/images/og-image.png"> 
 
   <!-- Canonical -->
-  <link rel="canonical" href="https://xconviewer.dev">
+  <link rel="canonical" href="https://xconviewer.dev/">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="/images/favicon.png" sizes="32x32">
@@ -104,15 +107,14 @@
         </div>
       </div>
       <figure class="visual" aria-label="Rendered XCON document preview">
-        <div class="visual-head"><span>account.xcon.json</span><span>rendered preview</span></div>
+        <div class="visual-head"><span>account.xcon.sketch</span><span>rendered preview</span></div>
         <div class="preview-screen">
           <div class="phone">
             <div class="phone-title">Account</div>
             <div class="pill-row">
-              <span class="pill">JSON</span>
-              <span class="pill green">XML</span>
-              <span class="pill amber">TAGLESS</span>
               <span class="pill">SKETCH</span>
+              <span class="pill green">JSON</span>
+              <span class="pill amber">compat</span>
             </div>
             <div class="phone-card">
               <strong>Profile</strong>
@@ -131,25 +133,20 @@
       <div class="section-head">
         <div>
           <p class="eyebrow">Live SKETCH demo</p>
-          <h2 id="live-sketch-title">Write XCON/SKETCH. See it render.</h2>
+          <h2 id="live-sketch-title">Load XCON/SKETCH. See it render.</h2>
         </div>
-        <p>LLMs speak SKETCH natively. Write or generate UI on the left - the viewer renders the same document model on the right, using only the packages shipped on this site.</p>
+        <p>The demo types a curated XCONBNB mobile screen in SKETCH. Each completed block is parsed and rendered immediately, so the interface builds up on the right as the source appears on the left.</p>
       </div>
       <div class="live-sketch-surface">
         <div class="live-sketch-editor" aria-label="Animated XCON/SKETCH code sample">
           <div class="live-sketch-panel-head">
-            <span>example.xcon.sketch</span>
+            <span id="liveSketchFileName">example.xcon.sketch</span>
             <span id="liveSketchStatus">typing...</span>
           </div>
-          <pre class="live-sketch-code"><code id="liveSketchCode"></code><span class="live-sketch-caret" aria-hidden="true"></span></pre>
+          <pre class="live-sketch-code"><code id="liveSketchCode"></code><span id="liveSketchCursor" class="live-sketch-caret" aria-hidden="true"></span></pre>
         </div>
         <div class="live-sketch-viewer" aria-label="Rendered XCON/SKETCH preview">
-          <div id="liveSketchPreview" class="live-sketch-preview">
-            <div class="live-sketch-fallback">
-              <strong>XCON/SKETCH</strong>
-              <span>Render Preview</span>
-            </div>
-          </div>
+          <div id="liveSketchPreview" class="live-sketch-preview" aria-live="polite"></div>
         </div>
       </div>
       <div class="actions live-sketch-actions">
@@ -161,25 +158,21 @@
 
     <section class="section">
       <div class="section-head">
-        <h2>One Screen. Four Syntaxes.</h2>
-        <p>LLMs write SKETCH. APIs consume JSON. Tools edit XML. All four syntaxes parse into the same XCON Object Model - so examples, conversion, validation, and rendering share one public contract.</p>
+        <h2>Write SKETCH. Ship JSON.</h2>
+        <p>Use SKETCH for Markdown and AI-generated drafts. Use JSON as the canonical structure for APIs, schemas, and tooling. XML and TAGLESS stay available for compatibility and round-trip checks.</p>
       </div>
       <div class="grid">
         <article class="card">
-          <h3>XCON/JSON</h3>
-          <p>Canonical structure for APIs, schema validation, and LLM generation.</p>
-        </article>
-        <article class="card">
-          <h3>XCON/XML</h3>
-          <p>Authoring syntax for UI tooling, comments, metadata, and round-trip editing.</p>
-        </article>
-        <article class="card">
-          <h3>XCON/TAGLESS</h3>
-          <p>Transport-friendly symbolic syntax with document-level marker selection.</p>
-        </article>
-        <article class="card">
           <h3>XCON/SKETCH</h3>
           <p>The format LLMs generate best. Compact Markdown authoring syntax for examples and AI-generated drafts.</p>
+        </article>
+        <article class="card">
+          <h3>XCON/JSON</h3>
+          <p>Canonical structure for APIs, schema validation, and interchange.</p>
+        </article>
+        <article class="card">
+          <h3>Compatibility Formats</h3>
+          <p>XML and TAGLESS are documented for conversion, tooling, and transport compatibility, but they are not the recommended starting point.</p>
         </article>
       </div>
     </section>
@@ -191,11 +184,43 @@
       </div>
       <div class="grid">
         <a class="card" href="/docs"><h3>Docs</h3><p>Guides, package references, and integration notes.</p></a>
-        <a class="card" href="/spec"><h3>Spec</h3><p>Object Model plus JSON, XML, TAGLESS, and SKETCH syntax rules.</p></a>
+        <a class="card" href="/spec"><h3>Spec</h3><p>Object Model plus SKETCH, JSON, XML, and TAGLESS syntax rules.</p></a>
         <a class="card" href="/examples"><h3>Examples</h3><p>Generated examples in all public syntax forms.</p></a>
         <a class="card" href="/api"><h3>API</h3><p>Core, viewer, CLI, framework wrappers, and plugins.</p></a>
         <a class="card" href="/security"><h3>Security</h3><p>Viewer-only boundary and blocked runtime features.</p></a>
         <a class="card" href="/llms.txt"><h3>LLM Index</h3><p>Machine-readable guidance for assistants and search systems.</p></a>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Companion Tools</h2>
+        <p>XCON Viewer stays focused on safe UI documents. Chain and Workflow are sibling projects for expression evaluation and action-flow design.</p>
+      </div>
+      <div class="grid">
+        <a class="card" href="/xcon-chain/"><h3>XCON Chain</h3><p>Public read-only expression playground for data lookup, formatting, sugar syntax, linting, and trace output.</p></a>
+        <a class="card" href="/xcon-workflow/"><h3>XCON Workflow</h3><p>Sketch, inspect, validate, and preview portable workflow/action documents as diagrams and dry-run plans.</p></a>
+        <a class="card" href="/template-lab"><h3>Template Studio</h3><p>Production-ready SKETCH + SUGAR studio for data-bound Markdown UI documents.</p></a>
+        <a class="card" href="/meta-lab"><h3>Meta Lab</h3><p>Experiment with path metadata that drives fixture binding, workflow generation, and SKETCH dashboards.</p></a>
+        <a class="card" href="/workflow-runner/diagram"><h3>Workflow Diagram Editor</h3><p>Author workflow diagrams and inspect the generated SKETCH + workflow source for executable flow documents.</p></a>
+        <a class="card" href="/workflow-runner/monitoring-sketch"><h3>SKETCH Workflow Monitor</h3><p>Run a live queue and scheduler simulation against a SKETCH monitoring dashboard.</p></a>
+        <a class="card" href="/workflow-runner/family-binding"><h3>XCON Family Binding</h3><p>See fixture, chain, workflow, and SKETCH work together while workflow replay updates only the data fixture.</p></a>
+        <a class="card" href="/workflow-runner/binding-lab"><h3>Binding Lab</h3><p>Paste Markdown/SKETCH, JSON fixture, and workflow source, then render and run them together.</p></a>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Demo</h2>
+        <p>See how XCON Viewer can present AI-generated UI documents, Markdown + SKETCH answers, and viral artifact-style experiences.</p>
+      </div>
+      <div class="grid">
+        <a class="card" href="/xcon-viewer-viral-demo-no-site-header.html"><h3>XCON Viewer Viral Demo</h3><p>A focused full-screen product demo without the site header, built to show XCON Viewer as an AI-native UI document renderer.</p></a>
+        <a class="card" href="/chatgpt-viral-demo-v2.html"><h3>ChatGPT-style XCON Demo</h3><p>A ChatGPT-style conversation where Markdown + XCON/SKETCH answers render polished inline artifacts.</p></a>
+        <a class="card" href="/claude-markdown-sketch-demo.html"><h3>Claude-style SKETCH Demo</h3><p>A Claude-style split interface that streams Raw SKETCH while the live visual document renders beside it.</p></a>
+        <a class="card" href="/chatgpt-simulation"><h3>ChatGPT Simulation</h3><p>Watch a Markdown answer stream an XCON fence into a live artifact preview.</p></a>
+        <a class="card" href="/chatgpt-markdown-sketch-simulation"><h3>Rendered Chat Simulation</h3><p>Watch Markdown + SKETCH stream as raw source while the chat renders the answer inline.</p></a>
+        <a class="card" href="/html-css-simulation"><h3>HTML/CSS Simulation</h3><p>Watch a Markdown answer stream HTML and CSS into a sandboxed artifact preview.</p></a>
       </div>
     </section>
 
@@ -217,24 +242,261 @@ npm install @xcon-viewer/markdown-it @xcon-viewer/remark @xcon-viewer/vite-plugi
     import { parseBySyntax } from '@xcon-viewer/core';
     import { render, viewerCss } from '@xcon-viewer/viewer';
 
-    const sample = `screen 360x220 bg #f8fafc
-
-title: label "XCON/SKETCH" at 24 24 312 36
-  font 24 800
-  align center
-
-cta: button "Render Preview" at 72 142 216 44
-  bg #db2777
-  color white
-  radius 12`;
+    const fullSampleUrl = '/examples/showcase/p_xconbnb_main.xcon.sketch';
+    const progressiveSketchBlocks = [
+      {
+        label: 'screen frame',
+        source: `screen "XCONBNB Main" 402x800 bg @surface
+  border
+    visible true
+    width 1
+    color @border
+    radius 28
+  scroll "none"
+`
+      },
+      {
+        label: 'top bar',
+        instant: true,
+        source: `  top: panel at 0 0 402 68
+    al
+      direction "row"
+      alignItems "center"
+      justifyContent "space-between"
+      padding "16px 20px 8px"
+    logo: label "xconbnb" at 0 0 160 32
+      color @accent
+      font
+        size 18
+        weight 800
+    toolbar: panel at 0 0 88 40
+      al
+        direction "row"
+        gap 8
+        alignItems "center"
+      b1: button at 0 0 40 40
+        icon
+          name "schedule"
+        bg @surface2
+        color @ink-3
+        border
+          visible true
+          color @border2
+          radius 20
+      b2: button at 0 0 40 40
+        icon
+          name "menu"
+        bg @surface2
+        color @ink-3
+        border
+          visible true
+          color @border2
+          radius 20
+`
+      },
+      {
+        label: 'search field',
+        source: `  search: textField "Where are you going?" at 20 76 362 48
+    bg @surface2
+    border
+      visible false
+      radius 24
+    prefix
+      icon "search"
+`
+      },
+      {
+        label: 'hero banner',
+        source: `  hero: banner at 20 138 362 228
+    bannerHeight "228px"
+    radius 20
+    indicator
+      show true
+`
+      },
+      {
+        label: 'hero slides',
+        instant: true,
+        source: `    slides [{"type":"image","src":"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80","objectFit":"fill","overlayTag":"LIVE","overlayTitle":"anywhere","overlaySub":"Millions of stays\\nare waiting for you.","overlayCta":"Explore"},{"type":"image","src":"https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200&q=80","objectFit":"fill","overlayTag":"HOST","overlayTitle":"earn","overlaySub":"Share your extra space\\nwith travelers.","overlayCta":"Become a host"}]
+`
+      },
+      {
+        label: 'CTA buttons',
+        source: `  cta: panel at 20 380 362 44
+    al
+      direction "row"
+      gap 10
+      alignItems "stretch"
+    primary: button "Get matched stays" at 0 0 176 44
+      bg @accent
+      color "#fff"
+      border
+        visible false
+        radius 10
+      al
+        flex "1 1 0"
+    secondary: button "View map" at 0 0 176 44
+      bg @surface
+      color @accent
+      border
+        visible true
+        color @accent
+        radius 10
+      al
+        flex "1 1 0"
+`
+      },
+      {
+        label: 'recent stays',
+        source: `  hR: panel at 20 440 362 28
+    al
+      direction "row"
+      alignItems "center"
+      justifyContent "space-between"
+    h2: label "Recently viewed" at 0 0 220 28
+      color @ink
+      font
+        size 16
+        weight 800
+    link: label "See all >" at 280 0 82 28
+      color @ink-2
+      align right
+      font
+        size 13
+        weight 600
+`
+      },
+      {
+        label: 'recent stays list',
+        source: `  xlStay: list at 20 480 362 172
+    backgroundColor @surface
+    direction "horizontal"
+    itemSize
+      width 156
+      height 172
+    separator
+      size 12
+      color transparent
+`
+      },
+      {
+        label: 'recent stays data',
+        instant: true,
+        source: `    dataTemplate {"type":"template","template":{"tabledata":[{"title":"Cozy studio","line":"Mapo · ₩89,000/night","image":"https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&q=80"},{"title":"Mountain-view house","line":"Gangwon · ₩210,000/night","image":"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&q=80"},{"title":"Forest cabin","line":"Jeju · ₩125,000/night","image":"https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&q=80"}]}}
+    templates {"cell":{"cover":{"type":"image","pos":[0,0,156,116],"src":"{{item.image}}","objectFit":"fill","border":{"radius":"8px"}},"titleT":{"type":"label","pos":[0,126,148,20],"text":"{{item.title}}","color":"28,23,16,255","font":{"size":"13","weight":"700"}},"subS":{"type":"label","pos":[0,149,148,18],"text":"{{item.line}}","color":"168,153,138,255","font":{"size":"11"}},"itemSize":{"height":"172","width":"156"}}}
+`
+      },
+      {
+        label: 'Where to next',
+        source: `  hC: label "Where to next?" at 20 662 220 28
+    color @ink
+    font
+      size 16
+      weight 800
+`
+      },
+      {
+        label: 'Where list',
+        source: `  xlStayCat: list at 20 696 362 78
+    backgroundColor @surface
+    direction "horizontal"
+    itemSize
+      width 72
+      height 78
+    separator
+      size 12
+      color @surface
+`
+      },
+      {
+        label: 'Where list data',
+        instant: true,
+        source: `    dataTemplate {"type":"template","template":{"tabledata":[{"label":"Beach","image":"https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=240&q=80"},{"label":"Cabins","image":"https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=240&q=80"},{"label":"Cities","image":"https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=240&q=80"},{"label":"Islands","image":"https://images.unsplash.com/photo-1500375592092-40eb2168fd21?w=240&q=80"}]}}
+    templates {"cell":{"avatar":{"type":"image","pos":[6,0,60,60],"src":"{{item.image}}","objectFit":"fill","border":{"radius":"30px"}},"lbl":{"type":"label","pos":[0,63,72,15],"text":"{{item.label}}","textAlign":"center","color":"168,153,138,255","font":{"size":"10","weight":"600"}},"itemSize":{"height":"78","width":"72"}}}
+`
+      },
+      {
+        label: 'bottom toolbar',
+        source: `  tabs: panel at 0 744 402 56
+    bg @surface
+    al
+      direction "row"
+      alignItems "stretch"
+      justifyContent "space-between"
+      padding "5px 12px"
+`
+      },
+      {
+        label: 'bottom toolbar homeTab',
+        source: `    homeTab: button "Home" at 0 0 64 46
+      icon
+        name "home"
+      layout "column"
+      bg transparent
+      color @accent
+      al
+        flex "1 1 0"
+`
+      },
+      {
+        label: 'bottom toolbar searchTab',
+        source: `    searchTab: button "Search" at 0 0 64 46
+      icon
+        name "search"
+      layout "column"
+      bg transparent
+      color @ink-3
+      al
+        flex "1 1 0"
+`
+      },
+      {
+        label: 'bottom toolbar saveTab',
+        source: `    saveTab: button "Saved" at 0 0 64 46
+      icon
+        name "favorite"
+      layout "column"
+      bg transparent
+      color @ink-3
+      al
+        flex "1 1 0"
+`
+      },
+      {
+        label: 'bottom toolbar messageTab',
+        source: `    messageTab: button "Messages" at 0 0 64 46
+      icon
+        name "chat"
+      layout "column"
+      bg transparent
+      color @ink-3
+      al
+        flex "1 1 0"
+`
+      },
+      {
+        label: 'bottom toolbar profileTab',
+        source: `    profileTab: button "Profile" at 0 0 64 46
+      icon
+        name "person"
+      layout "column"
+      bg transparent
+      color @ink-3
+      al
+        flex "1 1 0"
+`
+      }      
+    ];
 
     const code = document.getElementById('liveSketchCode');
+    const codeScroller = code.closest('.live-sketch-code');
+    const cursor = document.getElementById('liveSketchCursor');
     const preview = document.getElementById('liveSketchPreview');
     const status = document.getElementById('liveSketchStatus');
+    const fileName = document.getElementById('liveSketchFileName');
 
     ensureViewerStyle();
-    code.textContent = '';
-    typeSketch();
+    renderProgressiveSketchDemo();
 
     function ensureViewerStyle() {
       if (document.getElementById('xcon-viewer-style')) return;
@@ -244,47 +506,103 @@ cta: button "Render Preview" at 72 142 216 44
       document.head.appendChild(style);
     }
 
-    function typeSketch() {
-      let index = 0;
-      const typeDelayMs = 42;
-      const step = () => {
-        const next = sample.slice(0, index);
-        code.textContent = next;
-        renderSketch(next, 'typing...');
-        index += 1;
+    function renderProgressiveSketchDemo() {
+      fileName.textContent = 'xconbnb-progressive.xcon.sketch';
+      fileName.title = fullSampleUrl;
+      let blockIndex = 0;
+      let charIndex = 0;
+      let typedSource = '';
+      const typeDelayMs = 16;
+      const blockPauseMs = 520;
+      status.textContent = 'typing SKETCH...';
+      code.textContent = '';
 
-        if (index <= sample.length + 1) {
+      const step = () => {
+        const block = progressiveSketchBlocks[blockIndex];
+        if (block.instant) {
+          typedSource += block.source;
+          code.textContent = typedSource;
+          ensureLiveSketchCursorVisible();
+          renderCompleteBlocks(blockIndex + 1);
+          status.textContent = `rendered ${block.label}`;
+          blockIndex += 1;
+          charIndex = 0;
+
+          if (blockIndex < progressiveSketchBlocks.length) {
+            window.setTimeout(step, Math.floor(blockPauseMs / 2));
+            return;
+          }
+
+          status.textContent = 'rendered progressive SKETCH';
+          return;
+        }
+
+        typedSource += block.source.charAt(charIndex);
+        code.textContent = typedSource;
+        ensureLiveSketchCursorVisible();
+        charIndex += 1;
+
+        if (charIndex < block.source.length) {
           window.setTimeout(step, typeDelayMs);
           return;
         }
 
-        code.textContent = sample;
-        renderSketch(sample, 'rendered');
-        window.setTimeout(() => {
-          index = 0;
-          code.textContent = '';
-          renderSketch('', 'typing...');
-          window.setTimeout(step, 420);
-        }, 3600);
+        renderCompleteBlocks(blockIndex + 1);
+        status.textContent = `rendered ${block.label}`;
+        blockIndex += 1;
+        charIndex = 0;
+
+        if (blockIndex < progressiveSketchBlocks.length) {
+          window.setTimeout(step, blockPauseMs);
+          return;
+        }
+
+        code.textContent = typedSource;
+        ensureLiveSketchCursorVisible();
+        status.textContent = 'rendered progressive SKETCH';
       };
 
       step();
     }
 
-    function renderSketch(source, nextStatus) {
-      status.textContent = nextStatus;
-      if (!source.trim()) return;
+    function ensureLiveSketchCursorVisible() {
+      if (!codeScroller || !cursor) return;
+      const padding = 12;
+      const cursorTop = cursor.offsetTop;
+      const cursorBottom = cursorTop + cursor.offsetHeight;
+      const visibleTop = codeScroller.scrollTop;
+      const visibleBottom = visibleTop + codeScroller.clientHeight;
 
-      try {
-        const documentModel = parseBySyntax(source, 'sketch');
-        render(documentModel, preview, {
-          allowExternalResources: false,
-          allowHtml: false,
-        });
-        status.textContent = source === sample ? 'rendered' : nextStatus;
-      } catch {
-        status.textContent = nextStatus;
+      if (cursorBottom > visibleBottom - padding) {
+        codeScroller.scrollTop = cursorBottom - codeScroller.clientHeight + 12;
+      } else if (cursorTop < visibleTop + padding) {
+        codeScroller.scrollTop = Math.max(0, cursorTop - padding);
       }
+
+      const cursorLeft = cursor.offsetLeft;
+      const cursorRight = cursorLeft + cursor.offsetWidth;
+      const visibleLeft = codeScroller.scrollLeft;
+      const visibleRight = visibleLeft + codeScroller.clientWidth;
+
+      if (cursorRight > visibleRight - padding) {
+        codeScroller.scrollLeft = cursorRight - codeScroller.clientWidth + padding;
+      } else if (cursorLeft < visibleLeft + padding) {
+        codeScroller.scrollLeft = Math.max(0, cursorLeft - padding);
+      }
+    }
+
+    function renderCompleteBlocks(count) {
+      const source = progressiveSketchBlocks.slice(0, count).map((block) => block.source).join('');
+      const documentModel = parseBySyntax(source, 'sketch');
+      renderShowcase(documentModel);
+    }
+
+    function renderShowcase(documentModel) {
+      preview.classList.add('is-xconbnb-preview');
+      render(documentModel, preview, {
+        allowExternalResources: true,
+        allowHtml: false,
+      });
     }
   </script>
 </body>

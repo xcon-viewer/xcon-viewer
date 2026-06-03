@@ -15,7 +15,7 @@
         354,
         34
       ],
-      "text": "One screen. Three syntaxes.",
+      "text": "One screen. Four syntaxes.",
       "font": {
         "size": 22,
         "weight": 800
@@ -29,7 +29,7 @@
         354,
         96
       ],
-      "text": "JSON, XML, and TAGLESS parse into the same XCON Object Model."
+      "text": "SKETCH, JSON, XML, and TAGLESS parse into the same XCON Object Model."
     }
   }
 }

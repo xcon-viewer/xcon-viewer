@@ -1,0 +1,31 @@
+<Panel border="visible:true; width:1; color:var(--border); radius:10" shadow="visible:true; opacity:0.08; blur:6" pos="0,0,560,32" al="autoHeight:true; gap:18px; padding:14px 16px" componentsOrder="hdr,ex1,ex2,ex3,ex4,ex5,ex6,ex7">
+  <Label name="hdr" text="Extended · slider" pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+  <Panel name="ex1" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="cap,c">
+    <Label name="cap" text="Full showcase" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" labelPadding="0 0 10px 0" style="letter-spacing:0.4px;text-transform:uppercase;" />
+    <Slider name="c" pos="0,0,560,220" extVariant="showcase" min="0" max="100" value="62" showValue="true" al="width:100%; alignSelf:stretch" />
+  </Panel>
+  <Panel name="ex2" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="cap,c">
+    <Label name="cap" text="Default (value + ticks)" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" labelPadding="16px 0 10px 0" style="letter-spacing:0.4px;text-transform:uppercase;" />
+    <Slider name="c" pos="0,0,560,120" min="0" max="100" step="1" value="62" showValue="true" al="width:100%; alignSelf:stretch" showLabels="true" />
+  </Panel>
+  <Panel name="ex3" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="cap,c">
+    <Label name="cap" text="Label + slider" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" labelPadding="16px 0 10px 0" style="letter-spacing:0.4px;text-transform:uppercase;" />
+    <Slider name="c" pos="0,0,560,132" min="0" max="100" value="72" showValue="true" al="width:100%; alignSelf:stretch" label="Brightness" />
+  </Panel>
+  <Panel name="ex4" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="cap,c">
+    <Label name="cap" text="Value hidden (showValue false)" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" labelPadding="16px 0 10px 0" style="letter-spacing:0.4px;text-transform:uppercase;" />
+    <Slider name="c" pos="0,0,560,88" min="0" max="100" value="40" showValue="false" al="width:100%; alignSelf:stretch" label="Volume" />
+  </Panel>
+  <Panel name="ex5" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="cap,c">
+    <Label name="cap" text="Bottom ticks hidden" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" labelPadding="16px 0 10px 0" style="letter-spacing:0.4px;text-transform:uppercase;" />
+    <Slider name="c" pos="0,0,560,100" min="0" max="100" value="55" showValue="true" al="width:100%; alignSelf:stretch" showLabels="false" />
+  </Panel>
+  <Panel name="ex6" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="cap,c">
+    <Label name="cap" text="Range 0-10 (step 1)" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" labelPadding="16px 0 10px 0" style="letter-spacing:0.4px;text-transform:uppercase;" />
+    <Slider name="c" pos="0,0,560,120" min="0" max="10" step="1" value="7" showValue="true" al="width:100%; alignSelf:stretch" />
+  </Panel>
+  <Panel name="ex7" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="cap,c">
+    <Label name="cap" text="step 5 · max 100" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" labelPadding="16px 0 10px 0" style="letter-spacing:0.4px;text-transform:uppercase;" />
+    <Slider name="c" pos="0,0,560,120" min="0" max="100" step="5" value="50" showValue="true" al="width:100%; alignSelf:stretch" />
+  </Panel>
+</Panel>

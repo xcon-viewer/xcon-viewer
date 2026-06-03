@@ -1155,6 +1155,7 @@ describe('converter, validator, and path utilities', () => {
         code: { type: 'codeEditor', mode: 'javascript' },
         rich: { type: 'richEditor', theme: 'snow' },
         viz: { type: 'dataViz', vizType: 'bar' },
+        spanGrid: { type: 'spanGrid', data: [['Name', 'Status'], ['XCON', 'Ready']] },
         flipbook: { type: 'flipbook', pages: 2 },
         network: { type: 'networkDiagram', nodes: [] },
         map: { type: 'map', latitude: 37.5665, longitude: 126.978 },

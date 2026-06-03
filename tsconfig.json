@@ -15,6 +15,7 @@
   "references": [
     { "path": "./packages/core" },
     { "path": "./packages/viewer" },
+    { "path": "./packages/document-importer" },
     { "path": "./packages/cli" },
     { "path": "./packages/react" },
     { "path": "./packages/vue" },

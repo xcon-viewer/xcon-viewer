@@ -1,0 +1,26 @@
+screen 402x620
+  alert: alert at 24 32 354 72
+    severity "success"
+    title "Saved"
+    message "The document was saved."
+  progress: progressBar at 24 124 300 24
+    label "Progress"
+    value 72
+    max 100
+  spinner: spinner at 340 116 32 32
+    variant "border"
+    color "#2563EB"
+  rating: rating at 24 176 180 32
+    value 4
+    max 5
+    icons
+      filled "★"
+      empty "☆"
+  tooltip: tooltip at 24 228 160 32
+    text "Helpful hint"
+    position "top"
+    trigger "hover"
+  modal: modal at 24 288 354 180
+    title "Confirm"
+    text "Continue with this action?"
+    backdropClose true

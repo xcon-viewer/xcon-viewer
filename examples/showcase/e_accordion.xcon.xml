@@ -1,0 +1,26 @@
+<Panel border="visible:true; width:1; color:var(--border); radius:10" shadow="visible:true; opacity:0.08; blur:6" pos="0,0,560,32" al="autoHeight:true; gap:18px; padding:14px 16px" componentsOrder="hdr,ex1,ex2,ex3">
+  <Label name="hdr" text="Extended · accordion" pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+  <Panel name="ex1" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="cap,c">
+    <Label name="cap" text="Full showcase" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" labelPadding="0 0 10px 0" style="letter-spacing:0.4px;text-transform:uppercase;" />
+    <Accordion name="c" pos="0,0,560,400" extVariant="showcase" al="width:100%; alignSelf:stretch" />
+  </Panel>
+  <Panel name="ex2" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="cap,c">
+    <Label name="cap" text="Data-driven · single open item" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" labelPadding="16px 0 10px 0" style="letter-spacing:0.4px;text-transform:uppercase;" />
+    <Accordion name="c" pos="0,0,560,280" multiple="false" defaultOpen="[0]" al="width:100%; alignSelf:stretch">
+      <Items>
+        <Value json="{&quot;title&quot;:&quot;First&quot;,&quot;content&quot;:&quot;First panel content.&quot;}" />
+        <Value json="{&quot;title&quot;:&quot;Second&quot;,&quot;content&quot;:&quot;Second panel content.&quot;}" />
+        <Value json="{&quot;title&quot;:&quot;Third&quot;,&quot;content&quot;:&quot;Third panel content.&quot;}" />
+      </Items>
+    </Accordion>
+  </Panel>
+  <Panel name="ex3" border="visible:false; width:1; color:var(--border); radius:10" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="cap,c">
+    <Label name="cap" text="multiple open" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" labelPadding="16px 0 10px 0" style="letter-spacing:0.4px;text-transform:uppercase;" />
+    <Accordion name="c" pos="0,0,560,260" multiple="true" defaultOpen="[0,1]" al="width:100%; alignSelf:stretch">
+      <Items>
+        <Value json="{&quot;title&quot;:&quot;A&quot;,&quot;content&quot;:&quot;Content A&quot;}" />
+        <Value json="{&quot;title&quot;:&quot;B&quot;,&quot;content&quot;:&quot;Content B&quot;}" />
+      </Items>
+    </Accordion>
+  </Panel>
+</Panel>

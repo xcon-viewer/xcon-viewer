@@ -109,6 +109,7 @@ describe('XCON JSON schema', () => {
       'codeEditor',
       'richEditor',
       'dataViz',
+      'spanGrid',
       'flipbook',
       'networkDiagram',
       'map',

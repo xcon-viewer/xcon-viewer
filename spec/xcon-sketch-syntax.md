@@ -1,11 +1,11 @@
 # XCON/SKETCH Syntax
 
-XCON/SKETCH is a compact authoring syntax for Markdown, examples, and LLM-generated drafts. It is not a separate runtime model. SKETCH parses into the same XCON Object Model used by XCON/JSON, XCON/XML, and XCON/TAGLESS, and the converter can serialize existing XCON documents back to SKETCH.
+XCON/SKETCH is the preferred compact authoring syntax for Markdown, examples, and LLM-generated drafts. It is not a separate runtime model. SKETCH parses into the same XCON Object Model used by XCON/JSON, XCON/XML, and XCON/TAGLESS, and the converter can serialize existing XCON documents back to SKETCH.
 
 ## Goals
 
 - Keep common UI sketches short enough to write by hand.
-- Preserve named component structure for JSON/XML/TAGLESS round trips.
+- Preserve named component structure for SKETCH/JSON/XML/TAGLESS round trips.
 - Prefer readable primitives, blocks, and shorthands over verbose JSON.
 - Allow full XCON properties when a component needs details that SKETCH does not shorthand.
 
@@ -308,7 +308,7 @@ screen 402x800
 SKETCH participates in the same normalized conversion pipeline:
 
 ```text
-XCON/JSON -> XCON/XML -> XCON/TAGLESS -> XCON/SKETCH -> XCON Object Model
+XCON/SKETCH -> XCON/JSON -> XCON/XML -> XCON/TAGLESS -> XCON Object Model
 ```
 
-When exact machine-level preservation is more important than readability, use XCON/JSON or machine XCON/XML. SKETCH is optimized for readable authoring and review.
+When exact machine-level preservation is more important than readability, use XCON/JSON. XML and TAGLESS are compatibility targets for tools and transport. SKETCH is optimized for readable authoring and review.

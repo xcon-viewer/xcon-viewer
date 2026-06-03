@@ -1,0 +1,62 @@
+<Panel border="visible:true; width:1; color:var(--border); radius:10" shadow="opacity:0.08; blur:6" pos="0,0,560,32" al="autoHeight:true; gap:10px; padding:14px 16px" componentsOrder="hdr,h02a,c02a,h02b,c02b">
+  <Label name="hdr" text="02 · Button" pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+  <Label name="h02a" text="button · styles &amp; states (#02-A)" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" />
+  <Panel name="c02a" border="visible:false; width:1; color:var(--border); radius:0" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:14px; padding:0" componentsOrder="hdr,pv,sem,sz,st">
+    <Label name="hdr" text=" " pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+    <Panel name="pv" border="visible:true; width:1; color:var(--border); radius:8" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:6px 0; direction:row; alignItems:center" componentsOrder="p1,p2,p3,p4">
+      <Button name="p1" label="Get Started" pos="0,0,128,40" font="size:13; weight:600" border="visible:false; radius:8" backgroundColor="var(--accent)" color="#ffffff" />
+      <Button name="p2" label="Learn More" pos="0,0,128,40" font="size:13; weight:600" border="visible:true; color:var(--border); radius:8" backgroundColor="var(--surface2)" color="var(--ink)" />
+      <Button name="p3" label="Cancel" pos="0,0,100,40" font="size:13; weight:600" border="visible:true; radius:8" backgroundColor="transparent" color="var(--ink-2)" />
+      <Button name="p4" label="Download" pos="0,0,112,40" font="size:13; weight:600" border="visible:false; radius:8" backgroundColor="28,23,16,255" color="#f7f4ef" />
+    </Panel>
+    <Panel name="sem" border="visible:true; width:1; color:var(--border); radius:8" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:6px 0; direction:row; alignItems:center" componentsOrder="s1,s2,s3">
+      <Button name="s1" label="Approve" pos="0,0,132,40" font="size:13; weight:600" border="visible:false; radius:8" backgroundColor="var(--green)" color="#fff" icon="name:check" />
+      <Button name="s2" label="Delete" pos="0,0,124,40" font="size:13; weight:600" border="visible:false; radius:8" backgroundColor="var(--red)" color="#fff" icon="name:delete" />
+      <Button name="s3" label="Info" pos="0,0,108,40" font="size:13; weight:600" border="visible:false; radius:8" backgroundColor="var(--blue)" color="#fff" icon="name:info" />
+    </Panel>
+    <Panel name="sz" border="visible:true; width:1; color:var(--border); radius:8" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:6px 0; direction:row; alignItems:center" componentsOrder="z1,z2,z3,z4">
+      <Button name="z1" label="Tiny" pos="0,0,72,30" font="size:11; weight:600" border="visible:false; radius:6" backgroundColor="var(--accent)" color="#fff" />
+      <Button name="z2" label="Small" pos="0,0,88,34" font="size:12; weight:600" border="visible:false; radius:7" backgroundColor="var(--accent)" color="#fff" />
+      <Button name="z3" label="Medium" pos="0,0,104,40" font="size:13; weight:600" border="visible:false; radius:8" backgroundColor="var(--accent)" color="#fff" />
+      <Button name="z4" label="Large" pos="0,0,120,46" font="size:14; weight:600" border="visible:false; radius:9" backgroundColor="var(--accent)" color="#fff" />
+    </Panel>
+    <Panel name="st" border="visible:true; width:1; color:var(--border); radius:8" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:6px 0; direction:row; alignItems:center" componentsOrder="n,ld,ds">
+      <Button name="n" label="Normal" pos="0,0,112,40" font="size:13; weight:600" border="visible:false; radius:8" backgroundColor="var(--accent)" color="#fff" />
+      <Button name="ld" label="Loading…" pos="0,0,120,40" font="size:13; weight:600" border="visible:false; radius:8" backgroundColor="var(--accent)" color="#fff" loading="true" />
+      <Button name="ds" label="Disabled" pos="0,0,112,40" font="size:13; weight:600" border="visible:false; radius:8" backgroundColor="var(--accent)" color="#fff" enabled="false" />
+    </Panel>
+  </Panel>
+  <Label name="h02b" text="button · advanced patterns (#02-B)" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" />
+  <Panel name="c02b" border="visible:false; width:1; color:var(--border); radius:0" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:16px; padding:0" componentsOrder="hdr,ic,ico,gf,fl">
+    <Label name="hdr" text=" " pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+    <Panel name="ic" border="visible:true; width:1; color:var(--border); radius:8" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:6px 0; direction:row; alignItems:center" componentsOrder="i1,i2,i3">
+      <Button name="i1" label="New Project" pos="0,0,140,40" font="size:13" border="visible:false; radius:8" backgroundColor="var(--accent)" color="#fff" icon="name:add" />
+      <Button name="i2" label="Export" pos="0,0,120,40" font="size:13" border="visible:true; color:var(--border); radius:8" backgroundColor="var(--surface2)" color="var(--ink)" icon="name:file_download" />
+      <Button name="i3" label="Search" pos="0,0,112,40" font="size:13" border="visible:false; radius:8" backgroundColor="transparent" color="var(--ink-2)" icon="name:search" />
+    </Panel>
+    <Panel name="ico" border="visible:true; width:1; color:var(--border); radius:8" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:6px 0; direction:row; alignItems:center" componentsOrder="o1,o2,o3,o4">
+      <Button name="o1" label="" pos="0,0,44,44" border="visible:true; color:var(--border); radius:22" backgroundColor="var(--surface2)" color="var(--accent)" icon="name:favorite" />
+      <Button name="o2" label="" pos="0,0,44,44" border="visible:true; color:var(--border); radius:22" backgroundColor="var(--surface2)" color="var(--ink)" icon="name:share" />
+      <Button name="o3" label="" pos="0,0,44,44" border="visible:true; color:var(--border); radius:22" backgroundColor="var(--surface2)" color="var(--ink)" icon="name:edit" />
+      <Button name="o4" label="" pos="0,0,44,44" border="visible:false; radius:22" backgroundColor="var(--red)" color="#fff" icon="name:delete" />
+    </Panel>
+    <Panel name="gf" border="visible:false; width:1; color:var(--border); radius:0" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:12px; padding:0" componentsOrder="hdr,grp,spl">
+      <Label name="hdr" text="Button Group &amp; Split" pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+      <Panel name="grp" border="visible:true; width:1; color:var(--border); radius:8" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:0; padding:6px 0; direction:row; alignItems:center" componentsOrder="g1,g2,g3,g4">
+        <Button name="g1" label="Day" pos="0,0,64,32" font="size:12" border="visible:true; color:var(--border); radius:6" backgroundColor="var(--surface2)" color="var(--ink)" segment="first" />
+        <Button name="g2" label="Week" pos="0,0,72,32" font="size:12" border="visible:false; radius:6" backgroundColor="var(--accent)" color="#fff" segment="middle" />
+        <Button name="g3" label="Month" pos="0,0,72,32" font="size:12" border="visible:true; color:var(--border); radius:6" backgroundColor="var(--surface2)" color="var(--ink)" segment="middle" />
+        <Button name="g4" label="Year" pos="0,0,68,32" font="size:12" border="visible:true; color:var(--border); radius:6" backgroundColor="var(--surface2)" color="var(--ink)" segment="last" />
+      </Panel>
+      <Panel name="spl" border="visible:true; width:1; color:var(--border); radius:8" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:0; padding:6px 0; direction:row; alignItems:center" componentsOrder="d1,d2">
+        <Button name="d1" label="Deploy" pos="0,0,160,40" font="size:13" border="visible:false; radius:8" backgroundColor="var(--accent)" color="#fff" split="main" icon="name:cloud_download" />
+        <Button name="d2" label="▾" pos="0,0,44,40" font="size:14" border="visible:false; radius:8" backgroundColor="var(--accent)" color="#fff" split="caret" />
+      </Panel>
+    </Panel>
+    <Panel name="fl" border="visible:false; width:1; color:var(--border); radius:0" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:10px; padding:0; alignItems:stretch" componentsOrder="hdr,fw,lk">
+      <Label name="hdr" text="Full Width &amp; Link" pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+      <Button name="fw" label="Continue to Checkout →" pos="0,0,520,48" font="size:15; weight:600" border="visible:false; radius:10" backgroundColor="var(--accent)" color="#fff" al="alignSelf:stretch; width:100%" />
+      <Button name="lk" label="Already have an account? Sign in" pos="0,0,360,36" font="size:13; weight:600" border="visible:false; radius:6" backgroundColor="transparent" color="var(--accent)" appearance="link" />
+    </Panel>
+  </Panel>
+</Panel>

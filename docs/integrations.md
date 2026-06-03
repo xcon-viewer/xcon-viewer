@@ -55,7 +55,7 @@ md.use(xconMarkdownIt, {
 const html = md.render(markdownSource);
 ```
 
-Supported fences: `xcon`, `xcon-json`, `xconj`, `xcon-xml`, `xconx`, `xcon-tagless`, `xconl`, `xcont`, `xcon-sketch`, and `xcons`.
+Supported fences: `xcon-sketch`, `xcons`, `xcon`, `xcon-json`, `xconj`, `xcon-xml`, `xconx`, `xcon-tagless`, `xconl`, and `xcont`.
 
 ```text
 screen 360x220 bg #f8fafc
@@ -115,14 +115,14 @@ export default {
 import document, { source, html } from './screen.xcon.json';
 ```
 
-The plugin supports `.xcon`, `.xcon.xml`, `.xcon.json`, `.xcon.sketch`, and `.xcons`.
+The plugin supports `.xcon.sketch`, `.xcons`, `.xcon.json`, `.xcon.xml`, `.xcon`, and TAGLESS marker aliases.
 
 ## GitHub Action
 
 ```yaml
 steps:
   - uses: actions/checkout@v6
-  - uses: xcon-viewer/xcon-viewer/packages/github-action@v0.1.0
+  - uses: xcon-viewer/xcon-viewer/packages/github-action@v0.1.6
     with:
       files: README.md,docs
       out-dir: xcon-rendered
@@ -130,3 +130,4 @@ steps:
 ```
 
 The action scans Markdown files for XCON fences and writes rendered HTML artifacts.
+

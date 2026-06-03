@@ -33,7 +33,7 @@ Rules:
 
 - `type` is required on every renderable component.
 - `components` is an ordered dictionary. Use `componentsOrder` when visual order must be stable.
-- Child components should include `name` when a JSON -> XML -> TAGLESS round trip must preserve stable keys.
+- Child components should include `name` when a SKETCH -> JSON -> XML -> TAGLESS round trip must preserve stable keys.
 - Unknown properties are preserved as data, but public examples should prefer the documented names below.
 - Use `@token` for theme tokens, for example `@surface`, `@ink`, `@border`, and `@accent`.
 
@@ -153,8 +153,9 @@ Rules:
 | `treeView` | Tree-style data view. |
 | `chart` | Static chart container. |
 | `dataViz` | Data visualization container. |
+| `spanGrid` | Spreadsheet-like data grid preview. Public rendering is read-only by default. |
 | `networkDiagram` | Network graph visualization. |
-| `map` | Map container. |
+| `map` | Read-only static map container. Use `snapshotUrl` for an actual map image snapshot and `markers` for marker overlays; without `snapshotUrl`, the viewer renders a generated schematic fallback. |
 | `calendar` | Calendar container. |
 | `qrCode` | QR code display. |
 | `barcode` | Barcode display. |

@@ -1,0 +1,67 @@
+<Panel border="visible:true; width:1; color:var(--border); radius:10" shadow="opacity:0.08; blur:6" pos="0,0,560,32" al="autoHeight:true; gap:10px; padding:14px 16px" componentsOrder="hdr,typo,subTag,tagRow,formBlock,edBlock,tipNote,ctx">
+  <Label name="hdr" text="01 · Label" pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+  <Panel name="typo" border="visible:false; width:1; color:var(--border); radius:0" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0" componentsOrder="hdr,a,b,c,d,e">
+    <Label name="hdr" text="Typography Scale" pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+    <Label name="a" text="Caption · Extra Small" pos="0,0,560,28" font="size:10" textAlign="left" color="var(--ink-3)" />
+    <Label name="b" text="Subtext · Small" pos="0,0,560,28" font="size:12" textAlign="left" color="var(--ink-2)" />
+    <Label name="c" text="Body Label · Medium" pos="0,0,560,28" font="size:14; weight:500" textAlign="left" color="var(--ink)" />
+    <Label name="d" text="Section Title · Large" pos="0,0,560,28" font="size:18; weight:600" textAlign="left" color="var(--ink)" />
+    <Label name="e" text="Display · Extra Large" pos="0,0,560,28" font="family:&apos;Playfair Display&apos;, serif; size:24; weight:700" textAlign="left" color="var(--ink)" />
+  </Panel>
+  <Label name="subTag" text="Status Tags" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" />
+  <Panel name="tagRow" border="visible:true; width:1; color:var(--border); radius:8" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:4px 0; direction:row" componentsOrder="t1,t2,t3,t4,t5">
+    <Label name="t1" text="New" pos="0,0,560,28" font="size:11; weight:600" textAlign="left" backgroundColor="var(--blue-lt)" color="var(--blue)" labelPadding="3px 10px" border="visible:true; width:1px; color:rgba(43,95,160,0.2); radius:4px" prefixDot="true" al="alignSelf:flex-start; width:auto" />
+    <Label name="t2" text="Sale" pos="0,0,560,28" font="size:11; weight:600" textAlign="left" backgroundColor="var(--red-lt)" color="var(--red)" labelPadding="3px 10px" border="visible:true; width:1px; color:rgba(192,58,43,0.2); radius:4px" prefixDot="true" al="alignSelf:flex-start; width:auto" />
+    <Label name="t3" text="Live" pos="0,0,560,28" font="size:11; weight:600" textAlign="left" backgroundColor="var(--green-lt)" color="var(--green)" labelPadding="3px 10px" border="visible:true; width:1px; color:rgba(45,125,79,0.2); radius:4px" prefixDot="true" al="alignSelf:flex-start; width:auto" />
+    <Label name="t4" text="Draft" pos="0,0,560,28" font="size:11; weight:600" textAlign="left" backgroundColor="var(--yellow-lt)" color="var(--yellow)" labelPadding="3px 10px" border="visible:true; width:1px; color:rgba(176,125,18,0.2); radius:4px" prefixDot="true" al="alignSelf:flex-start; width:auto" />
+    <Label name="t5" text="Featured" pos="0,0,560,28" font="size:11; weight:600" textAlign="left" backgroundColor="var(--accent-lt)" color="var(--accent)" labelPadding="3px 10px" border="visible:true; width:1px; color:var(--border2); radius:4px" al="alignSelf:flex-start; width:auto" />
+  </Panel>
+  <Panel name="formBlock" border="visible:false; width:1; color:var(--border); radius:0" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:6px; padding:0" componentsOrder="hdr,em,mock,hint">
+    <Label name="hdr" text="Form Field Labels" pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+    <Label name="em" text="Email Address" pos="0,0,560,28" font="size:12; weight:600" textAlign="left" color="var(--ink-2)" suffixTextColor="var(--red)" suffix="text:*" />
+    <Label name="mock" text=" " pos="0,0,280,36" textAlign="left" backgroundColor="var(--bg2)" labelPadding="8px 10px" border="visible:true; width:1px; color:var(--border2); radius:6px" />
+    <Label name="hint" text="We&apos;ll never share your email with anyone." pos="0,0,560,28" font="size:11" textAlign="left" color="var(--ink-3)" />
+  </Panel>
+  <Label name="edBlock" text="Editor&apos;s Pick" pos="0,0,560,28" font="family:&apos;Playfair Display&apos;, serif; size:13; italic:true" textAlign="left" color="var(--accent)" editorialBar="true" />
+  <Panel name="tipNote" border="visible:true; width:1; color:var(--border); radius:8" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:4px 0; direction:row; alignItems:center" componentsOrder="hov,api">
+    <Label name="hov" text="Hover for info" pos="0,0,560,28" font="size:12" textAlign="left" color="var(--ink-2)" />
+    <Label name="api" text="API Rate Limit — tooltip UI in HTML demo · AL expresses it with label + text" pos="0,0,560,28" font="size:12; weight:600" textAlign="left" color="var(--accent)" />
+  </Panel>
+  <Panel name="ctx" border="visible:false; width:1; color:var(--border); radius:0" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:10px; padding:0" componentsOrder="hdr,hCtx,grid2,hBread,breadRow,kbdLine,hProg,progRow,progTrack">
+    <Label name="hdr" text="label · contextual (#01-B)" pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+    <Label name="hCtx" text="Data Display Labels" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" />
+    <Panel name="grid2" border="visible:false; width:1; color:var(--border); radius:0" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:12px; padding:0; direction:row; alignItems:flex-start" componentsOrder="colL,colR">
+      <Panel name="colL" border="visible:false; width:1; color:var(--border); radius:0" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:4px; padding:0; flex:1 1 0" componentsOrder="hdr,r1,r2,r3">
+        <Label name="hdr" text=" " pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+        <Label name="r1" text="Revenue" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" />
+        <Label name="r2" text="₩12.4M" pos="0,0,560,28" font="family:&apos;Playfair Display&apos;, serif; size:26; weight:700" textAlign="left" color="var(--ink)" />
+        <Label name="r3" text="▲ +18.2% vs last month" pos="0,0,560,28" font="size:11; weight:600" textAlign="left" color="var(--green)" />
+      </Panel>
+      <Panel name="colR" border="visible:false; width:1; color:var(--border); radius:0" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:4px; padding:0; flex:1 1 0" componentsOrder="hdr,u1,u2,u3">
+        <Label name="hdr" text=" " pos="0,0,560,28" font="size:11; weight:bold" textAlign="left" />
+        <Label name="u1" text="Users" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" color="var(--ink-3)" />
+        <Label name="u2" text="84,310" pos="0,0,560,28" font="family:&apos;Playfair Display&apos;, serif; size:26; weight:700" textAlign="left" color="var(--ink)" />
+        <Label name="u3" text="▼ -3.1% vs last month" pos="0,0,560,28" font="size:11; weight:600" textAlign="left" color="var(--red)" />
+      </Panel>
+    </Panel>
+    <Label name="hBread" text="Navigation Breadcrumb" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" />
+    <Panel name="breadRow" border="visible:false; width:1; color:var(--border); radius:0" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:6px; padding:4px 0; direction:row; alignItems:center" componentsOrder="p1,p2,p3,p4,p5,p6,p7">
+      <Label name="p1" text="Home" pos="0,0,560,28" font="size:12" textAlign="left" color="var(--accent)" />
+      <Label name="p2" text="/" pos="0,0,560,28" font="size:12" textAlign="left" color="var(--ink-3)" />
+      <Label name="p3" text="Products" pos="0,0,560,28" font="size:12" textAlign="left" color="var(--accent)" />
+      <Label name="p4" text="/" pos="0,0,560,28" font="size:12" textAlign="left" color="var(--ink-3)" />
+      <Label name="p5" text="Components" pos="0,0,560,28" font="size:12" textAlign="left" color="var(--accent)" />
+      <Label name="p6" text="/" pos="0,0,560,28" font="size:12" textAlign="left" color="var(--ink-3)" />
+      <Label name="p7" text="Label" pos="0,0,560,28" font="size:12; weight:600" textAlign="left" color="var(--ink)" />
+    </Panel>
+    <Label name="kbdLine" text="Press ⌘K to open search. Use data-id attribute for targeting (replacement sentence for HTML #01-B inline code/kbd)." pos="0,0,560,28" font="size:13" textAlign="left" color="var(--ink-2)" />
+    <Label name="hProg" text="Progress label" pos="0,0,560,28" font="size:10; weight:600" textAlign="left" />
+    <Panel name="progRow" border="visible:false; width:1; color:var(--border); radius:0" shadow="visible:false" pos="0,0,560,32" al="autoHeight:true; gap:8px; padding:0; direction:row; alignItems:center; justifyContent:space-between" componentsOrder="pl,pr">
+      <Label name="pl" text="Profile Completion" pos="0,0,560,28" font="size:12; weight:600" textAlign="left" color="var(--ink-2)" />
+      <Label name="pr" text="72%" pos="0,0,560,28" font="size:12; weight:700" textAlign="left" color="var(--accent)" />
+    </Panel>
+    <Panel name="progTrack" pos="0,0,560,10" border="visible:false; radius:4" backgroundColor="239, 231, 220, 255" al="autoHeight:true; gap:0; padding:0; direction:row; alignItems:stretch" componentsOrder="bar">
+      <Label name="bar" text=" " pos="0,0,400,10" backgroundColor="var(--accent)" al="width:72%; alignSelf:stretch" border="radius:4" />
+    </Panel>
+  </Panel>
+</Panel>

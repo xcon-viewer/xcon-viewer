@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability report
+    url: https://github.com/xcon-viewer/xcon-viewer/security/policy
+    about: Please report suspected vulnerabilities privately. Do not open public security issues.
+  - name: Questions and design discussion
+    url: https://github.com/xcon-viewer/xcon-viewer/discussions
+    about: Use Discussions for questions, ideas, syntax design discussion, and showcase posts.
+  - name: XCON Viewer documentation site
+    url: https://xconviewer.dev/docs
+    about: Read the public documentation before opening a support or usage question.

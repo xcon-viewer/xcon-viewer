@@ -1,6 +1,6 @@
 # XCON/JSON Syntax
 
-XCON/JSON is the canonical authoring and interchange syntax for public XCON. Use it for API integration, schema validation, tests, examples, and LLM generation.
+XCON/JSON is the canonical structured interchange syntax for public XCON. Use it for API integration, schema validation, tests, and machine-readable examples. Use XCON/SKETCH first for Markdown and LLM-authored UI drafts.
 
 ## Rules
 

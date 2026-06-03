@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://xconviewer.dev/xcon.schema.json",
   "title": "XCON Document",
-  "description": "Public viewer-only XCON/JSON schema for declarative UI documents. It covers renderable component documents and nested data for XCON/JSON, XCON/XML, XCON/TAGLESS, and XCON/SKETCH conversion.",
+  "description": "Public viewer-only XCON/JSON schema for declarative UI documents. It covers renderable component documents and nested data for XCON/SKETCH, XCON/JSON, XCON/XML, and XCON/TAGLESS conversion.",
   "type": "object",
   "allOf": [
     {
@@ -489,6 +489,7 @@
         "shape",
         "slider",
         "spacer",
+        "spanGrid",
         "spinner",
         "stack",
         "switch",
@@ -858,6 +859,39 @@
         },
         "data": {},
         "dataTemplate": {},
+        "merges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/safeObject"
+          }
+        },
+        "mergeCells": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/safeObject"
+          }
+        },
+        "spans": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/safeObject"
+          }
+        },
+        "fixed": {
+          "$ref": "#/definitions/safeObject"
+        },
+        "fixedRows": {
+          "type": "number"
+        },
+        "fixedColumns": {
+          "type": "number"
+        },
+        "fixedRowCount": {
+          "type": "number"
+        },
+        "fixedColumnCount": {
+          "type": "number"
+        },
         "src": {
           "type": "string"
         },
@@ -980,6 +1014,9 @@
           "oneOf": [
             {
               "type": "number"
+            },
+            {
+              "type": "array"
             },
             {
               "type": "null"
@@ -1108,7 +1145,14 @@
           "$ref": "#/definitions/stringOrNumber"
         },
         "columns": {
-          "$ref": "#/definitions/stringOrNumber"
+          "oneOf": [
+            {
+              "$ref": "#/definitions/stringOrNumber"
+            },
+            {
+              "type": "array"
+            }
+          ]
         },
         "responsive": {
           "type": "boolean"
@@ -1446,6 +1490,33 @@
           "type": "number"
         },
         "tileLayer": {
+          "type": "string"
+        },
+        "snapshotUrl": {
+          "type": "string"
+        },
+        "snapshotAlt": {
+          "type": "string"
+        },
+        "snapshotFit": {
+          "type": "string"
+        },
+        "snapshotPosition": {
+          "type": "string"
+        },
+        "staticImage": {
+          "type": "string"
+        },
+        "mapImage": {
+          "type": "string"
+        },
+        "objectFit": {
+          "type": "string"
+        },
+        "objectPosition": {
+          "type": "string"
+        },
+        "attribution": {
           "type": "string"
         },
         "markers": {

@@ -2655,6 +2655,21 @@ describe('viewer security renderer', () => {
     expect(html).not.toContain('justify-content:center');
   });
 
+  test('honors explicit label vertical alignment from SKETCH valign aliases', () => {
+    const html = renderToHtml({
+      type: 'label',
+      text: 'Bottom aligned label',
+      pos: [0, 0, 240, 80],
+      textAlign: 'center',
+      textVerticalAlign: 'bottom',
+    });
+
+    expect(html).toContain('class="xa-al-label"');
+    expect(html).toContain('justify-content:flex-end');
+    expect(html).toContain('align-items:flex-end');
+    expect(html).toContain('justify-content:center');
+  });
+
   test('collapses generated blank label headers without dropping visual spacer labels', () => {
     const html = renderToHtml({
       type: 'panel',
@@ -4052,6 +4067,128 @@ describe('viewer security renderer', () => {
     expect(dataViz).toContain('id="dataviz-root"');
     expect(dataViz).toContain('데이터 시각화 로딩 중...');
 
+    const spanGrid = renderToHtml({
+      type: 'spanGrid',
+      pos: [0, 0, 360, 180],
+      data: [
+        ['Name', 'Status', 'Owner'],
+        ['XCON', 'Ready', 'Viewer'],
+        ['SKETCH', 'Public', 'Playground'],
+        ['SpanGrid', 'Readonly', 'Docs'],
+      ],
+      merges: [
+        { start: { row: 0, col: 0 }, end: { row: 0, col: 2 } },
+        { start: { row: 2, col: 1 }, end: { row: 3, col: 2 } },
+      ],
+    });
+    expect(spanGrid).toContain('class="xa-spangrid-container"');
+    expect(spanGrid).toContain('data-component="spanGrid"');
+    expect(spanGrid).toContain('data-xcon-spangrid');
+    expect(spanGrid).toContain('data-xcon-spangrid-options="{&quot;readonly&quot;:true');
+    expect(spanGrid).toContain('&quot;XCON&quot;');
+    expect(spanGrid).toContain('&quot;merges&quot;');
+    expect(spanGrid).toContain('colspan="3"');
+    expect(spanGrid).toContain('rowspan="2"');
+    expect(spanGrid).toContain('SpanGrid loading...');
+    expect(spanGrid).toContain('width:360px');
+    expect(spanGrid).toContain('height:180px');
+    expect(spanGrid).not.toContain('width:100%;height:100%;overflow:hidden');
+    expect(viewerCss).toContain('.xa-spangrid-surface{width:100%;height:100%;overflow:auto');
+    expect(viewerCss).toContain('.xa-spangrid-table{width:100%;border-collapse:collapse');
+    expect(viewerCss).not.toContain('.xa-spangrid-table{width:100%;height:100%');
+
+    const scrollableSpanGrid = renderToHtml({
+      type: 'spanGrid',
+      pos: [0, 0, 260, 120],
+      fixed: { rows: 1, columns: 1 },
+      columns: [
+        { id: 'metric', title: 'Metric', width: 120 },
+        { id: 'jan', title: 'Jan', width: 96 },
+        { id: 'feb', title: 'Feb', width: 96 },
+        { id: 'mar', title: 'Mar', width: 96 },
+      ],
+      rows: [
+        { height: 32 },
+        { height: 40 },
+        { height: 40 },
+        { height: 40 },
+      ],
+      data: [
+        ['Metric', 'Jan', 'Feb', 'Mar'],
+        ['Sales', '10', '12', '14'],
+        ['Cost', '4', '5', '6'],
+        ['Margin', '6', '7', '8'],
+      ],
+    });
+    expect(scrollableSpanGrid).toContain('data-xcon-spangrid-scroll');
+    expect(scrollableSpanGrid).toContain('style="min-width:408px');
+    expect(scrollableSpanGrid).toContain('height:152px');
+    expect(scrollableSpanGrid).toContain('xa-spangrid-cell--fixed-row');
+    expect(scrollableSpanGrid).toContain('xa-spangrid-cell--fixed-col');
+    expect(scrollableSpanGrid).toContain('xa-spangrid-cell--fixed-corner');
+    expect(scrollableSpanGrid).toContain('position:sticky;top:0px;left:0px');
+    expect(scrollableSpanGrid).toContain('position:sticky;top:0px;');
+    expect(scrollableSpanGrid).toContain('position:sticky;left:0px;');
+
+    const snapshotSpanGrid = renderToHtml({
+      type: 'spanGrid',
+      pos: [0, 0, 362, 160],
+      snapshot: {
+        width: 362,
+        height: 160,
+        gridBorder: {
+          borderDirection: 'All',
+          lineStyle: 'Solid',
+          lineWidth: 1,
+          topColor: '#d0d7e0',
+          leftColor: '#d0d7e0',
+          rightColor: '#d0d7e0',
+          bottomColor: '#d0d7e0',
+        },
+        fixed: { row: 0, col: 0 },
+        cols: [{ width: 120 }, { width: 96 }, { width: 120 }],
+        rows: [
+          {
+            height: 38,
+            cells: [
+              { text: 'Project Status', backColor: '#1a2744', foreColor: '#ffffff', font: 'bold 10pt sans-serif', textAlign: 'MiddleCenter' },
+              { text: '', backColor: '#1a2744', foreColor: '#ffffff' },
+              { text: '', backColor: '#1a2744', foreColor: '#ffffff' },
+            ],
+          },
+          {
+            height: 30,
+            cells: [
+              { text: 'Name', backColor: '#f1f5f9', foreColor: '#111827', font: 'bold 9pt sans-serif', textAlign: 'MiddleCenter' },
+              { text: 'Status', backColor: '#f1f5f9', foreColor: '#111827', font: 'bold 9pt sans-serif', textAlign: 'MiddleCenter' },
+              { text: 'Owner', backColor: '#f1f5f9', foreColor: '#111827', font: 'bold 9pt sans-serif', textAlign: 'MiddleCenter' },
+            ],
+          },
+          {
+            height: 32,
+            cells: [
+              { text: 'XCON', backColor: '#ffffff', foreColor: '#1f2937', textAlign: 'MiddleLeft' },
+              { text: 'Ready', backColor: '#dcfce7', foreColor: '#166534', font: 'bold 9pt sans-serif', textAlign: 'MiddleCenter' },
+              { text: 'Viewer', backColor: '#ffffff', foreColor: '#1f2937', textAlign: 'MiddleCenter' },
+            ],
+          },
+        ],
+        merges: [
+          { start: { row: 0, col: 0 }, end: { row: 0, col: 2 } },
+        ],
+      },
+    });
+    expect(snapshotSpanGrid).toContain('Project Status');
+    expect(snapshotSpanGrid).toContain('colspan="3"');
+    expect(snapshotSpanGrid).toContain('background-color:#1a2744');
+    expect(snapshotSpanGrid).toContain('color:#ffffff');
+    expect(snapshotSpanGrid).toContain('font:bold 10pt sans-serif');
+    expect(snapshotSpanGrid).toContain('text-align:center');
+    expect(snapshotSpanGrid).toContain('vertical-align:middle');
+    expect(snapshotSpanGrid).toContain('style="width:120px"');
+    expect(snapshotSpanGrid).toContain('height:100px');
+    expect(snapshotSpanGrid).toContain('position:sticky;top:0px;left:0px');
+
     const flipbook = renderToHtml({
       type: 'flipbook',
       pages: 2,
@@ -4084,7 +4221,7 @@ describe('viewer security renderer', () => {
     expect(calendar).toContain('id="calendar-root"');
     expect(calendar).toContain('캘린더 로딩 중...');
 
-    const combined = [chart, codeEditor, richEditor, dataViz, flipbook, network, map, calendar].join('\n');
+    const combined = [chart, codeEditor, richEditor, dataViz, spanGrid, flipbook, network, map, calendar].join('\n');
     expect(combined).not.toMatch(/\son(?:click|error|load)=/i);
     expect(combined).not.toContain('<script');
   });
@@ -4116,12 +4253,19 @@ describe('viewer security renderer', () => {
   });
 
   test('keeps advanced calendar events visible like draft XaCalendar data', () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day1 = String(now.getDate()).padStart(2, '0');
+    const lastDay = new Date(year, now.getMonth() + 1, 0).getDate();
+    const day2 = String(Math.min(now.getDate() + 1, lastDay)).padStart(2, '0');
+
     const html = renderToHtml({
       type: 'calendar',
       locale: 'ko',
       events: [
-        { title: 'Design Review', start: '2026-05-14' },
-        { title: 'Release', date: '2026-05-15' },
+        { title: 'Design Review', start: `${year}-${month}-${day1}` },
+        { title: 'Release', date: `${year}-${month}-${day2}` },
       ],
     });
 
@@ -4137,6 +4281,9 @@ describe('viewer security renderer', () => {
       longitude: 126.978,
       zoom: 12,
       tileLayer: 'CartoDB',
+      snapshotUrl: 'maps/seoul-cityhall-z15.png',
+      snapshotAlt: 'Seoul City Hall map',
+      attribution: 'OpenStreetMap contributors',
       markers: [
         { lat: 37.57, lng: 126.99, popup: 'Seoul Office' },
         { lat: 37.55, lng: 126.97, title: 'HQ' },
@@ -4147,9 +4294,28 @@ describe('viewer security renderer', () => {
     expect(html).toContain('data-longitude="126.978"');
     expect(html).toContain('data-zoom="12"');
     expect(html).toContain('data-tile-layer="CartoDB"');
+    expect(html).toContain('class="xa-map-snapshot"');
+    expect(html).toContain('src="maps/seoul-cityhall-z15.png"');
+    expect(html).toContain('alt="Seoul City Hall map"');
+    expect(html).toContain('OpenStreetMap contributors');
     expect(html).toContain('title="Seoul Office"');
     expect(html).toContain('Se');
     expect(html).toContain('HQ');
+  });
+
+  test('renders a generated static map fallback when no snapshot image is provided', () => {
+    const html = renderToHtml({
+      type: 'map',
+      latitude: 37.5665,
+      longitude: 126.978,
+      zoom: 12,
+      tileLayer: 'CartoDB',
+      markers: [{ lat: 37.5665, lng: 126.978, title: 'City Hall' }],
+    });
+
+    expect(html).toContain('xa-map-layer xa-map-water');
+    expect(html).toContain('xa-map-road xa-map-road--main');
+    expect(html).toContain('title="City Hall"');
   });
 
   test('keeps advanced chart and editor options visible like draft advanced components', () => {
@@ -4253,6 +4419,7 @@ describe('viewer security renderer', () => {
     expect(viewerCss).toContain('.network-link.ref-link{stroke:var(--xcon-network-ref-link,#a0aec0);stroke-opacity:.5;stroke-width:2px;stroke-dasharray:8,4;animation:dash 2s linear infinite}');
     expect(viewerCss).toContain('.network-tooltip::before{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:8px solid transparent;border-top-color:rgba(102,126,234,.95)}');
     expect(viewerCss).toContain('@keyframes dash{to{stroke-dashoffset:-12}}');
+    expect(viewerCss).toContain('.xa-map-snapshot{position:absolute;inset:0;width:100%;height:100%;object-fit:cover');
     expect(viewerCss).toContain('.xa-map .leaflet-popup-content-wrapper{border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15)}');
     expect(viewerCss).toContain('.xa-calendar .fc-event{border-radius:4px;border:none;padding:2px 4px}');
     expect(viewerCss).toContain('.xa-calendar .fc-button-primary:hover{background:#5a67d8;border-color:#5a67d8}');

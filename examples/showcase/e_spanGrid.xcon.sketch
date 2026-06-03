@@ -1,0 +1,25 @@
+screen "SpanGrid Merge Demo" 402x800 bg @surface
+  title: label "Cell merge sample" at 20 40 320 36
+    color @ink
+    font
+      size 24
+      weight 800
+
+  caption: label "Header merge + vertical group merge" at 20 78 320 22
+    color @ink-2
+    font
+      size 13
+      weight 600
+
+  sheet: spanGrid at 20 120 362 260
+    backgroundColor @surface
+    border
+      visible true
+      width 1
+      color @border
+      radius 12
+    readonly true
+    data [["Quarterly Plan","",""],["Area","Metric","Owner"],["Product","Launch","Mina"],["Product","Retention","Mina"],["Platform","Reliability","Jun"],["Platform","Cost","Jun"]]
+    columns [{"id":"area","title":"Area","width":120},{"id":"metric","title":"Metric","width":120},{"id":"owner","title":"Owner","width":96}]
+    merges [{"start":{"row":0,"col":0},"end":{"row":0,"col":2}},{"start":{"row":2,"col":0},"end":{"row":3,"col":0}},{"start":{"row":4,"col":0},"end":{"row":5,"col":0}}]
+

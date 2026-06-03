@@ -1,0 +1,31 @@
+screen 402x640
+  backgroundColor "#F8FAFC"
+  title: label "Contact" at 24 28 354 34
+    font
+      size 24
+      weight 800
+  name: textField "Name" at 24 92 354 44
+    bind "contact.name"
+    border
+      width 1
+      color "#D1D5DB"
+      radius 8
+  email: textField "Email" at 24 152 354 44
+    inputType "email"
+    bind "contact.email"
+    border
+      width 1
+      color "#D1D5DB"
+      radius 8
+  message: textarea at 24 212 354 132
+    placeholder "Message"
+    rows null
+    showCharCount true
+  consent: checkbox at 24 360 320 32
+    label "I agree to be contacted."
+    value "unchecked"
+  submit: button "Send" at 24 416 354 48
+    backgroundColor "#0F766E"
+    color "#FFFFFF"
+    border
+      radius 10

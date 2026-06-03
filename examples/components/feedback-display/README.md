@@ -2,6 +2,7 @@
 
 Alert, progress, spinner, tooltip, modal, and rating.
 
+- SKETCH: [feedback-display.xcon.sketch](/play?src=%2Fexamples%2Fcomponents%2Ffeedback-display%2Ffeedback-display.xcon.sketch)
 - JSON: [feedback-display.xcon.json](/play?src=%2Fexamples%2Fcomponents%2Ffeedback-display%2Ffeedback-display.xcon.json)
 - XML: [feedback-display.xcon.xml](/play?src=%2Fexamples%2Fcomponents%2Ffeedback-display%2Ffeedback-display.xcon.xml)
 - TAGLESS: [feedback-display.xcon](/play?src=%2Fexamples%2Fcomponents%2Ffeedback-display%2Ffeedback-display.xcon)
