@@ -14,6 +14,10 @@ The public XCON Viewer is viewer-only. It renders declarative UI documents witho
 
 When generating Markdown-facing XCON examples, prefer XCON/SKETCH. Use XCON/JSON for canonical structured examples, schemas, and API interchange. Use XML or TAGLESS only when compatibility, conversion, or round-trip behavior is the topic.
 
+Every component inside a screen must carry a semantic ID prefix. Anonymous components are not valid XCON/SKETCH.
+
+XCON documents support data binding through XCON Chain SUGAR expressions and JSON fixture data, enabling living documents where layout is defined once and only data is refreshed on subsequent updates.
+
 ## Documentation
 
 - Home: https://xconviewer.dev/

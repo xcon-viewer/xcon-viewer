@@ -24,6 +24,7 @@ packages/github-action/dist/*
 # Internal / work-in-progress (not for public release)
 drafts/
 .temp/
+.tmp/
 xcon-chain/
 xcon-workflow/
 figma-plugins/

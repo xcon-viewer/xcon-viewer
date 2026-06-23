@@ -5,7 +5,7 @@ screen "Map Sample" 560x360
     font
       size 24
       weight 800
-  subtitle: label "A read-only static map preview with multiple markers." at 24 54 430 22
+  subtitle: label "A read-only Leaflet/OpenStreetMap view with multiple markers." at 24 54 430 22
     color "@ink-2"
     font
       size 13
@@ -14,11 +14,10 @@ screen "Map Sample" 560x360
     latitude 37.5665
     longitude 126.978
     zoom 12
-    tileLayer "CartoDB"
-    snapshotUrl "https://staticmap.openstreetmap.de/staticmap.php?center=37.5665,126.978&zoom=13&size=512x244&markers=37.5665,126.978,red-pushpin"
-    snapshotAlt "Static map snapshot centered on Seoul City Hall"
+    provider "leaflet"
+    tileLayer "OpenStreetMap"
     attribution "(C) OpenStreetMap contributors"
     showControls true
-    enableZoom false
-    enablePan false
+    enableZoom true
+    enablePan true
     markers [{"lat":37.5665,"lng":126.978,"title":"City Hall"},{"lat":37.5704,"lng":126.983,"title":"Design Studio"},{"lat":37.5512,"lng":126.9882,"title":"N Tower"},{"lat":37.5796,"lng":126.977,"title":"Palace"}]

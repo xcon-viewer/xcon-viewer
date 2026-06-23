@@ -34,7 +34,7 @@
     ♧subtitle♣
     ♤
       ♧type♣◇label◆
-      ♧text♣◇A read-only static map preview with multiple markers.◆
+      ♧text♣◇A read-only Leaflet/OpenStreetMap view with multiple markers.◆
       ♧pos♣
       ♡
         ◇24◆
@@ -62,13 +62,12 @@
       ♧latitude♣◇37.5665◆
       ♧longitude♣◇126.978◆
       ♧zoom♣◇12◆
-      ♧tileLayer♣◇CartoDB◆
-      ♧snapshotUrl♣◇https://staticmap.openstreetmap.de/staticmap.php?center=37.5665,126.978&zoom=13&size=512x244&markers=37.5665,126.978,red-pushpin◆
-      ♧snapshotAlt♣◇Static map snapshot centered on Seoul City Hall◆
+      ♧provider♣◇leaflet◆
+      ♧tileLayer♣◇OpenStreetMap◆
       ♧attribution♣◇(C) OpenStreetMap contributors◆
       ♧showControls♣◇true◆
-      ♧enableZoom♣◇false◆
-      ♧enablePan♣◇false◆
+      ♧enableZoom♣◇true◆
+      ♧enablePan♣◇true◆
       ♧markers♣
       ♡
         ♤

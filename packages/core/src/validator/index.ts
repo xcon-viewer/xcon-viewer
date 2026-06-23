@@ -20,6 +20,8 @@ const publicComponentTypes = new Set([
   'form',
   'list',
   'label',
+  'line',
+  'connector',
   'textField',
   'textView',
   'button',

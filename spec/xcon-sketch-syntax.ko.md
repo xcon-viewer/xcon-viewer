@@ -91,6 +91,32 @@ button "Save" at 24,120 size 120x44
 
 `size 120x44`는 `size: [120, 44]`로 매핑되고, `at 24 120 120 44`는 `pos: [24, 120, 120, 44]`로 매핑됩니다.
 
+문서형 선 primitive는 일반 `at` 레이아웃과 좌표 기반 `from ... to ...` 레이아웃을 모두 지원합니다. 구분선은 `line at x y width height`를 쓰고, 절대 좌표 화살표는 `line from x y to x y`를 사용합니다. 좌표 기반 형식은 Object Model에서 `pos`, `from`, `to`로 정규화됩니다.
+
+컴포넌트 앵커를 연결할 때는 절대 좌표 대신 `connector from source.anchor to target.anchor`를 사용합니다. 기존 문서 호환을 위해 `arrow from source anchor to target anchor`도 받습니다. `arrow`는 내부적으로 `type: "connector"`와 `end: "arrow"`로 정규화됩니다. 지원 앵커는 `left`, `right`, `top`, `bottom`, `center`입니다.
+
+```xcon-sketch
+rule: line at 48 140 720 0
+  color #cbd5e1
+  width 2
+  style "dashed"
+
+flow: line from 240 220 to 330 220
+  color #2563eb
+  width 3
+  end "arrow"
+  label "Message"
+
+message: connector from user.right to agent.left
+  color #2563eb
+  width 3
+  end "arrow"
+
+legacyMessage: arrow from user right to agent left
+  color #2563eb
+  width 3
+```
+
 ## Inline Properties
 
 Inline property는 layout 뒤에 이어서 작성합니다.

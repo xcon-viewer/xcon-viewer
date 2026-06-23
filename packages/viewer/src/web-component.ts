@@ -3,14 +3,13 @@
 // custom element in the browser.
 //
 // Usage (HTML):
-//   <script type="module" src="https://unpkg.com/@xcon-viewer/viewer@0.1.0/dist/web-component.js"></script>
+//   <script type="module" src="https://unpkg.com/@xcon-viewer/viewer@0.1.7/dist/web-component.js"></script>
 //   <xcon-viewer src="./home.xcon.json"></xcon-viewer>
 //
 // Usage (JS/TS):
 //   import '@xcon-viewer/viewer/web-component';
 
-import { deserialize, fromJSONObject } from '@xcon-viewer/core';
-import { hydrateXconViewer, renderToHtml, viewerCss, type RenderOptions } from './renderer/index.js';
+import { hydrateXconViewer, renderToHtml, resolveRenderInput, viewerCss, type RenderOptions } from './renderer/index.js';
 
 export class XconViewerElement extends HTMLElement {
   static get observedAttributes(): string[] {
@@ -47,9 +46,9 @@ export class XconViewerElement extends HTMLElement {
         this.root.innerHTML = '';
         return;
       }
-      const document = typeof source === 'string' ? deserialize(source) : fromJSONObject(source);
-      const html = renderToHtml(document, this.renderOptions());
-      const frameStyle = xconElementFrameStyle(document);
+      const resolved = resolveRenderInput(source);
+      const html = renderToHtml(source, this.renderOptions());
+      const frameStyle = xconElementFrameStyle(resolved.root);
       this.root.innerHTML = `<style>:host{display:block;contain:content;position:relative}${viewerCss}</style><div class="xcon-viewer-host" data-xcon-viewer-host style="${frameStyle}">${html}</div>`;
       hydrateXconViewer(this.root);
     } catch (error) {

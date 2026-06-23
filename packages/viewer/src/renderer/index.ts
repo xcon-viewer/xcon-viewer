@@ -1,7 +1,11 @@
 import {
   XconObject,
+  deserialize,
+  detectXconSyntax,
   fromJSONObject,
+  fromSketchLenient,
   isXconObject,
+  type SketchRecoveryError,
   type XconValue,
 } from '@xcon-viewer/core';
 
@@ -15,6 +19,7 @@ export interface RenderOptions {
 interface RenderContext {
   options: Required<RenderOptions>;
   nodes: number;
+  componentBounds: Map<string, Rect>;
 }
 
 interface RenderState {
@@ -29,12 +34,24 @@ interface BuildStyleOptions {
   isRoot?: boolean;
 }
 
+type Rect = [number, number, number, number];
+
+export interface ResolvedRenderInput {
+  root: XconObject;
+  diagnostics: SketchRecoveryError[];
+}
+
 const defaultOptions: Required<RenderOptions> = {
   allowExternalResources: false,
   allowHtml: false,
   maxDepth: 64,
   maxNodes: 10000,
 };
+
+const leafletCssUrl = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';
+const leafletJsUrl = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';
+const openStreetMapTileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+const openStreetMapAttribution = '(C) OpenStreetMap contributors';
 
 interface BannerRuntimeState {
   index: number;
@@ -68,6 +85,7 @@ const extCarouselStates = new WeakMap<HTMLElement, ExtCarouselRuntimeState>();
 const shapeImageAnimationStates = new WeakMap<HTMLElement, ShapeImageAnimationRuntimeState>();
 const bannerTransition = 'transform .42s cubic-bezier(.22,1,.36,1)';
 let customSelectDocumentBound = false;
+let leafletRuntimePromise: Promise<unknown> | undefined;
 
 const allowedCssProperties = new Set([
   'align-items',
@@ -448,7 +466,7 @@ select.f-select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(var(-
 .xa-dataviz-empty{height:100%;display:flex;align-items:center;justify-content:center;color:#888;font-size:13px}
 .xa-flipbook-container .catalog-app{width:100%;height:100%;position:relative;display:flex;align-items:center;justify-content:center}.xa-flipbook-container .flipbook-viewer{position:relative;display:flex;align-items:center;justify-content:center;min-width:600px;min-height:400px}.xa-flipbook-container .ui-flipbook{position:relative;margin:0 auto;box-shadow:0 4px 20px rgba(0,0,0,.3);border-radius:8px;overflow:visible}.xa-flipbook-container .ui-flipbook .page{background:white;border:1px solid #ddd;box-sizing:border-box;display:flex;align-items:center;justify-content:center;overflow:hidden;width:220px;height:320px}.xa-flipbook-container .ui-flipbook .page img{max-width:100%;max-height:100%;object-fit:contain}.page-content{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;box-sizing:border-box}.flipbook-page-placeholder{padding:20px;text-align:center;color:#666}.flipbook-controls{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);padding:10px;border-radius:5px;display:flex;gap:10px;z-index:1000}.flipbook-control-btn{background:#333;color:white;border:none;padding:8px 12px;border-radius:3px;cursor:pointer;font-size:14px}.flipbook-control-btn:hover{background:#555}.flipbook-page-info{color:white;display:flex;align-items:center;font-size:14px;margin:0 10px}.flipbook-miniatures{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);padding:10px;border-radius:5px;display:none;max-width:80%;overflow-x:auto}.flipbook-miniature{display:inline-block;width:60px;height:80px;margin:0 5px;cursor:pointer;border:2px solid transparent;border-radius:3px;overflow:hidden;background:transparent;padding:0}.flipbook-miniature:hover{border-color:#fff}.flipbook-miniature.active{border-color:#007bff}.flipbook-miniature img{width:100%;height:100%;object-fit:cover}.ui-arrow-control{position:absolute;top:50%;transform:translateY(-50%);width:50px;height:50px;background:rgba(0,0,0,.6);color:white;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:1001;border-radius:25px;font-size:24px;font-weight:bold;transition:all .3s ease;border:2px solid rgba(255,255,255,.3)}.ui-arrow-control:hover{background:rgba(0,0,0,.8);border-color:rgba(255,255,255,.6);transform:translateY(-50%) scale(1.1)}.ui-arrow-next-page{right:10px}.ui-arrow-previous-page{left:10px}.ui-arrow-next-page::before{content:"›"}.ui-arrow-previous-page::before{content:"‹"}
 .xa-network-diagram-container{position:relative;background:linear-gradient(135deg,#f7fafc 0%,#e2e8f0 100%);border:none;border-radius:16px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.1),0 8px 16px rgba(0,0,0,.06);backdrop-filter:blur(10px)}.network-svg{cursor:grab;transition:all .3s ease}.network-svg:active{cursor:grabbing}.network-node{cursor:pointer;stroke:#fff;stroke-width:3px;filter:drop-shadow(0 6px 12px rgba(0,0,0,.15));transition:stroke .2s ease,stroke-width .2s ease,filter .2s ease}.network-node:hover{stroke:var(--xcon-network-accent,#f093fb);stroke-width:4px;filter:drop-shadow(0 12px 24px rgba(0,0,0,.2))}.network-node.root-node{stroke:#fff;stroke-width:5px;filter:drop-shadow(0 8px 16px rgba(102,126,234,.4))}.network-node.expanded{stroke:var(--xcon-network-accent,#f093fb);stroke-width:4px;filter:drop-shadow(0 6px 12px rgba(240,147,251,.3))}.network-link{fill:none;stroke:var(--xcon-network-link,#cbd5e0);stroke-width:3px;stroke-opacity:.7;transition:all .3s ease}.network-link:hover{stroke:var(--xcon-network-primary,#667eea);stroke-width:4px;stroke-opacity:.9}.network-link.ref-link{stroke:var(--xcon-network-ref-link,#a0aec0);stroke-opacity:.5;stroke-width:2px;stroke-dasharray:8,4;animation:dash 2s linear infinite}@keyframes dash{to{stroke-dashoffset:-12}}.network-link.marker-only{stroke:var(--xcon-network-accent,#f093fb);stroke-opacity:.7;stroke-width:3px}.network-label{fill:var(--xcon-network-text,#2d3748);font:12px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;font-weight:600;text-anchor:middle;pointer-events:none;user-select:none;text-shadow:0 2px 4px rgba(255,255,255,.8);transition:all .3s ease}.network-label:hover{fill:var(--xcon-network-primary,#667eea);font-weight:700}.network-label.root-label{font-weight:800;font-size:14px;fill:var(--xcon-network-primary,#667eea);text-shadow:0 3px 6px rgba(0,0,0,.15)}.network-tooltip{position:absolute;background:linear-gradient(135deg,rgba(102,126,234,.95) 0%,rgba(118,75,162,.95) 100%);color:white;padding:16px 20px;border-radius:12px;font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-weight:500;pointer-events:none;opacity:0;transition:all .4s cubic-bezier(.4,0,.2,1);z-index:1000;box-shadow:0 12px 24px rgba(0,0,0,.2);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.3);text-align:center}.network-tooltip.show{opacity:1;transform:translateY(-4px)}.network-tooltip::before{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:8px solid transparent;border-top-color:rgba(102,126,234,.95)}.network-arrow{fill:var(--xcon-network-link,#cbd5e0);transition:all .3s ease}.network-arrow.ref-arrow{fill:var(--xcon-network-ref-link,#a0aec0)}.network-group{cursor:pointer;transition:all .3s ease}.network-border{fill:none;stroke:var(--xcon-network-ref-link,#a0aec0);stroke-width:2px;stroke-opacity:.4;stroke-dasharray:5,5;transition:all .3s ease}.network-border:hover{stroke:var(--xcon-network-primary,#667eea);stroke-opacity:.8;stroke-width:3px}.network-image{pointer-events:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.1))}.loading-spinner{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:18px;color:var(--xcon-network-text,#2d3748);font-weight:500;animation:pulse 2s ease-in-out infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-.xa-map-container{position:relative;background:#eef3ed;border:1px solid #d5dee7;border-radius:10px;overflow:hidden}.xa-map-static{position:relative;width:100%;height:100%;min-height:180px;overflow:hidden;background:#e8efe5}.xa-map-static::before{content:"";position:absolute;inset:0;background-image:linear-gradient(0deg,rgba(132,153,166,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(132,153,166,.18) 1px,transparent 1px),linear-gradient(45deg,rgba(255,255,255,.42) 16%,transparent 16.5%,transparent 83%,rgba(255,255,255,.42) 83.5%);background-size:64px 64px,64px 64px,96px 96px;opacity:.9}.xa-map-static::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 24% 28%,rgba(255,255,255,.46),transparent 28%),radial-gradient(circle at 74% 72%,rgba(255,255,255,.36),transparent 24%);pointer-events:none}.xa-map-static--snapshot::before,.xa-map-static--snapshot::after{display:none}.xa-map-snapshot{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;z-index:1;background:#dfe7dc}.xa-map-layer{position:absolute;display:block;pointer-events:none}.xa-map-water{left:-10%;top:58%;width:120%;height:70px;border-radius:999px;background:linear-gradient(90deg,rgba(126,190,217,.62),rgba(167,213,231,.8),rgba(126,190,217,.58));transform:rotate(-7deg);box-shadow:inset 0 0 0 1px rgba(255,255,255,.45);opacity:.9}.xa-map-park{background:rgba(129,190,112,.34);border:1px solid rgba(86,145,91,.16);border-radius:18px}.xa-map-park--north{left:5%;top:9%;width:28%;height:30%;transform:rotate(-12deg)}.xa-map-park--south{right:8%;bottom:8%;width:30%;height:28%;transform:rotate(8deg)}.xa-map-road{background:rgba(255,255,255,.95);border-radius:999px;box-shadow:0 0 0 1px rgba(151,163,176,.26),0 2px 7px rgba(79,92,111,.1)}.xa-map-road--main{left:-8%;top:47%;width:116%;height:18px;transform:rotate(-13deg)}.xa-map-road--cross{left:20%;top:-8%;width:16px;height:116%;transform:rotate(19deg)}.xa-map-road--vertical{left:63%;top:-10%;width:14px;height:120%;transform:rotate(-4deg)}.xa-map-road--ring{left:55%;top:18%;width:126px;height:88px;border:10px solid rgba(255,255,255,.92);border-radius:999px;background:transparent;box-shadow:0 0 0 1px rgba(151,163,176,.26),0 3px 8px rgba(79,92,111,.1)}.xa-map-label{z-index:5;color:#5f6f5d;background:rgba(255,255,255,.72);border:1px solid rgba(137,154,135,.25);border-radius:999px;padding:3px 7px;font-size:10px;font-weight:700;letter-spacing:.01em;box-shadow:0 2px 6px rgba(74,87,71,.12)}.xa-map-label--north{left:8%;top:12%}.xa-map-label--center{left:42%;top:35%}.xa-map-label--south{right:9%;bottom:14%}.xa-map-attribution{position:absolute;right:8px;bottom:6px;z-index:10;padding:2px 6px;border-radius:999px;background:rgba(255,255,255,.76);color:#6b7280;font-size:9px;box-shadow:0 1px 4px rgba(0,0,0,.1)}.xa-map-marker{position:absolute;z-index:9;transform:translate(-50%,-100%);min-width:24px;height:24px;border-radius:999px;background:#667eea;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;box-shadow:0 3px 8px rgba(0,0,0,.24);border:2px solid rgba(255,255,255,.8)}.xa-map .leaflet-control-container{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif}.xa-map .leaflet-popup-content-wrapper{border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15)}.xa-map .leaflet-popup-content{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;line-height:1.4}
+.xa-map-container{position:relative;background:#eef3ed;border:1px solid #d5dee7;border-radius:10px;overflow:hidden}.xa-map-static{position:relative;width:100%;height:100%;min-height:180px;overflow:hidden;background:#e8efe5}.xa-map-static::before{content:"";position:absolute;inset:0;background-image:linear-gradient(0deg,rgba(132,153,166,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(132,153,166,.18) 1px,transparent 1px),linear-gradient(45deg,rgba(255,255,255,.42) 16%,transparent 16.5%,transparent 83%,rgba(255,255,255,.42) 83.5%);background-size:64px 64px,64px 64px,96px 96px;opacity:.9}.xa-map-static::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 24% 28%,rgba(255,255,255,.46),transparent 28%),radial-gradient(circle at 74% 72%,rgba(255,255,255,.36),transparent 24%);pointer-events:none}.xa-map-static--snapshot::before,.xa-map-static--snapshot::after,.xa-map-static--leaflet::before,.xa-map-static--leaflet::after{display:none}.xa-map-snapshot{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;z-index:1;background:#dfe7dc}.xa-map-layer{position:absolute;display:block;pointer-events:none}.xa-map-water{left:-10%;top:58%;width:120%;height:70px;border-radius:999px;background:linear-gradient(90deg,rgba(126,190,217,.62),rgba(167,213,231,.8),rgba(126,190,217,.58));transform:rotate(-7deg);box-shadow:inset 0 0 0 1px rgba(255,255,255,.45);opacity:.9}.xa-map-park{background:rgba(129,190,112,.34);border:1px solid rgba(86,145,91,.16);border-radius:18px}.xa-map-park--north{left:5%;top:9%;width:28%;height:30%;transform:rotate(-12deg)}.xa-map-park--south{right:8%;bottom:8%;width:30%;height:28%;transform:rotate(8deg)}.xa-map-road{background:rgba(255,255,255,.95);border-radius:999px;box-shadow:0 0 0 1px rgba(151,163,176,.26),0 2px 7px rgba(79,92,111,.1)}.xa-map-road--main{left:-8%;top:47%;width:116%;height:18px;transform:rotate(-13deg)}.xa-map-road--cross{left:20%;top:-8%;width:16px;height:116%;transform:rotate(19deg)}.xa-map-road--vertical{left:63%;top:-10%;width:14px;height:120%;transform:rotate(-4deg)}.xa-map-road--ring{left:55%;top:18%;width:126px;height:88px;border:10px solid rgba(255,255,255,.92);border-radius:999px;background:transparent;box-shadow:0 0 0 1px rgba(151,163,176,.26),0 3px 8px rgba(79,92,111,.1)}.xa-map-label{z-index:5;color:#5f6f5d;background:rgba(255,255,255,.72);border:1px solid rgba(137,154,135,.25);border-radius:999px;padding:3px 7px;font-size:10px;font-weight:700;letter-spacing:.01em;box-shadow:0 2px 6px rgba(74,87,71,.12)}.xa-map-label--north{left:8%;top:12%}.xa-map-label--center{left:42%;top:35%}.xa-map-label--south{right:9%;bottom:14%}.xa-map-attribution{position:absolute;right:8px;bottom:6px;z-index:10;padding:2px 6px;border-radius:999px;background:rgba(255,255,255,.76);color:#6b7280;font-size:9px;box-shadow:0 1px 4px rgba(0,0,0,.1)}.xa-map-marker{position:absolute;z-index:9;transform:translate(-50%,-100%);min-width:24px;height:24px;border-radius:999px;background:#667eea;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;box-shadow:0 3px 8px rgba(0,0,0,.24);border:2px solid rgba(255,255,255,.8)}.xcon-leaflet-marker{width:28px!important;height:28px!important;margin-left:-14px!important;margin-top:-28px!important;background:#2563eb;border:2px solid #fff;border-radius:999px;box-shadow:0 8px 18px rgba(15,23,42,.34);color:#fff;display:flex!important;align-items:center;justify-content:center;font:800 11px/1 system-ui,sans-serif}.xcon-leaflet-marker::after{content:"";position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);border:7px solid transparent;border-top-color:#2563eb}.xcon-leaflet-marker--rain,.xcon-leaflet-marker--wind{background:#0ea5e9}.xcon-leaflet-marker--rain::after,.xcon-leaflet-marker--wind::after{border-top-color:#0ea5e9}.xcon-leaflet-marker--cloud,.xcon-leaflet-marker--cool{background:#64748b}.xcon-leaflet-marker--cloud::after,.xcon-leaflet-marker--cool::after{border-top-color:#64748b}.xcon-leaflet-marker--sun{background:#f97316}.xcon-leaflet-marker--sun::after{border-top-color:#f97316}.xa-map .leaflet-control-container{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif}.xa-map .leaflet-popup-content-wrapper{border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15)}.xa-map .leaflet-popup-content{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;line-height:1.4}
 .xa-calendar-container{position:relative;background:#fff;border:1px solid #dee2e6;border-radius:8px;overflow:hidden;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif}.xa-calendar-static{height:100%;display:flex;flex-direction:column;padding:12px;box-sizing:border-box}.fc-header-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.fc-button-primary{background:#667eea;border:1px solid #667eea;color:#fff;border-radius:4px;padding:5px 10px}.xa-calendar .fc-button-primary:hover{background:#5a67d8;border-color:#5a67d8}.fc-scrollgrid{width:100%;border-collapse:collapse;table-layout:fixed;flex:1}.fc-scrollgrid th{background:#f8f9fa;color:#495057;font-size:12px;border:1px solid #dee2e6;padding:6px}.fc-scrollgrid td{height:34px;border:1px solid #dee2e6;vertical-align:top;padding:2px}.fc-daygrid-day-number{background:none;border:0;color:#495057;font-size:12px;padding:2px 4px}.fc-today{background:rgba(102,126,234,.1)!important}.xa-calendar .fc-theme-standard .fc-scrollgrid{border:1px solid #dee2e6}.xa-calendar .fc-theme-standard .fc-col-header-cell{background:#f8f9fa;border-color:#dee2e6}.xa-calendar .fc-theme-standard .fc-daygrid-day{border-color:#dee2e6}.xa-calendar .fc-button-primary{background:#667eea;border-color:#667eea}.xa-calendar .fc-event{border-radius:4px;border:none;padding:2px 4px}.xa-calendar .fc-event-title{font-weight:500}.xa-calendar .fc-today{background:rgba(102,126,234,.1)!important}
 .xa-map-loading,.xa-calendar-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,.9);padding:20px;border-radius:8px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.1);display:none}.xa-map-loading .spinner,.xa-calendar-loading .spinner{width:40px;height:40px;border:4px solid #f3f3f3;border-top:4px solid #667eea;border-radius:50%;animation:xa-advanced-spin 1s linear infinite;margin:0 auto 10px}@keyframes xa-advanced-spin{to{transform:rotate(360deg)}}
 `.trim();
@@ -1715,6 +1733,186 @@ export const viewerScript = `
       host.classList.add('xa-spangrid-container--hydrated');
     });
   }
+  let leafletLoadPromise = null;
+  function ensureLeafletStyles(rootNode) {
+    const isShadow = rootNode && rootNode.toString && String(rootNode).includes('ShadowRoot');
+    const target = isShadow ? rootNode : document.head;
+    if (!target || target.querySelector('link[data-xcon-leaflet-css]')) return Promise.resolve();
+    return new Promise((resolve) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';
+      link.setAttribute('data-xcon-leaflet-css', 'true');
+      link.addEventListener('load', () => resolve());
+      link.addEventListener('error', () => resolve());
+      target.appendChild(link);
+    });
+  }
+  function loadLeafletRuntime() {
+    if (window.L && typeof window.L.map === 'function') return Promise.resolve(window.L);
+    if (leafletLoadPromise) return leafletLoadPromise;
+    leafletLoadPromise = new Promise((resolve, reject) => {
+      ensureLeafletStyles(document);
+      const existing = document.querySelector('script[data-xcon-leaflet-js]');
+      if (existing) {
+        existing.addEventListener('load', () => resolve(window.L));
+        existing.addEventListener('error', reject);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';
+      script.async = true;
+      script.defer = true;
+      script.setAttribute('data-xcon-leaflet-js', 'true');
+      script.addEventListener('load', () => resolve(window.L));
+      script.addEventListener('error', reject);
+      document.head.appendChild(script);
+    });
+    return leafletLoadPromise;
+  }
+  function parseLeafletMarkers(host) {
+    try {
+      const parsed = JSON.parse(host.getAttribute('data-xcon-map-markers') || '[]');
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  function parseLeafletJsonAttr(host, name, fallback) {
+    try {
+      const raw = host.getAttribute(name);
+      if (!raw) return fallback;
+      const parsed = JSON.parse(raw);
+      return parsed == null ? fallback : parsed;
+    } catch {
+      return fallback;
+    }
+  }
+  function xconLeafletPoint(value) {
+    if (Array.isArray(value)) {
+      const lat = Number(value[0]);
+      const lng = Number(value[1]);
+      return Number.isFinite(lat) && Number.isFinite(lng) ? [lat, lng] : undefined;
+    }
+    if (value && typeof value === 'object') {
+      const lat = Number(value.lat ?? value.latitude);
+      const lng = Number(value.lng ?? value.longitude);
+      return Number.isFinite(lat) && Number.isFinite(lng) ? [lat, lng] : undefined;
+    }
+    return undefined;
+  }
+  function xconLeafletLayerPoints(value) {
+    const source = value && typeof value === 'object' && !Array.isArray(value)
+      ? (value.points || value.path || value.coordinates || value.latlngs || value.latLngs)
+      : value;
+    if (!Array.isArray(source)) return [];
+    return source.map(xconLeafletPoint).filter(Boolean);
+  }
+  function xconLeafletLayerStyle(layer, fallbackColor) {
+    const source = layer && typeof layer === 'object' ? layer : {};
+    const color = String(source.color || source.stroke || source.strokeColor || fallbackColor);
+    return {
+      color,
+      weight: Number(source.weight || source.strokeWidth || 3),
+      opacity: Number(source.opacity || 0.85),
+      fillColor: String(source.fillColor || source.fill || color),
+      fillOpacity: Number(source.fillOpacity || 0.18),
+    };
+  }
+  function applyLeafletMapLayers(L, map, host) {
+    parseLeafletJsonAttr(host, 'data-xcon-map-polylines', []).forEach((layer) => {
+      const points = xconLeafletLayerPoints(layer);
+      if (points.length < 2 || typeof L.polyline !== 'function') return;
+      L.polyline(points, xconLeafletLayerStyle(layer, '#2563eb')).addTo(map);
+    });
+    parseLeafletJsonAttr(host, 'data-xcon-map-polygons', []).forEach((layer) => {
+      const points = xconLeafletLayerPoints(layer);
+      if (points.length < 3 || typeof L.polygon !== 'function') return;
+      L.polygon(points, xconLeafletLayerStyle(layer, '#14b8a6')).addTo(map);
+    });
+    const heatmap = parseLeafletJsonAttr(host, 'data-xcon-map-heatmap', []);
+    if (Array.isArray(heatmap) && heatmap.length && typeof L.heatLayer === 'function') {
+      const points = heatmap.map((point) => {
+        if (Array.isArray(point)) {
+          const lat = Number(point[0]);
+          const lng = Number(point[1]);
+          const intensity = Number(point[2] ?? 1);
+          return Number.isFinite(lat) && Number.isFinite(lng) ? [lat, lng, Number.isFinite(intensity) ? intensity : 1] : undefined;
+        }
+        if (point && typeof point === 'object') {
+          const lat = Number(point.lat ?? point.latitude);
+          const lng = Number(point.lng ?? point.longitude);
+          const intensity = Number(point.value ?? point.intensity ?? point.weight ?? 1);
+          return Number.isFinite(lat) && Number.isFinite(lng) ? [lat, lng, Number.isFinite(intensity) ? intensity : 1] : undefined;
+        }
+        return undefined;
+      }).filter(Boolean);
+      if (points.length) L.heatLayer(points, { radius: 24, blur: 18 }).addTo(map);
+    }
+  }
+  function xconLeafletSafeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+  }
+  function xconLeafletMarkerIcon(L, marker, label) {
+    if (!L || typeof L.divIcon !== 'function') return undefined;
+    const status = String((marker && marker.status) || '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    const text = xconLeafletSafeHtml(String(label || '').slice(0, 2) || '•');
+    return L.divIcon({
+      className: 'xcon-leaflet-marker' + (status ? ' xcon-leaflet-marker--' + status : ''),
+      html: text,
+      iconSize: [28, 28],
+      iconAnchor: [14, 28],
+      popupAnchor: [0, -24],
+    });
+  }
+  function hydrateLeafletMaps(root) {
+    (root || document).querySelectorAll('[data-xcon-leaflet-map]').forEach((host) => {
+      if (host.dataset.xconLeafletBound === 'true' || host.dataset.xconLeafletBound === 'pending') return;
+      host.dataset.xconLeafletBound = 'pending';
+      Promise.all([loadLeafletRuntime(), ensureLeafletStyles(host.getRootNode ? host.getRootNode() : document)]).then(([L]) => {
+        if (!L || typeof L.map !== 'function') throw new Error('Leaflet unavailable');
+        const lat = Number(host.getAttribute('data-latitude') || 37.5665);
+        const lng = Number(host.getAttribute('data-longitude') || 126.978);
+        const zoom = Number(host.getAttribute('data-zoom') || 10);
+        const showControls = host.getAttribute('data-xcon-map-show-controls') !== 'false';
+        const enableZoom = host.getAttribute('data-xcon-map-enable-zoom') !== 'false';
+        const enablePan = host.getAttribute('data-xcon-map-enable-pan') !== 'false';
+        const tileUrl = host.getAttribute('data-xcon-map-tile-url') || 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        const attribution = host.getAttribute('data-xcon-map-attribution') || '(C) OpenStreetMap contributors';
+        host.innerHTML = '';
+        host.classList.add('xa-map-static--live');
+        const map = L.map(host, {
+          zoomControl: showControls,
+          dragging: enablePan,
+          scrollWheelZoom: enableZoom,
+          doubleClickZoom: enableZoom,
+          boxZoom: enableZoom,
+          keyboard: enableZoom,
+          attributionControl: true,
+        }).setView([lat, lng], zoom);
+        L.tileLayer(tileUrl, {
+          attribution,
+          maxZoom: 19,
+        }).addTo(map);
+        host._xconLeafletMap = map;
+        host._leaflet_map = map;
+        parseLeafletMarkers(host).forEach((marker, index) => {
+          const markerLat = Number(marker && (marker.lat ?? marker.latitude));
+          const markerLng = Number(marker && (marker.lng ?? marker.longitude));
+          if (!Number.isFinite(markerLat) || !Number.isFinite(markerLng)) return;
+          const label = String((marker && (marker.label ?? marker.title ?? marker.popup)) || index + 1);
+          const icon = xconLeafletMarkerIcon(L, marker, label);
+          const pin = L.marker([markerLat, markerLng], icon ? { icon } : undefined).addTo(map);
+          if (label) pin.bindPopup(label);
+        });
+        applyLeafletMapLayers(L, map, host);
+        window.setTimeout(() => map.invalidateSize(), 50);
+        host.dataset.xconLeafletBound = 'true';
+      }).catch(() => {
+        host.dataset.xconLeafletBound = 'failed';
+      });
+    });
+  }
   function hydrate(root) {
     (root || document).querySelectorAll('[data-xcon-carousel="true"]').forEach((banner) => {
       sync(banner);
@@ -1743,6 +1941,7 @@ export const viewerScript = `
     hydrateShapeImageAnimations(root || document);
     hydrateFlipbooks(root || document);
     hydrateSpanGrids(root || document);
+    hydrateLeafletMaps(root || document);
   }
   window.xconViewerHydrate = hydrate;
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => hydrate(document));
@@ -1752,12 +1951,12 @@ export const viewerScript = `
 
 export function render(input: unknown, target: HTMLElement, options: RenderOptions = {}): void {
   target.replaceChildren();
-  const root = toComponent(input);
+  const resolved = resolveRenderInput(input);
   const host = target.ownerDocument.createElement('div');
   host.className = 'xcon-viewer-host';
   host.setAttribute('data-xcon-viewer-host', '');
-  host.setAttribute('style', xconHostFrameStyle(root));
-  host.innerHTML = renderToHtml(root, options);
+  host.setAttribute('style', xconHostFrameStyle(resolved.root));
+  host.innerHTML = renderResolvedToHtml(resolved, options);
   target.appendChild(host);
   hydrateXconViewer(target);
 }
@@ -1784,16 +1983,22 @@ function xconHostFrameStyle(root: XconObject): string {
 }
 
 export function renderToHtml(input: unknown, options: RenderOptions = {}): string {
-  const root = toComponent(input);
+  return renderResolvedToHtml(resolveRenderInput(input), options);
+}
+
+function renderResolvedToHtml(resolved: ResolvedRenderInput, options: RenderOptions = {}): string {
+  const root = resolved.root;
   const context: RenderContext = {
     options: { ...defaultOptions, ...options },
     nodes: 0,
+    componentBounds: collectComponentBounds(root),
   };
-  return renderComponent(root, context, 0, { parentFlow: false }, 'root');
+  return renderComponent(root, context, 0, { parentFlow: false }, 'root') + renderXconDiagnostics(resolved.diagnostics);
 }
 
 export function renderDocument(input: unknown, options: RenderOptions = {}): string {
-  const root = toComponent(input);
+  const resolved = resolveRenderInput(input);
+  const root = resolved.root;
   const framedHtml = tag(
     'div',
     {
@@ -1801,7 +2006,7 @@ export function renderDocument(input: unknown, options: RenderOptions = {}): str
       'data-xcon-viewer-host': '',
       style: xconHostFrameStyle(root),
     },
-    renderToHtml(root, options),
+    renderResolvedToHtml(resolved, options),
   );
   return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>XCON Render</title><style id="xcon-viewer-style">${viewerCss}</style></head><body style="margin:0;padding:0;background:transparent;">${framedHtml}<script id="xcon-viewer-runtime">${viewerScript}</script></body></html>`;
 }
@@ -1830,6 +2035,7 @@ export function hydrateXconViewer(root: ParentNode = document): void {
   hydrateShapeImageAnimations(root);
   hydrateFlipbooks(root);
   hydrateSpanGrids(root);
+  hydrateLeafletMaps(root);
 }
 
 function hydrateTextFields(root: ParentNode = document): void {
@@ -2883,6 +3089,217 @@ function hydrateSpanGrids(root: ParentNode = document): void {
   });
 }
 
+function loadLeafletRuntime(): Promise<unknown> {
+  const current = (window as Window & { L?: unknown }).L as { map?: unknown } | undefined;
+  if (current && typeof current.map === 'function') return Promise.resolve(current);
+  if (leafletRuntimePromise) return leafletRuntimePromise;
+  leafletRuntimePromise = new Promise((resolve, reject) => {
+    void ensureLeafletStyles(document);
+    const existing = document.querySelector<HTMLScriptElement>('script[data-xcon-leaflet-js]');
+    if (existing) {
+      existing.addEventListener('load', () => resolve((window as Window & { L?: unknown }).L));
+      existing.addEventListener('error', reject);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = leafletJsUrl;
+    script.async = true;
+    script.defer = true;
+    script.setAttribute('data-xcon-leaflet-js', 'true');
+    script.addEventListener('load', () => resolve((window as Window & { L?: unknown }).L));
+    script.addEventListener('error', reject);
+    document.head.appendChild(script);
+  });
+  return leafletRuntimePromise;
+}
+
+function ensureLeafletStyles(rootNode: Document | ShadowRoot): Promise<void> {
+  const target: DocumentFragment | HTMLElement = rootNode instanceof ShadowRoot ? rootNode : document.head;
+  if (target.querySelector('link[data-xcon-leaflet-css]')) return Promise.resolve();
+  return new Promise((resolve) => {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = leafletCssUrl;
+    link.setAttribute('data-xcon-leaflet-css', 'true');
+    link.addEventListener('load', () => resolve());
+    link.addEventListener('error', () => resolve());
+    target.appendChild(link);
+  });
+}
+
+function parseLeafletMarkers(host: HTMLElement): Array<Record<string, unknown>> {
+  try {
+    const parsed = JSON.parse(host.getAttribute('data-xcon-map-markers') || '[]') as unknown;
+    return Array.isArray(parsed) ? parsed.filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === 'object' && !Array.isArray(item)) : [];
+  } catch {
+    return [];
+  }
+}
+
+function parseLeafletJsonAttr<T>(host: HTMLElement, name: string, fallback: T): T {
+  try {
+    const raw = host.getAttribute(name);
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw) as unknown;
+    return parsed === undefined || parsed === null ? fallback : parsed as T;
+  } catch {
+    return fallback;
+  }
+}
+
+function leafletPoint(value: unknown): [number, number] | undefined {
+  const plain = toPlainValue(value);
+  if (Array.isArray(plain)) {
+    const lat = Number(plain[0]);
+    const lng = Number(plain[1]);
+    return Number.isFinite(lat) && Number.isFinite(lng) ? [lat, lng] : undefined;
+  }
+  const record = objectRecord(plain);
+  if (!record) return undefined;
+  const lat = Number(record.lat ?? record.latitude);
+  const lng = Number(record.lng ?? record.longitude);
+  return Number.isFinite(lat) && Number.isFinite(lng) ? [lat, lng] : undefined;
+}
+
+function leafletLayerPoints(value: unknown): Array<[number, number]> {
+  const record = objectRecord(toPlainValue(value));
+  const source = record ? record.points ?? record.path ?? record.coordinates ?? record.latlngs ?? record.latLngs : value;
+  if (!Array.isArray(source)) return [];
+  return source.map(leafletPoint).filter((point): point is [number, number] => Boolean(point));
+}
+
+function leafletLayerStyle(layer: unknown, fallbackColor: string): Record<string, unknown> {
+  const record = objectRecord(toPlainValue(layer)) ?? {};
+  const color = String(record.color ?? record.stroke ?? record.strokeColor ?? fallbackColor);
+  return {
+    color,
+    weight: finiteNumber(record.weight ?? record.strokeWidth, 3),
+    opacity: finiteNumber(record.opacity, 0.85),
+    fillColor: String(record.fillColor ?? record.fill ?? color),
+    fillOpacity: finiteNumber(record.fillOpacity, 0.18),
+  };
+}
+
+function leafletHeatPoint(value: unknown): [number, number, number] | undefined {
+  const plain = toPlainValue(value);
+  if (Array.isArray(plain)) {
+    const lat = Number(plain[0]);
+    const lng = Number(plain[1]);
+    const intensity = finiteNumber(plain[2], 1);
+    return Number.isFinite(lat) && Number.isFinite(lng) ? [lat, lng, intensity] : undefined;
+  }
+  const record = objectRecord(plain);
+  if (!record) return undefined;
+  const lat = Number(record.lat ?? record.latitude);
+  const lng = Number(record.lng ?? record.longitude);
+  const intensity = finiteNumber(record.value ?? record.intensity ?? record.weight, 1);
+  return Number.isFinite(lat) && Number.isFinite(lng) ? [lat, lng, intensity] : undefined;
+}
+
+function applyLeafletMapLayers(leaflet: unknown, map: unknown, host: HTMLElement): void {
+  const L = leaflet as {
+    polyline?: (points: Array<[number, number]>, options: Record<string, unknown>) => { addTo: (target: unknown) => unknown };
+    polygon?: (points: Array<[number, number]>, options: Record<string, unknown>) => { addTo: (target: unknown) => unknown };
+    heatLayer?: (points: Array<[number, number, number]>, options: Record<string, unknown>) => { addTo: (target: unknown) => unknown };
+  };
+  parseLeafletJsonAttr<unknown[]>(host, 'data-xcon-map-polylines', []).forEach((layer) => {
+    const points = leafletLayerPoints(layer);
+    if (points.length < 2 || typeof L.polyline !== 'function') return;
+    L.polyline(points, leafletLayerStyle(layer, '#2563eb')).addTo(map);
+  });
+  parseLeafletJsonAttr<unknown[]>(host, 'data-xcon-map-polygons', []).forEach((layer) => {
+    const points = leafletLayerPoints(layer);
+    if (points.length < 3 || typeof L.polygon !== 'function') return;
+    L.polygon(points, leafletLayerStyle(layer, '#14b8a6')).addTo(map);
+  });
+  const heatmap = parseLeafletJsonAttr<unknown[]>(host, 'data-xcon-map-heatmap', []).map(leafletHeatPoint).filter((point): point is [number, number, number] => Boolean(point));
+  if (heatmap.length && typeof L.heatLayer === 'function') {
+    L.heatLayer(heatmap, { radius: 24, blur: 18 }).addTo(map);
+  }
+}
+
+function leafletMarkerStatus(value: unknown): string {
+  return String(value ?? '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
+}
+
+function leafletMarkerIcon(
+  leaflet: unknown,
+  marker: Record<string, unknown>,
+  label: string,
+): unknown {
+  const L = leaflet as {
+    divIcon?: (options: Record<string, unknown>) => unknown;
+  };
+  if (!L || typeof L.divIcon !== 'function') return undefined;
+  const status = leafletMarkerStatus(marker.status);
+  return L.divIcon({
+    className: `xcon-leaflet-marker${status ? ` xcon-leaflet-marker--${status}` : ''}`,
+    html: escapeHtml(label.slice(0, 2) || '•'),
+    iconSize: [28, 28],
+    iconAnchor: [14, 28],
+    popupAnchor: [0, -24],
+  });
+}
+
+function hydrateLeafletMaps(root: ParentNode = document): void {
+  root.querySelectorAll<HTMLElement>('[data-xcon-leaflet-map]').forEach((host) => {
+    if (host.dataset.xconLeafletBound === 'true' || host.dataset.xconLeafletBound === 'pending') return;
+    host.dataset.xconLeafletBound = 'pending';
+    void Promise.all([loadLeafletRuntime(), ensureLeafletStyles(host.getRootNode() as Document | ShadowRoot)])
+      .then(([leaflet]) => {
+        const L = leaflet as {
+          map?: (element: HTMLElement, options: Record<string, unknown>) => {
+            setView: (center: [number, number], zoom: number) => unknown;
+            invalidateSize: () => void;
+          };
+          tileLayer?: (url: string, options: Record<string, unknown>) => { addTo: (map: unknown) => unknown };
+          marker?: (center: [number, number], options?: Record<string, unknown>) => { addTo: (map: unknown) => { bindPopup?: (label: string) => unknown } };
+        };
+        if (!L || typeof L.map !== 'function' || typeof L.tileLayer !== 'function') throw new Error('Leaflet unavailable');
+        const lat = Number(host.getAttribute('data-latitude') || 37.5665);
+        const lng = Number(host.getAttribute('data-longitude') || 126.978);
+        const zoom = Number(host.getAttribute('data-zoom') || 10);
+        const showControls = host.getAttribute('data-xcon-map-show-controls') !== 'false';
+        const enableZoom = host.getAttribute('data-xcon-map-enable-zoom') !== 'false';
+        const enablePan = host.getAttribute('data-xcon-map-enable-pan') !== 'false';
+        const tileUrl = host.getAttribute('data-xcon-map-tile-url') || openStreetMapTileUrl;
+        const attribution = host.getAttribute('data-xcon-map-attribution') || openStreetMapAttribution;
+        host.innerHTML = '';
+        host.classList.add('xa-map-static--live');
+        const map = L.map(host, {
+          zoomControl: showControls,
+          dragging: enablePan,
+          scrollWheelZoom: enableZoom,
+          doubleClickZoom: enableZoom,
+          boxZoom: enableZoom,
+          keyboard: enableZoom,
+          attributionControl: true,
+        });
+        map.setView([lat, lng], zoom);
+        L.tileLayer(tileUrl, { attribution, maxZoom: 19 }).addTo(map);
+        const hostWithMap = host as HTMLElement & { _xconLeafletMap?: unknown; _leaflet_map?: unknown };
+        hostWithMap._xconLeafletMap = map;
+        hostWithMap._leaflet_map = map;
+        parseLeafletMarkers(host).forEach((marker, index) => {
+          if (typeof L.marker !== 'function') return;
+          const markerLat = Number(marker.lat ?? marker.latitude);
+          const markerLng = Number(marker.lng ?? marker.longitude);
+          if (!Number.isFinite(markerLat) || !Number.isFinite(markerLng)) return;
+          const label = String(marker.label ?? marker.title ?? marker.popup ?? index + 1);
+          const icon = leafletMarkerIcon(leaflet, marker, label);
+          const pin = L.marker([markerLat, markerLng], icon ? { icon } : undefined).addTo(map);
+          if (label && typeof pin.bindPopup === 'function') pin.bindPopup(label);
+        });
+        applyLeafletMapLayers(leaflet, map, host);
+        window.setTimeout(() => map.invalidateSize(), 50);
+        host.dataset.xconLeafletBound = 'true';
+      })
+      .catch(() => {
+        host.dataset.xconLeafletBound = 'failed';
+      });
+  });
+}
+
 function extCarouselStateFor(carousel: HTMLElement): ExtCarouselRuntimeState {
   let state = extCarouselStates.get(carousel);
   if (!state) {
@@ -3277,6 +3694,10 @@ function renderComponent(
       return renderPanel(component, attrs, renderText(component, context) + children, context);
     case 'shape':
       return renderShape(component, attrs, context, children);
+    case 'line':
+      return renderLine(component, attrs);
+    case 'connector':
+      return renderConnector(component, attrs, context);
     case 'modal':
       return renderModal(component, attrs, children);
     case 'stack':
@@ -3420,9 +3841,72 @@ function renderComponent(
   }
 }
 
-function toComponent(input: unknown): XconObject {
-  if (isXconObject(input)) return input;
-  return fromJSONObject(input);
+export function resolveRenderInput(input: unknown): ResolvedRenderInput {
+  if (isXconObject(input)) return { root: input, diagnostics: [] };
+  if (typeof input === 'string') return resolveStringRenderInput(input);
+  return { root: fromJSONObject(input), diagnostics: [] };
+}
+
+function resolveStringRenderInput(input: string): ResolvedRenderInput {
+  const source = input.trim();
+  const syntax = detectXconSyntax(source);
+  if (syntax === 'sketch') {
+    const parsed = fromSketchLenient(source);
+    return { root: parsed.document, diagnostics: parsed.errors };
+  }
+  return { root: deserialize(source), diagnostics: [] };
+}
+
+function renderXconDiagnostics(errors: SketchRecoveryError[]): string {
+  if (errors.length === 0) return '';
+  const items = errors
+    .map((error) => tag('li', {}, `${escapeHtml(error.message)}${error.source ? `: ${escapeHtml(error.source)}` : ''}`))
+    .join('');
+  return tag(
+    'details',
+    {
+      class: 'xcon-viewer-diagnostics',
+      'data-xcon-diagnostics': '',
+      style: 'position:relative;z-index:1;margin:8px 0 0;padding:8px 10px;border:1px solid rgba(180,120,20,.24);border-radius:8px;background:rgba(255,247,237,.96);color:#7c2d12;font:12px/1.4 system-ui,sans-serif;box-sizing:border-box',
+    },
+    tag('summary', {}, `${errors.length} SKETCH parse warning${errors.length === 1 ? '' : 's'}`) + tag('ul', { style: 'margin:6px 0 0 18px;padding:0' }, items),
+  );
+}
+
+function collectComponentBounds(component: XconObject): Map<string, Rect> {
+  const bounds = new Map<string, Rect>();
+  collectComponentBoundsInto(component, bounds, 'root', 'root', [0, 0]);
+  return bounds;
+}
+
+function collectComponentBoundsInto(
+  component: XconObject,
+  bounds: Map<string, Rect>,
+  keyPath: string,
+  componentKey: string,
+  origin: [number, number],
+): void {
+  const pos = rectParts(component.get('pos')) ?? [0, 0, 0, 0];
+  const absolute: Rect = [origin[0] + pos[0], origin[1] + pos[1], pos[2], pos[3]];
+  registerComponentBound(bounds, keyPath, absolute, true);
+  registerComponentBound(bounds, componentKey, absolute);
+
+  const id = component.get('id');
+  if (typeof id === 'string' && id.trim()) registerComponentBound(bounds, id.trim(), absolute);
+  const name = component.get('name');
+  if (typeof name === 'string' && name.trim()) registerComponentBound(bounds, name.trim(), absolute);
+
+  const components = component.get('components');
+  if (!isXconObject(components)) return;
+  components.forEach((child, key) => {
+    if (key === 'componentsOrder' || !isXconObject(child)) return;
+    collectComponentBoundsInto(child, bounds, `${keyPath}~${key}`, key, [absolute[0], absolute[1]]);
+  });
+}
+
+function registerComponentBound(bounds: Map<string, Rect>, key: string, rect: Rect, overwrite = false): void {
+  if (!key || (!overwrite && bounds.has(key))) return;
+  bounds.set(key, rect);
 }
 
 function baseAttributes(type: string, style: string, component: XconObject, keyPath: string): Record<string, string | undefined> {
@@ -3560,6 +4044,164 @@ function renderShape(
   children: string,
 ): string {
   return tag('div', shapeAttrs(component, attrs, context), shapeContent(component, context) + children);
+}
+
+function renderConnector(component: XconObject, attrs: Record<string, string | undefined>, context: RenderContext): string {
+  const from = resolveConnectorPoint(component.get('from'), context);
+  const to = resolveConnectorPoint(component.get('to'), context);
+  if (!from || !to) {
+    return tag(
+      'div',
+      attrsWithClass(attrsWithAppendedStyle(attrs, 'pointer-events:none;background:transparent'), 'xa-line xa-connector xa-connector--missing'),
+      renderText(component, context),
+    );
+  }
+
+  const left = Math.min(from[0], to[0]);
+  const top = Math.min(from[1], to[1]);
+  const width = Math.abs(to[0] - from[0]);
+  const height = Math.abs(to[1] - from[1]);
+  const line = component.deepClone();
+  line.set('pos', [left, top, width, height]);
+  line.set('from', [from[0] - left, from[1] - top]);
+  line.set('to', [to[0] - left, to[1] - top]);
+  if (!line.contains('end') && !line.contains('markerEnd') && !line.contains('arrow')) {
+    line.set('end', 'arrow');
+  }
+  return renderLine(
+    line,
+    attrsWithStyle(attrs, buildStyle(line, { parentFlow: false }, { includeAutoLayout: false })),
+  );
+}
+
+function resolveConnectorPoint(value: unknown, context: RenderContext): [number, number] | null {
+  const endpoint = connectorEndpoint(value);
+  if (!endpoint) return null;
+  const rect = context.componentBounds.get(endpoint.target) ?? context.componentBounds.get(`root~${endpoint.target}`);
+  if (!rect) return null;
+  return anchorPoint(rect, endpoint.anchor);
+}
+
+function connectorEndpoint(value: unknown): { target: string; anchor: string } | null {
+  if (typeof value === 'string') {
+    const parsed = parseConnectorEndpointString(value);
+    return parsed ? { target: parsed.target, anchor: parsed.anchor } : null;
+  }
+  if (!isXconObject(value)) return null;
+  const target = value.get('target');
+  if (typeof target !== 'string' || !target.trim()) return null;
+  const anchor = value.get('anchor');
+  return { target: target.trim(), anchor: typeof anchor === 'string' && anchor.trim() ? anchor.trim() : 'center' };
+}
+
+function parseConnectorEndpointString(value: string): { target: string; anchor: string } | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (!trimmed.includes('.')) return { target: trimmed, anchor: 'center' };
+  const parts = trimmed.split('.');
+  const anchor = parts.pop() || 'center';
+  const target = parts.join('.');
+  return target ? { target, anchor } : null;
+}
+
+function anchorPoint(rect: Rect, rawAnchor: string): [number, number] {
+  const anchor = rawAnchor.trim().toLowerCase();
+  const left = rect[0];
+  const top = rect[1];
+  const right = rect[0] + rect[2];
+  const bottom = rect[1] + rect[3];
+  const centerX = rect[0] + rect[2] / 2;
+  const centerY = rect[1] + rect[3] / 2;
+  if (anchor === 'left' || anchor === 'start') return [left, centerY];
+  if (anchor === 'right' || anchor === 'end') return [right, centerY];
+  if (anchor === 'top') return [centerX, top];
+  if (anchor === 'bottom') return [centerX, bottom];
+  return [centerX, centerY];
+}
+
+function renderLine(component: XconObject, attrs: Record<string, string | undefined>): string {
+  const pos = rectParts(component.get('pos')) ?? [0, 0, 0, 0];
+  const localWidth = Math.max(0, pos[2]);
+  const localHeight = Math.max(0, pos[3]);
+  const from = pointParts(component.get('from')) ?? [0, 0];
+  const to = pointParts(component.get('to')) ?? [localWidth, localHeight];
+  const strokeWidth = lineStrokeWidth(component.get('width') ?? component.get('strokeWidth') ?? component.get('weight'));
+  const padding = Math.max(6, strokeWidth * 3);
+  const minX = Math.min(from[0], to[0]) - padding;
+  const minY = Math.min(from[1], to[1]) - padding;
+  const svgWidth = Math.max(1, Math.abs(to[0] - from[0])) + padding * 2;
+  const svgHeight = Math.max(1, Math.abs(to[1] - from[1])) + padding * 2;
+  const x1 = from[0] - minX;
+  const y1 = from[1] - minY;
+  const x2 = to[0] - minX;
+  const y2 = to[1] - minY;
+  const stroke = cssColor(component.get('color') ?? component.get('stroke') ?? component.get('strokeColor')) ?? 'currentColor';
+  const markerStart = lineMarker(component.get('start') ?? component.get('markerStart'));
+  const markerEnd = lineMarker(component.get('end') ?? component.get('markerEnd') ?? component.get('arrow'));
+  const idBase = domIdFromAttrs(attrs);
+  const defs = renderLineMarkers(idBase, stroke, markerStart, markerEnd);
+  const label = component.get('label') ?? component.get('text');
+  const labelHtml = label === undefined || label === null || String(label) === ''
+    ? ''
+    : tag('text', {
+        x: trimNumber((x1 + x2) / 2),
+        y: trimNumber((y1 + y2) / 2 - Math.max(7, strokeWidth * 2)),
+        fill: cssColor(component.get('labelColor') ?? component.get('textColor') ?? component.get('color')) ?? stroke,
+        'font-size': attr(component.get('fontSize') ?? fontValue(component, 'size') ?? 12),
+        'font-weight': attr(fontValue(component, 'weight') ?? 700),
+        'text-anchor': 'middle',
+        'dominant-baseline': 'central',
+      }, escapeHtml(String(label)));
+
+  const lineAttrs: Record<string, string | undefined> = {
+    x1: trimNumber(x1),
+    y1: trimNumber(y1),
+    x2: trimNumber(x2),
+    y2: trimNumber(y2),
+    stroke,
+    'stroke-width': trimNumber(strokeWidth),
+    'stroke-linecap': lineCap(component.get('cap') ?? component.get('lineCap')),
+    'stroke-dasharray': lineDashArray(component.get('style') ?? component.get('lineStyle') ?? component.get('dash'), strokeWidth),
+    'marker-start': markerStart ? `url(#${idBase}_${markerStart}_start)` : undefined,
+    'marker-end': markerEnd ? `url(#${idBase}_${markerEnd}_end)` : undefined,
+  };
+
+  return tag(
+    'div',
+    attrsWithClass(attrsWithAppendedStyle(attrs, 'overflow:visible;pointer-events:none;background:transparent'), 'xa-line'),
+    tag('svg', {
+      class: 'xa-line__svg',
+      viewBox: `0 0 ${trimNumber(svgWidth)} ${trimNumber(svgHeight)}`,
+      width: trimNumber(svgWidth),
+      height: trimNumber(svgHeight),
+      style: `position:absolute;left:${trimNumber(minX)}px;top:${trimNumber(minY)}px;overflow:visible`,
+      'aria-hidden': 'true',
+      focusable: 'false',
+    }, defs + tag('line', lineAttrs, '') + labelHtml),
+  );
+}
+
+function renderLineMarkers(idBase: string, stroke: string, markerStart: string | null, markerEnd: string | null): string {
+  const markers: string[] = [];
+  if (markerStart === 'arrow') markers.push(renderLineArrowMarker(`${idBase}_${markerStart}_start`, stroke, true));
+  if (markerEnd === 'arrow') markers.push(renderLineArrowMarker(`${idBase}_${markerEnd}_end`, stroke, false));
+  return markers.length ? tag('defs', {}, markers.join('')) : '';
+}
+
+function renderLineArrowMarker(id: string, color: string, reverse: boolean): string {
+  return tag('marker', {
+    id,
+    viewBox: '0 0 10 10',
+    refX: reverse ? '2' : '8',
+    refY: '5',
+    markerWidth: '6',
+    markerHeight: '6',
+    orient: reverse ? 'auto-start-reverse' : 'auto',
+    markerUnits: 'strokeWidth',
+  }, tag('path', {
+    d: reverse ? 'M 8 0 L 0 5 L 8 10 z' : 'M 0 0 L 10 5 L 0 10 z',
+    fill: color,
+  }, ''));
 }
 
 function shapeAttrs(component: XconObject, attrs: Record<string, string | undefined>, context: RenderContext): Record<string, string | undefined> {
@@ -7286,7 +7928,7 @@ function renderAdvancedDataViz(component: XconObject, attrs: Record<string, stri
       'data-xcon-dataviz-config': jsonAttr(config),
       'data-xcon-dataviz-interactive': String(interactive),
     },
-    renderStaticDataViz(data, vizType),
+    renderStaticDataViz(data, vizType, config),
   );
   return tag('div', rootAttrs, preview + advancedLoading(`dataviz-loading-${key}`, 'dataviz-loading', '데이터 시각화 로딩 중...'));
 }
@@ -7383,9 +8025,31 @@ function renderAdvancedCalendar(component: XconObject, attrs: Record<string, str
   return tag('div', advancedAttrs(attrs, '', key, ''), tag('div', { class: 'xa-calendar-container', style: 'width:100%;height:100%;' }, calendarBody + mapCalendarLoading(`calendar-loading-${key}`, 'xa-calendar-loading', '캘린더 로딩 중...')));
 }
 
+function advancedRootStyle(attrs: Record<string, string | undefined>, style: string): string {
+  if (!style) return style;
+  const baseStyle = attrs.style ?? '';
+  const protectedProps = new Set<string>();
+  if (/\bposition\s*:/i.test(baseStyle)) protectedProps.add('position');
+  if (/\bwidth\s*:/i.test(baseStyle)) protectedProps.add('width');
+  if (/\bheight\s*:/i.test(baseStyle)) {
+    protectedProps.add('height');
+    protectedProps.add('min-height');
+  }
+  if (protectedProps.size === 0) return style;
+  return style
+    .split(';')
+    .map((part) => part.trim())
+    .filter((part) => {
+      if (!part) return false;
+      const prop = part.split(':', 1)[0]?.trim().toLowerCase();
+      return !protectedProps.has(prop);
+    })
+    .join(';');
+}
+
 function advancedAttrs(attrs: Record<string, string | undefined>, className: string, key: string, style: string): Record<string, string | undefined> {
   const withClass = className ? attrsWithClass(attrs, className) : attrs;
-  return { ...attrsWithAppendedStyle(withClass, style), 'data-component-key': key };
+  return { ...attrsWithAppendedStyle(withClass, advancedRootStyle(attrs, style)), 'data-component-key': key };
 }
 
 function componentDomKey(attrs: Record<string, string | undefined>): string {
@@ -7437,6 +8101,13 @@ function jsonAttr(value: unknown): string {
   } catch {
     return 'null';
   }
+}
+
+function hasJsonData(value: unknown): boolean {
+  const plain = toPlainValue(value);
+  if (Array.isArray(plain)) return plain.length > 0;
+  if (plain && typeof plain === 'object') return Object.keys(plain as Record<string, unknown>).length > 0;
+  return plain !== undefined && plain !== null && plain !== '';
 }
 
 function spanGridData(component: XconObject): unknown[][] {
@@ -7491,6 +8162,8 @@ function spanGridConfig(component: XconObject, data: unknown[][]): Record<string
   copySpanGridConfigValue(config, 'fixedRows', component.get('fixedRows') ?? component.get('fixedRowCount'));
   copySpanGridConfigValue(config, 'fixedColumns', component.get('fixedColumns') ?? component.get('fixedColumnCount'));
   copySpanGridConfigValue(config, 'gridBorder', toPlainValue(component.get('gridBorder') ?? snapshotRecord?.gridBorder));
+  copySpanGridConfigValue(config, 'backgroundColor', component.get('backgroundColor') ?? component.get('bgColor') ?? component.get('bg') ?? snapshotRecord?.backgroundColor ?? snapshotRecord?.bgColor ?? snapshotRecord?.bg);
+  copySpanGridConfigValue(config, 'backColor', component.get('backColor') ?? snapshotRecord?.backColor);
   copySpanGridConfigValue(config, 'zoom', component.get('zoom'));
   copySpanGridConfigValue(config, 'scrollMode', component.get('scrollMode'));
   copySpanGridConfigValue(config, 'reserveScrollbarInViewport', component.get('reserveScrollbarInViewport'));
@@ -7545,6 +8218,7 @@ type StaticSpanGridMerge = {
 function renderStaticSpanGrid(data: unknown[][], config: Record<string, unknown> = {}): string {
   const rows = normalizeSpanGridRows(data).slice(0, 80);
   if (rows.length === 0) return tag('div', { class: 'xa-spangrid-empty' }, 'No grid data');
+  const gridBackground = config.backColor ?? config.backgroundColor ?? config.bgColor ?? config.bg;
   const columnCount = Math.max(1, ...rows.map((row) => row.length));
   const normalized = rows.map((row) => Array.from({ length: columnCount }, (_, index) => row[index] ?? ''));
   const columnWidths = spanGridColumnPixelWidths(config, columnCount);
@@ -7614,7 +8288,7 @@ function renderStaticSpanGrid(data: unknown[][], config: Record<string, unknown>
     }
     if (rowHeights[rowIndex]) styles.push(`height:${rowHeights[rowIndex]}px`);
     if (gridBorderColor) styles.push(`border-color:${gridBorderColor}`);
-    appendSpanGridCellStyle(styles, cellRecord);
+    appendSpanGridCellStyle(styles, cellRecord, gridBackground);
     if (styles.length > 0) attrs.style = styles.join(';') + ';';
     return tag(tagName, attrs, escapeHtml(spanGridCellText(cell)));
   };
@@ -7729,9 +8403,9 @@ function spanGridTotalPixels(values: number[]): number {
   return values.reduce((sum, value) => sum + Math.max(0, value), 0);
 }
 
-function appendSpanGridCellStyle(styles: string[], cell: Record<string, unknown> | undefined): void {
+function appendSpanGridCellStyle(styles: string[], cell: Record<string, unknown> | undefined, fallbackBackground?: unknown): void {
   if (!cell) return;
-  const background = safeCssValue(cssColor(cell.backColor ?? cell.backgroundColor ?? cell.bg));
+  const background = safeCssValue(cssColor(cell.backColor ?? cell.backgroundColor ?? cell.bg ?? fallbackBackground));
   const foreground = safeCssValue(cssColor(cell.foreColor ?? cell.color ?? cell.fg));
   const font = safeCssValue(cell.font);
   const alignment = spanGridTextAlignment(cell.textAlign ?? cell.align ?? cell.alignment);
@@ -7821,76 +8495,483 @@ function contextlessRichText(value: unknown): string {
   return linesToBreaks(String(value));
 }
 
-function chartRows(data: unknown): Array<{ label: string; value: number }> {
+type ChartRow = { label: string; value: number; color?: string };
+
+function chartRows(data: unknown): ChartRow[] {
+  const plain = toPlainValue(data);
+  if (Array.isArray(plain)) {
+    return plain.map((item, index) => chartRowFromSimpleValue(item, index)).filter((row): row is ChartRow => Boolean(row));
+  }
+  if (!plain || typeof plain !== 'object') return [];
+  const obj = plain as Record<string, unknown>;
+  const labels = Array.isArray(obj.labels) ? obj.labels.map(String) : [];
+  const datasets = Array.isArray(obj.datasets) ? obj.datasets : [];
+  const first = datasets[0] && typeof datasets[0] === 'object' ? datasets[0] as Record<string, unknown> : undefined;
+  const values = Array.isArray(first?.data) ? first.data.map(Number) : [];
+  return values.map((value, index) => ({
+    label: labels[index] ?? String(index + 1),
+    value: Number.isFinite(value) ? value : 0,
+    color: chartPreviewColor(first?.backgroundColor ?? first?.borderColor, index),
+  }));
+}
+
+function chartRowFromSimpleValue(item: unknown, index: number): ChartRow | undefined {
+  const plain = toPlainValue(item);
+  if (plain && typeof plain === 'object' && !Array.isArray(plain)) {
+    const record = plain as Record<string, unknown>;
+    return {
+      label: String(record.label ?? record.name ?? record.title ?? index + 1),
+      value: finiteNumber(record.value ?? record.y ?? record.count ?? record.amount ?? record.data, 0),
+      color: cssColor(record.color ?? record.backgroundColor ?? record.borderColor),
+    };
+  }
+  if (plain === undefined || plain === null || plain === '') return undefined;
+  return {
+    label: String(index + 1),
+    value: finiteNumber(plain, 0),
+  };
+}
+
+const chartPreviewPalette = [
+  'var(--xcon-chart-accent, var(--accent, #2563eb))',
+  'var(--xcon-chart-blue, var(--blue, #0ea5e9))',
+  'var(--xcon-chart-green, var(--green, #22c55e))',
+  'var(--xcon-chart-yellow, var(--yellow, #f59e0b))',
+  'var(--xcon-chart-red, var(--red, #ef4444))',
+  '#8B5CF6',
+  '#0EA5E9',
+  '#F97316',
+];
+
+type ChartSeries = { label: string; rows: ChartRow[]; color: string };
+
+function chartPreviewColor(value: unknown, index: number): string {
+  if (Array.isArray(value)) return cssColor(value[index] ?? value[0]) ?? chartPreviewPalette[index % chartPreviewPalette.length];
+  return cssColor(value) ?? chartPreviewPalette[index % chartPreviewPalette.length];
+}
+
+function chartSeriesRows(data: unknown): ChartSeries[] {
+  const plain = toPlainValue(data);
+  if (!plain || typeof plain !== 'object' || Array.isArray(plain)) return [];
+  const obj = plain as Record<string, unknown>;
+  const labels = Array.isArray(obj.labels) ? obj.labels.map(String) : [];
+  const datasets = Array.isArray(obj.datasets) ? obj.datasets : [];
+  return datasets.map((dataset, datasetIndex) => {
+    const record = toPlainValue(dataset);
+    if (!record || typeof record !== 'object' || Array.isArray(record)) return null;
+    const source = record as Record<string, unknown>;
+    const values = Array.isArray(source.data) ? source.data.map(Number) : [];
+    const rows = values.map((value, index) => ({
+      label: labels[index] ?? String(index + 1),
+      value: Number.isFinite(value) ? value : 0,
+    }));
+    if (rows.length === 0) return null;
+    return {
+      label: String(source.label ?? `Series ${datasetIndex + 1}`),
+      rows,
+      color: chartPreviewColor(source.borderColor ?? source.backgroundColor, datasetIndex),
+    };
+  }).filter((series): series is ChartSeries => Boolean(series));
+}
+
+type ChartPointRow = { label: string; x: number; y: number; r: number };
+
+function chartPointRows(data: unknown): ChartPointRow[] {
   const plain = toPlainValue(data);
   if (!plain || typeof plain !== 'object' || Array.isArray(plain)) return [];
   const obj = plain as Record<string, unknown>;
   const labels = Array.isArray(obj.labels) ? obj.labels.map(String) : [];
   const datasets = Array.isArray(obj.datasets) ? obj.datasets : [];
   const first = datasets[0] && typeof datasets[0] === 'object' ? datasets[0] as Record<string, unknown> : undefined;
-  const values = Array.isArray(first?.data) ? first.data.map(Number) : [];
-  return values.map((value, index) => ({ label: labels[index] ?? String(index + 1), value: Number.isFinite(value) ? value : 0 }));
+  const values = Array.isArray(first?.data) ? first.data : [];
+  return values.map((value, index) => {
+    const point = toPlainValue(value);
+    if (point && typeof point === 'object' && !Array.isArray(point)) {
+      const record = point as Record<string, unknown>;
+      return {
+        label: labels[index] ?? String(record.label ?? record.name ?? index + 1),
+        x: finiteNumber(record.x, index + 1),
+        y: finiteNumber(record.y ?? record.value, 0),
+        r: Math.max(3, Math.min(22, finiteNumber(record.r ?? record.radius ?? record.size, 7))),
+      };
+    }
+    const numeric = finiteNumber(value, 0);
+    return {
+      label: labels[index] ?? String(index + 1),
+      x: index + 1,
+      y: numeric,
+      r: Math.max(4, Math.min(18, Math.sqrt(Math.abs(numeric) || 1) + 3)),
+    };
+  }).filter((row) => Number.isFinite(row.x) && Number.isFinite(row.y) && Number.isFinite(row.r));
+}
+
+function finiteNumber(value: unknown, fallback: number): number {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
+}
+
+function chartTypeKey(chartType: string): string {
+  return String(chartType ?? '').trim().toLowerCase().replace(/[\s_-]+/g, '');
 }
 
 function renderStaticChartPreview(component: XconObject, data: unknown, chartType: string): string {
   const rows = chartRows(data);
+  const type = chartTypeKey(chartType);
+  if (type === 'scatter' || type === 'bubble') {
+    const points = chartPointRows(data);
+    if (points.length === 0) return rows.length === 0 ? '' : renderPointPreview(rows.map((row, index) => ({ label: row.label, x: index + 1, y: row.value, r: 7 })), 'xa-chart-preview', type === 'bubble');
+    return renderPointPreview(points, 'xa-chart-preview', type === 'bubble');
+  }
   if (rows.length === 0) return '';
-  if (chartType === 'pie' || chartType === 'doughnut') return renderPiePreview(rows, 'xa-chart-preview');
-  if (chartType === 'line') return renderLinePreview(rows, 'xa-chart-preview');
+  if (type === 'pie') return renderPiePreview(rows, 'xa-chart-preview');
+  if (type === 'doughnut') return renderDoughnutPreview(rows, 'xa-chart-preview');
+  if (type === 'line') {
+    const series = chartSeriesRows(data);
+    return series.length > 0 ? renderLineSeriesPreview(series, 'xa-chart-preview') : renderLinePreview(rows, 'xa-chart-preview');
+  }
+  if (type === 'radar') return renderRadarPreview(rows, 'xa-chart-preview');
+  if (type === 'polararea') return renderPolarAreaPreview(rows, 'xa-chart-preview');
   return renderBarPreview(rows, 'xa-chart-preview');
 }
 
-function renderStaticDataViz(data: unknown, vizType: string): string {
-  const rows = Array.isArray(data)
-    ? data
-        .map((item, index) => {
-          const plain = toPlainValue(item);
-          if (!plain || typeof plain !== 'object' || Array.isArray(plain)) return { label: String(index + 1), value: Number(plain) || 0 };
-          const obj = plain as Record<string, unknown>;
-          return { label: String(obj.label ?? obj.name ?? index + 1), value: Number(obj.value ?? obj.count ?? 0) || 0 };
-        })
-        .filter((row) => Number.isFinite(row.value))
-    : [];
+function renderStaticDataViz(data: unknown, vizType: string, config: unknown = {}): string {
+  const type = chartTypeKey(vizType);
+  if (type === 'treemap') return renderTreemapPreview(dataVizRows(data), 'xa-dataviz-preview');
+  if (type === 'sunburst') return renderSunburstPreview(dataVizRows(data), 'xa-dataviz-preview');
+  if (type === 'forcegraph' || type === 'force') return renderForceGraphPreview(data, 'xa-dataviz-preview');
+  if (type === 'scatter' || type === 'bubble') {
+    const points = chartPointRows(data);
+    if (points.length > 0) return renderPointPreview(points, 'xa-dataviz-preview', type === 'bubble');
+  }
+  const rows = chartRows(data);
   if (rows.length === 0) return tag('div', { class: 'xa-dataviz-empty' }, 'No data');
-  if (vizType === 'pie') return renderPiePreview(rows, 'xa-dataviz-preview');
-  if (vizType === 'line') return renderLinePreview(rows, 'xa-dataviz-preview');
+  if (type === 'pie') return renderPiePreview(rows, 'xa-dataviz-preview');
+  if (type === 'doughnut') return renderDoughnutPreview(rows, 'xa-dataviz-preview');
+  if (type === 'line') {
+    const series = chartSeriesRows(data);
+    return series.length > 0 ? renderLineSeriesPreview(series, 'xa-dataviz-preview') : renderLinePreview(rows, 'xa-dataviz-preview');
+  }
+  if (type === 'radar') return renderRadarPreview(rows, 'xa-dataviz-preview');
+  if (type === 'polararea') return renderPolarAreaPreview(rows, 'xa-dataviz-preview');
+  const preferred = objectRecord(config)?.type ?? objectRecord(config)?.fallbackType;
+  if (preferred && chartTypeKey(String(preferred)) === 'line') return renderLinePreview(rows, 'xa-dataviz-preview');
   return renderBarPreview(rows, 'xa-dataviz-preview');
 }
 
-function renderBarPreview(rows: Array<{ label: string; value: number }>, className: string): string {
-  const max = Math.max(1, ...rows.map((row) => row.value));
-  const bars = rows.slice(0, 12).map((row, index) => {
-    const height = Math.max(6, Math.round((row.value / max) * 120));
-    const x = 24 + index * 38;
-    const y = 148 - height;
-    return tag('rect', { x: String(x), y: String(y), width: '24', height: String(height), rx: '4', fill: 'var(--accent)' }, '') +
-      tag('text', { x: String(x + 12), y: '168', 'text-anchor': 'middle', 'font-size': '10', fill: '#666' }, escapeHtml(row.label));
-  }).join('');
-  return tag('svg', { class: className, viewBox: '0 0 520 190', preserveAspectRatio: 'none', 'aria-hidden': 'true' }, tag('line', { x1: '16', y1: '150', x2: '500', y2: '150', stroke: '#ddd' }, '') + bars);
+function dataVizRows(data: unknown): ChartRow[] {
+  const rows: ChartRow[] = [];
+  const visit = (value: unknown, index: number): void => {
+    const plain = toPlainValue(value);
+    if (Array.isArray(plain)) {
+      plain.forEach((item, childIndex) => visit(item, childIndex));
+      return;
+    }
+    const record = objectRecord(plain);
+    if (!record) {
+      const numeric = finiteNumber(plain, Number.NaN);
+      if (Number.isFinite(numeric)) rows.push({ label: String(index + 1), value: numeric });
+      return;
+    }
+    const children = Array.isArray(record.children)
+      ? record.children
+      : Array.isArray(record.items)
+        ? record.items
+        : Array.isArray(record.nodes)
+          ? record.nodes
+          : undefined;
+    if (children && children.length > 0) {
+      children.forEach((item, childIndex) => visit(item, childIndex));
+      return;
+    }
+    const valueNumber = finiteNumber(record.value ?? record.count ?? record.size ?? record.amount ?? record.weight, 1);
+    rows.push({
+      label: String(record.label ?? record.name ?? record.title ?? record.id ?? index + 1),
+      value: Math.max(0, valueNumber),
+      color: cssColor(record.color ?? record.backgroundColor ?? record.fill),
+    });
+  };
+  visit(data, 0);
+  return rows.filter((row) => row.label && Number.isFinite(row.value)).slice(0, 24);
 }
 
-function renderLinePreview(rows: Array<{ label: string; value: number }>, className: string): string {
-  const max = Math.max(1, ...rows.map((row) => row.value));
-  const step = rows.length > 1 ? 460 / (rows.length - 1) : 0;
-  const points = rows.slice(0, 12).map((row, index) => `${30 + index * step},${150 - (row.value / max) * 120}`).join(' ');
-  const circles = points.split(' ').filter(Boolean).map((point) => {
-    const [cx, cy] = point.split(',');
-    return tag('circle', { cx, cy, r: '4', fill: 'var(--accent)' }, '');
+function renderTreemapPreview(rows: ChartRow[], className: string): string {
+  const visibleRows = rows.filter((row) => row.value > 0).slice(0, 10);
+  if (visibleRows.length === 0) return tag('div', { class: 'xa-dataviz-empty' }, 'No data');
+  const total = Math.max(1, visibleRows.reduce((sum, row) => sum + row.value, 0));
+  let x = 14;
+  let y = 16;
+  let rowHeight = 70;
+  const rects = visibleRows.map((row, index) => {
+    const width = Math.max(48, Math.round((row.value / total) * 470));
+    if (x + width > 506) {
+      x = 14;
+      y += 82;
+      rowHeight = 60;
+    }
+    const safeWidth = Math.min(width, 506 - x);
+    const rect = tag('rect', {
+      x: String(x),
+      y: String(y),
+      width: String(safeWidth),
+      height: String(rowHeight),
+      rx: '8',
+      fill: row.color ?? chartPreviewPalette[index % chartPreviewPalette.length],
+      opacity: '0.9',
+    }, '') +
+      tag('text', { x: String(x + 12), y: String(y + 26), 'font-size': '12', 'font-weight': '700', fill: '#ffffff' }, escapeHtml(row.label)) +
+      tag('text', { x: String(x + 12), y: String(y + 46), 'font-size': '11', fill: '#ffffff', opacity: '0.85' }, escapeHtml(trimNumber(row.value)));
+    x += safeWidth + 8;
+    return rect;
   }).join('');
-  return tag('svg', { class: className, viewBox: '0 0 520 190', preserveAspectRatio: 'none', 'aria-hidden': 'true' }, tag('line', { x1: '16', y1: '150', x2: '500', y2: '150', stroke: '#ddd' }, '') + tag('polyline', { points, fill: 'none', stroke: 'var(--accent)', 'stroke-width': '4', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, '') + circles);
+  return tag('svg', { class: `${className} ${className}--treemap`, viewBox: '0 0 520 190', preserveAspectRatio: 'none', 'aria-hidden': 'true' }, rects);
+}
+
+function renderSunburstPreview(rows: ChartRow[], className: string): string {
+  const visibleRows = rows.filter((row) => row.value > 0).slice(0, 10);
+  if (visibleRows.length === 0) return tag('div', { class: 'xa-dataviz-empty' }, 'No data');
+  const total = Math.max(1, visibleRows.reduce((sum, row) => sum + row.value, 0));
+  let current = -90;
+  const slices = visibleRows.map((row, index) => {
+    const span = (row.value / total) * 360;
+    const path = polarAreaPath(260, 95, 72, current, current + span);
+    const labelAngle = current + span / 2;
+    const labelPoint = polarPoint(260, 95, 94, labelAngle);
+    current += span;
+    return tag('path', {
+      d: path,
+      fill: row.color ?? chartPreviewPalette[index % chartPreviewPalette.length],
+      stroke: '#ffffff',
+      'stroke-width': '2',
+    }, '') +
+      tag('text', { x: trimNumber(labelPoint.x), y: trimNumber(labelPoint.y), 'font-size': '10', 'text-anchor': 'middle', fill: '#334155' }, escapeHtml(row.label.slice(0, 10)));
+  }).join('');
+  const center = tag('circle', { cx: '260', cy: '95', r: '34', fill: '#ffffff', stroke: '#e2e8f0' }, '') +
+    tag('text', { x: '260', y: '99', 'font-size': '12', 'font-weight': '700', 'text-anchor': 'middle', fill: '#0f172a' }, 'Total');
+  return tag('svg', { class: `${className} ${className}--sunburst`, viewBox: '0 0 520 190', preserveAspectRatio: 'none', 'aria-hidden': 'true' }, slices + center);
+}
+
+function renderForceGraphPreview(data: unknown, className: string): string {
+  const plain = toPlainValue(data);
+  const record = objectRecord(plain);
+  const rawNodes = Array.isArray(record?.nodes) ? record.nodes : dataVizRows(data).map((row) => ({ id: row.label, label: row.label, value: row.value, color: row.color }));
+  const nodes = rawNodes.slice(0, 12).map((node, index) => {
+    const nodeRecord = objectRecord(toPlainValue(node)) ?? {};
+    return {
+      id: String(nodeRecord.id ?? nodeRecord.key ?? nodeRecord.name ?? nodeRecord.label ?? index + 1),
+      label: String(nodeRecord.label ?? nodeRecord.name ?? nodeRecord.id ?? index + 1),
+      color: cssColor(nodeRecord.color ?? nodeRecord.backgroundColor) ?? chartPreviewPalette[index % chartPreviewPalette.length],
+    };
+  });
+  if (nodes.length === 0) return tag('div', { class: 'xa-dataviz-empty' }, 'No data');
+  const positions = new Map<string, { x: number; y: number }>();
+  nodes.forEach((node, index) => {
+    const angle = (Math.PI * 2 * index) / Math.max(1, nodes.length);
+    positions.set(node.id, { x: 260 + Math.cos(angle) * 170, y: 95 + Math.sin(angle) * 60 });
+  });
+  const rawLinks = Array.isArray(record?.links) ? record.links : Array.isArray(record?.edges) ? record.edges : [];
+  const links = rawLinks.map((link) => {
+    const linkRecord = objectRecord(toPlainValue(link)) ?? {};
+    const source = String(linkRecord.source ?? linkRecord.from ?? '');
+    const target = String(linkRecord.target ?? linkRecord.to ?? '');
+    const a = positions.get(source);
+    const b = positions.get(target);
+    if (!a || !b) return '';
+    return tag('line', { x1: trimNumber(a.x), y1: trimNumber(a.y), x2: trimNumber(b.x), y2: trimNumber(b.y), stroke: '#94a3b8', 'stroke-width': '2', opacity: '0.7' }, '');
+  }).join('');
+  const nodeHtml = nodes.map((node) => {
+    const point = positions.get(node.id) ?? { x: 260, y: 95 };
+    return tag('circle', { cx: trimNumber(point.x), cy: trimNumber(point.y), r: '14', fill: node.color, stroke: '#ffffff', 'stroke-width': '2' }, '') +
+      tag('text', { x: trimNumber(point.x), y: trimNumber(point.y + 30), 'font-size': '10', 'text-anchor': 'middle', fill: '#334155' }, escapeHtml(node.label.slice(0, 14)));
+  }).join('');
+  return tag('svg', { class: `${className} ${className}--force-graph`, viewBox: '0 0 520 190', preserveAspectRatio: 'none', 'aria-hidden': 'true' }, links + nodeHtml);
+}
+
+function renderBarPreview(rows: ChartRow[], className: string): string {
+  const visibleRows = rows.slice(0, 12);
+  const max = Math.max(1, ...visibleRows.map((row) => row.value));
+  const min = Math.min(0, ...visibleRows.map((row) => row.value));
+  const range = Math.max(1, max - min);
+  const baseline = 150 - ((0 - min) / range) * 120;
+  const bars = visibleRows.map((row, index) => {
+    const valueY = 150 - ((row.value - min) / range) * 120;
+    const height = Math.max(4, Math.round(Math.abs(baseline - valueY)));
+    const x = 24 + index * 38;
+    const y = Math.min(baseline, valueY);
+    return tag('rect', { x: String(x), y: trimNumber(y), width: '24', height: String(height), rx: '4', fill: row.color ?? chartPreviewPalette[index % chartPreviewPalette.length] }, '') +
+      tag('text', { x: String(x + 12), y: '168', 'text-anchor': 'middle', 'font-size': '10', fill: '#666' }, escapeHtml(row.label));
+  }).join('');
+  return tag('svg', { class: className, viewBox: '0 0 520 190', preserveAspectRatio: 'none', 'aria-hidden': 'true' }, tag('line', { x1: '16', y1: trimNumber(baseline), x2: '500', y2: trimNumber(baseline), stroke: '#ddd' }, '') + bars);
+}
+
+function renderLinePreview(rows: ChartRow[], className: string, color = chartPreviewPalette[0]): string {
+  return renderLineSeriesPreview([{ label: 'Series 1', rows, color }], className);
+}
+
+function renderLineSeriesPreview(series: ChartSeries[], className: string): string {
+  const visibleSeries = series.filter((item) => item.rows.length > 0).slice(0, 6);
+  const allRows = visibleSeries.flatMap((item) => item.rows);
+  if (allRows.length === 0) return '';
+  const max = Math.max(1, ...allRows.map((row) => row.value));
+  const min = Math.min(0, ...allRows.map((row) => row.value));
+  const range = Math.max(1, max - min);
+  const lines = visibleSeries.map((item) => {
+    const rows = item.rows.slice(0, 12);
+    const step = rows.length > 1 ? 460 / (rows.length - 1) : 0;
+    const points = rows.map((row, index) => `${30 + index * step},${150 - ((row.value - min) / range) * 120}`).join(' ');
+    const circles = points.split(' ').filter(Boolean).map((point) => {
+      const [cx, cy] = point.split(',');
+      return tag('circle', { cx, cy, r: '4', fill: item.color }, '');
+    }).join('');
+    return tag('polyline', { points, fill: 'none', stroke: item.color, 'stroke-width': '4', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, '') + circles;
+  }).join('');
+  const labels = (visibleSeries[0]?.rows ?? []).slice(0, 12).map((row, index) => {
+    const step = (visibleSeries[0]?.rows.length ?? 0) > 1 ? 460 / ((visibleSeries[0]?.rows.length ?? 1) - 1) : 0;
+    return tag('text', { x: trimNumber(30 + index * step), y: '172', 'text-anchor': 'middle', 'font-size': '10', fill: '#666' }, escapeHtml(row.label));
+  }).join('');
+  return tag('svg', { class: className, viewBox: '0 0 520 190', preserveAspectRatio: 'none', 'aria-hidden': 'true' }, tag('line', { x1: '16', y1: '150', x2: '500', y2: '150', stroke: '#ddd' }, '') + lines + labels);
 }
 
 function renderPiePreview(rows: Array<{ label: string; value: number }>, className: string): string {
   const total = Math.max(1, rows.reduce((sum, row) => sum + Math.max(0, row.value), 0));
+  const values = rows.slice(0, 8);
+  const colors = chartPreviewPalette;
+  let angle = -Math.PI / 2;
+  const slices = values.map((row, index) => {
+    const length = Math.max(0, row.value) / total * Math.PI * 2;
+    const start = angle;
+    const end = angle + length;
+    angle = end;
+    return tag('path', {
+      d: polarAreaPath(95, 95, 66, start, end),
+      fill: colors[index % colors.length],
+      stroke: '#fff',
+      'stroke-width': '2',
+    }, '');
+  }).join('');
+  return tag('svg', { class: `${className} ${className}--pie`, viewBox: '0 0 190 190', 'aria-hidden': 'true' }, tag('circle', { cx: '95', cy: '95', r: '68', fill: '#f8fafc' }, '') + slices);
+}
+
+function renderDoughnutPreview(rows: Array<{ label: string; value: number }>, className: string): string {
+  const total = Math.max(1, rows.reduce((sum, row) => sum + Math.max(0, row.value), 0));
   let offset = 25;
-  const slices = rows.slice(0, 6).map((row, index) => {
+  const slices = rows.slice(0, 8).map((row, index) => {
     const length = Math.max(0, row.value) / total * 100;
-    const color = ['var(--accent)', 'var(--blue)', 'var(--green)', 'var(--yellow)', 'var(--red)', '#8B5CF6'][index % 6];
+    const color = chartPreviewPalette[index % chartPreviewPalette.length];
     const slice = tag('circle', { cx: '95', cy: '95', r: '58', fill: 'none', stroke: color, 'stroke-width': '46', 'stroke-dasharray': `${length} ${100 - length}`, 'stroke-dashoffset': String(offset) }, '');
     offset -= length;
     return slice;
   }).join('');
-  return tag('svg', { class: className, viewBox: '0 0 190 190', 'aria-hidden': 'true' }, tag('circle', { cx: '95', cy: '95', r: '58', fill: 'none', stroke: '#eee', 'stroke-width': '46' }, '') + slices);
+  return tag('svg', { class: `${className} ${className}--doughnut`, viewBox: '0 0 190 190', 'aria-hidden': 'true' }, tag('circle', { cx: '95', cy: '95', r: '58', fill: 'none', stroke: '#eee', 'stroke-width': '46' }, '') + slices + tag('circle', { cx: '95', cy: '95', r: '28', fill: '#fff' }, ''));
+}
+
+function renderRadarPreview(rows: Array<{ label: string; value: number }>, className: string): string {
+  const values = rows.slice(0, 8);
+  const max = Math.max(1, ...values.map((row) => Math.abs(row.value)));
+  const center = 95;
+  const radius = 66;
+  const grid = [0.33, 0.66, 1].map((scale) =>
+    tag('polygon', { points: radarPoints(values.length, radius * scale, center), fill: 'none', stroke: '#e5e7eb', 'stroke-width': '1' }, ''),
+  ).join('');
+  const axes = values.map((_, index) => {
+    const point = radarPoint(index, values.length, radius, center);
+    return tag('line', { x1: String(center), y1: String(center), x2: trimNumber(point.x), y2: trimNumber(point.y), stroke: '#e5e7eb', 'stroke-width': '1' }, '');
+  }).join('');
+  const dataPoints = values.map((row, index) => {
+    const point = radarPoint(index, values.length, radius * Math.max(0, row.value) / max, center);
+    return `${trimNumber(point.x)},${trimNumber(point.y)}`;
+  }).join(' ');
+  const markers = dataPoints.split(' ').filter(Boolean).map((point) => {
+    const [cx, cy] = point.split(',');
+    return tag('circle', { cx, cy, r: '3.5', fill: chartPreviewPalette[0] }, '');
+  }).join('');
+  const labels = values.map((row, index) => {
+    const point = radarPoint(index, values.length, radius + 13, center);
+    return tag('text', { x: trimNumber(point.x), y: trimNumber(point.y + 3), 'text-anchor': 'middle', 'font-size': '9', fill: '#64748b' }, escapeHtml(row.label));
+  }).join('');
+  return tag(
+    'svg',
+    { class: `${className} ${className}--radar`, viewBox: '0 0 190 190', 'aria-hidden': 'true' },
+    grid + axes + tag('polygon', { points: dataPoints, fill: 'rgba(37,99,235,0.18)', stroke: chartPreviewPalette[0], 'stroke-width': '3', 'stroke-linejoin': 'round' }, '') + markers + labels,
+  );
+}
+
+function radarPoints(count: number, radius: number, center: number): string {
+  return Array.from({ length: Math.max(3, count) }, (_, index) => {
+    const point = radarPoint(index, Math.max(3, count), radius, center);
+    return `${trimNumber(point.x)},${trimNumber(point.y)}`;
+  }).join(' ');
+}
+
+function radarPoint(index: number, count: number, radius: number, center: number): { x: number; y: number } {
+  const angle = -Math.PI / 2 + (Math.PI * 2 * index) / Math.max(3, count);
+  return {
+    x: center + Math.cos(angle) * radius,
+    y: center + Math.sin(angle) * radius,
+  };
+}
+
+function renderPolarAreaPreview(rows: Array<{ label: string; value: number }>, className: string): string {
+  const values = rows.slice(0, 8);
+  const max = Math.max(1, ...values.map((row) => Math.max(0, row.value)));
+  const center = 95;
+  const startOffset = -Math.PI / 2;
+  const step = (Math.PI * 2) / Math.max(1, values.length);
+  const colors = chartPreviewPalette;
+  const slices = values.map((row, index) => {
+    const radius = 26 + (Math.max(0, row.value) / max) * 56;
+    const start = startOffset + index * step + 0.02;
+    const end = startOffset + (index + 1) * step - 0.02;
+    return tag('path', { d: polarAreaPath(center, center, radius, start, end), fill: colors[index % colors.length], opacity: '0.9', stroke: '#fff', 'stroke-width': '2' }, '');
+  }).join('');
+  return tag('svg', { class: `${className} ${className}--polar-area`, viewBox: '0 0 190 190', 'aria-hidden': 'true' }, tag('circle', { cx: String(center), cy: String(center), r: '82', fill: '#f8fafc' }, '') + slices + tag('circle', { cx: String(center), cy: String(center), r: '4', fill: '#fff' }, ''));
+}
+
+function polarAreaPath(cx: number, cy: number, radius: number, startAngle: number, endAngle: number): string {
+  const start = polarPoint(cx, cy, radius, startAngle);
+  const end = polarPoint(cx, cy, radius, endAngle);
+  const largeArc = endAngle - startAngle > Math.PI ? '1' : '0';
+  return `M ${trimNumber(cx)} ${trimNumber(cy)} L ${trimNumber(start.x)} ${trimNumber(start.y)} A ${trimNumber(radius)} ${trimNumber(radius)} 0 ${largeArc} 1 ${trimNumber(end.x)} ${trimNumber(end.y)} Z`;
+}
+
+function polarPoint(cx: number, cy: number, radius: number, angle: number): { x: number; y: number } {
+  return {
+    x: cx + Math.cos(angle) * radius,
+    y: cy + Math.sin(angle) * radius,
+  };
+}
+
+function renderPointPreview(points: ChartPointRow[], className: string, bubble: boolean): string {
+  const visible = points.slice(0, 24);
+  const xs = visible.map((point) => point.x);
+  const ys = visible.map((point) => point.y);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(0, ...ys);
+  const maxY = Math.max(1, ...ys);
+  const dx = Math.max(1, maxX - minX);
+  const dy = Math.max(1, maxY - minY);
+  const colors = chartPreviewPalette;
+  const circles = visible.map((point, index) => {
+    const cx = 36 + ((point.x - minX) / dx) * 440;
+    const cy = 150 - ((point.y - minY) / dy) * 120;
+    const radius = bubble ? point.r : 4.5;
+    return tag('circle', {
+      cx: trimNumber(cx),
+      cy: trimNumber(cy),
+      r: trimNumber(radius),
+      fill: colors[index % colors.length],
+      opacity: bubble ? '0.72' : '0.9',
+      stroke: '#fff',
+      'stroke-width': bubble ? '2' : '1',
+    }, '') + tag('title', {}, escapeHtml(`${point.label}: ${point.x}, ${point.y}`));
+  }).join('');
+  return tag(
+    'svg',
+    { class: `${className} ${className}--${bubble ? 'bubble' : 'scatter'}`, viewBox: '0 0 520 190', preserveAspectRatio: 'none', 'aria-hidden': 'true' },
+    tag('line', { x1: '24', y1: '150', x2: '500', y2: '150', stroke: '#ddd' }, '') +
+      tag('line', { x1: '32', y1: '22', x2: '32', y2: '154', stroke: '#ddd' }, '') +
+      circles,
+  );
 }
 
 function renderFlipbookPages(component: XconObject, pages: number, context: RenderContext, pageStyle = ''): string {
@@ -8034,12 +9115,19 @@ function renderStaticMap(component: XconObject, context: RenderContext): string 
   const lng = Number(component.get('longitude') ?? 126.978) || 126.978;
   const zoom = Number(component.get('zoom') ?? 10) || 10;
   const tileLayer = String(component.get('tileLayer') ?? 'OpenStreetMap');
+  const provider = String(component.get('provider') ?? component.get('mapProvider') ?? '').trim().toLowerCase();
+  const liveLeaflet = provider === 'leaflet' && context.options.allowExternalResources;
+  const markers = parseArrayValue(component.get('markers')).slice(0, 20);
+  const heatmap = parseArrayValue(component.get('heatmap')).slice(0, 200);
+  const polylines = parseArrayValue(component.get('polylines')).slice(0, 50);
+  const polygons = parseArrayValue(component.get('polygons')).slice(0, 50);
+  const markerIcons = toPlainValue(component.get('markerIcons') ?? {});
   const rawSnapshot = component.get('snapshotUrl') ?? component.get('staticImage') ?? component.get('mapImage') ?? component.get('image') ?? component.get('src');
   const snapshotUrl = sanitizeUrl(stripCssUrl(String(rawSnapshot ?? '')), context.options);
   const snapshotAlt = String(component.get('snapshotAlt') ?? component.get('alt') ?? `Map centered at ${lat}, ${lng}`);
   const snapshotFit = mapSnapshotFit(component.get('snapshotFit') ?? component.get('objectFit'));
   const snapshotPosition = safeCssValue(component.get('objectPosition') ?? component.get('snapshotPosition')) ?? 'center';
-  const attributionText = component.get('attribution');
+  const attributionText = component.get('attribution') ?? (liveLeaflet ? openStreetMapAttribution : undefined);
   const layerHtml = snapshotUrl
     ? voidTag('img', {
         class: 'xa-map-snapshot',
@@ -8062,7 +9150,6 @@ function renderStaticMap(component: XconObject, context: RenderContext): string 
         tag('span', { class: 'xa-map-layer xa-map-label xa-map-label--south' }, 'District'),
         tag('span', { class: 'xa-map-attribution' }, 'static map preview'),
       ].join('');
-  const markers = parseArrayValue(component.get('markers')).slice(0, 20);
   const markerHtml = markers.length
     ? markers.map((marker, index) => {
         const plain = toPlainValue(marker);
@@ -8075,12 +9162,55 @@ function renderStaticMap(component: XconObject, context: RenderContext): string 
         return tag('span', { class: 'xa-map-marker', title: label, style: `left:${left}%;top:${top}%;` }, escapeHtml(label.slice(0, 2)));
       }).join('')
     : tag('span', { class: 'xa-map-marker', style: 'left:50%;top:50%;' }, '●');
-  return tag('div', { class: `xa-map-static${snapshotUrl ? ' xa-map-static--snapshot' : ''}`, 'data-latitude': String(lat), 'data-longitude': String(lng), 'data-zoom': String(zoom), 'data-tile-layer': tileLayer }, layerHtml + markerHtml);
+  return tag(
+    'div',
+    {
+      class: `xa-map-static${snapshotUrl ? ' xa-map-static--snapshot' : ''}${liveLeaflet ? ' xa-map-static--leaflet' : ''}`,
+      'data-latitude': String(lat),
+      'data-longitude': String(lng),
+      'data-zoom': String(zoom),
+      'data-tile-layer': tileLayer,
+      'data-xcon-leaflet-map': liveLeaflet ? '' : undefined,
+      'data-xcon-map-provider': liveLeaflet ? 'leaflet' : undefined,
+      'data-xcon-map-tile-url': liveLeaflet ? leafletTileUrl(component, context) : undefined,
+      'data-xcon-map-attribution': liveLeaflet ? String(attributionText ?? openStreetMapAttribution) : undefined,
+      'data-xcon-map-markers': liveLeaflet ? jsonAttr(markers.map(mapMarkerData)) : undefined,
+      'data-xcon-map-heatmap': liveLeaflet && heatmap.length ? jsonAttr(heatmap) : undefined,
+      'data-xcon-map-polylines': liveLeaflet && polylines.length ? jsonAttr(polylines) : undefined,
+      'data-xcon-map-polygons': liveLeaflet && polygons.length ? jsonAttr(polygons) : undefined,
+      'data-xcon-map-clustering': liveLeaflet ? String(booleanOption(component.get('clustering'), false)) : undefined,
+      'data-xcon-map-marker-icons': liveLeaflet && hasJsonData(markerIcons) ? jsonAttr(markerIcons) : undefined,
+      'data-xcon-map-show-controls': liveLeaflet ? String(booleanOption(component.get('showControls'), true)) : undefined,
+      'data-xcon-map-enable-zoom': liveLeaflet ? String(booleanOption(component.get('enableZoom'), true)) : undefined,
+      'data-xcon-map-enable-pan': liveLeaflet ? String(booleanOption(component.get('enablePan'), true)) : undefined,
+    },
+    layerHtml + markerHtml,
+  );
 }
 
 function mapSnapshotFit(value: unknown): string {
   const fit = String(value ?? 'cover').trim().toLowerCase();
   return ['cover', 'contain', 'fill', 'none', 'scale-down'].includes(fit) ? fit : 'cover';
+}
+
+function leafletTileUrl(component: XconObject, context: RenderContext): string {
+  const explicit = sanitizeUrl(String(component.get('tileUrl') ?? component.get('tileTemplate') ?? ''), context.options);
+  if (explicit) return explicit;
+  const layer = String(component.get('tileLayer') ?? '').trim().toLowerCase();
+  if (layer.includes('carto')) return 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+  return openStreetMapTileUrl;
+}
+
+function mapMarkerData(marker: unknown, index: number): Record<string, unknown> {
+  const plain = toPlainValue(marker);
+  const obj = plain && typeof plain === 'object' && !Array.isArray(plain) ? plain as Record<string, unknown> : {};
+  const lat = Number(obj.lat ?? obj.latitude);
+  const lng = Number(obj.lng ?? obj.longitude);
+  return {
+    lat: Number.isFinite(lat) ? lat : undefined,
+    lng: Number.isFinite(lng) ? lng : undefined,
+    label: String(obj.label ?? obj.title ?? obj.popup ?? index + 1),
+  };
 }
 
 function renderStaticCalendar(component: XconObject): string {
@@ -9788,6 +10918,41 @@ function sizeParts(value: unknown): [number, number] | null {
   if (typeof value !== 'string') return null;
   const parts = value.split(',').map((part) => Number(part.trim())).slice(0, 2);
   return parts.length === 2 && parts.every(Number.isFinite) ? (parts as [number, number]) : null;
+}
+
+function pointParts(value: unknown): [number, number] | null {
+  if (Array.isArray(value) && value.length >= 2) {
+    const parts = value.slice(0, 2).map(Number);
+    return parts.every(Number.isFinite) ? (parts as [number, number]) : null;
+  }
+  if (typeof value !== 'string') return null;
+  const normalized = value.replace(/^\s*\[|\]\s*$/g, '');
+  const parts = normalized.split(',').map((part) => Number(part.trim())).slice(0, 2);
+  return parts.length === 2 && parts.every(Number.isFinite) ? (parts as [number, number]) : null;
+}
+
+function lineStrokeWidth(value: unknown): number {
+  const parsed = Number(value ?? 1);
+  if (!Number.isFinite(parsed)) return 1;
+  return Math.max(0.5, Math.min(parsed, 32));
+}
+
+function lineMarker(value: unknown): string | null {
+  const marker = String(value ?? '').trim().toLowerCase();
+  return marker === 'arrow' ? 'arrow' : null;
+}
+
+function lineCap(value: unknown): string {
+  const cap = String(value ?? 'round').trim().toLowerCase();
+  return cap === 'butt' || cap === 'square' || cap === 'round' ? cap : 'round';
+}
+
+function lineDashArray(value: unknown, strokeWidth: number): string | undefined {
+  const style = String(value ?? '').trim().toLowerCase();
+  if (!style || style === 'solid' || style === 'none') return undefined;
+  if (style === 'dashed' || style === 'dash') return `${trimNumber(strokeWidth * 3)} ${trimNumber(strokeWidth * 3)}`;
+  if (style === 'dotted' || style === 'dot') return `${trimNumber(strokeWidth)} ${trimNumber(strokeWidth * 2)}`;
+  return safeCssValue(value);
 }
 
 function normalizeDirection(value: unknown): string {

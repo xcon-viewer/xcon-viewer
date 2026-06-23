@@ -1,6 +1,6 @@
 {
   "name": "@xcon-viewer/document-importer",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "type": "module",
   "description": "Document-to-XCON Markdown importer for Template Lab.",
   "keywords": [

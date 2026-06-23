@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.1.7
+
+### Added
+- Added opt-in Leaflet/OpenStreetMap hydration for the public `map` component via `provider "leaflet"` when external resources are allowed, while preserving the safe static fallback by default.
+- Added public `map` support for `heatmap`, `polylines`, `polygons`, `clustering`, and `markerIcons` properties so richer geographic documents can preserve route, region, density, and marker metadata through SKETCH, schema validation, and Leaflet hydration.
+- Added static `dataViz` previews for treemap, sunburst, and force graph documents so D3-style analytical artifacts render useful SVG output even before an optional interactive runtime is attached.
+
+### Fixed
+- Added lenient XCON/SKETCH parsing for Markdown and Remark rendering paths so recoverable local SKETCH errors no longer block the entire preview.
+- Added SKETCH parse diagnostics for partially rendered Markdown/Remark fences, allowing valid components to render while skipped invalid blocks are reported as warnings.
+- Added the same recoverable SKETCH parsing and diagnostics behavior to the core viewer APIs and `<xcon-viewer>` string input path.
+- Applied the same recoverable SKETCH rendering and diagnostics behavior to the XconViewer Desk Markdown pane.
+- Added the public `line` document primitive for SKETCH/JSON dividers, absolute-coordinate arrows, labels, schema validation, and safe SVG rendering.
+- Added anchor-based `connector` rendering plus the SKETCH compatibility form `arrow from source anchor to target anchor` for document flow diagrams.
+
 ## 0.1.6
 
 ### Changed

@@ -1,6 +1,6 @@
 {
   "name": "xcon-viewer",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "private": true,
   "description": "Monorepo for XCON Viewer — a public viewer for XCON UI documents",
   "workspaces": [
@@ -10,7 +10,7 @@
     "build": "npm run build --workspace @xcon-viewer/core && npm run build --workspace @xcon-viewer/viewer && npm run build --workspace @xcon-viewer/document-importer && npm run build --workspace @xcon-viewer/cli && npm run build --workspace @xcon-viewer/react && npm run build --workspace @xcon-viewer/vue && npm run build --workspace @xcon-viewer/markdown-it && npm run build --workspace @xcon-viewer/remark && npm run build --workspace @xcon-viewer/vite-plugin && npm run build --workspace @xcon-viewer/github-action",
     "test": "npm run test:public",
     "test:public": "npm run test:site && vitest run scripts/xcon-schema.test.mjs && vitest run scripts/package-publish.test.mjs && npm run test --workspaces",
-    "test:site": "vitest run scripts/site-structure.test.mjs scripts/template-export-api.test.mjs scripts/template-import-api.test.mjs scripts/template-lab-local-runner.test.mjs",
+    "test:site": "vitest run scripts/site-structure.test.mjs scripts/site-xcon-embed.test.mjs scripts/template-export-api.test.mjs scripts/template-import-api.test.mjs scripts/template-lab-local-runner.test.mjs",
     "site:build": "node scripts/build-public-site.mjs",
     "clean": "npm run clean --workspaces",
     "typecheck": "tsc --build --pretty false",

@@ -122,7 +122,7 @@ The plugin supports `.xcon.sketch`, `.xcons`, `.xcon.json`, `.xcon.xml`, `.xcon`
 ```yaml
 steps:
   - uses: actions/checkout@v6
-  - uses: xcon-viewer/xcon-viewer/packages/github-action@v0.1.6
+  - uses: xcon-viewer/xcon-viewer/packages/github-action@v0.1.7
     with:
       files: README.md,docs
       out-dir: xcon-rendered

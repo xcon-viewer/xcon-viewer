@@ -105,6 +105,38 @@
         }
       ]
     },
+    "lineOrConnectorEndpoint": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/size"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "target"
+          ],
+          "properties": {
+            "target": {
+              "type": "string"
+            },
+            "anchor": {
+              "type": "string",
+              "enum": [
+                "left",
+                "right",
+                "top",
+                "bottom",
+                "center"
+              ]
+            }
+          }
+        }
+      ]
+    },
     "spacing": {
       "oneOf": [
         {
@@ -454,6 +486,7 @@
         "chatBubble",
         "checkbox",
         "codeEditor",
+        "connector",
         "colorPicker",
         "dataViz",
         "datePicker",
@@ -466,6 +499,7 @@
         "icon",
         "image",
         "label",
+        "line",
         "list",
         "map",
         "modal",
@@ -698,6 +732,47 @@
           "$ref": "#/definitions/color"
         },
         "foregroundColor": {
+          "$ref": "#/definitions/color"
+        },
+        "from": {
+          "$ref": "#/definitions/lineOrConnectorEndpoint",
+          "description": "Line start point in local coordinates, or connector source endpoint as a component reference."
+        },
+        "to": {
+          "$ref": "#/definitions/lineOrConnectorEndpoint",
+          "description": "Line end point in local coordinates, or connector target endpoint as a component reference."
+        },
+        "stroke": {
+          "$ref": "#/definitions/color"
+        },
+        "strokeColor": {
+          "$ref": "#/definitions/color"
+        },
+        "strokeWidth": {
+          "$ref": "#/definitions/stringOrNumber"
+        },
+        "weight": {
+          "$ref": "#/definitions/stringOrNumber"
+        },
+        "style": {
+          "type": "string"
+        },
+        "lineStyle": {
+          "type": "string"
+        },
+        "start": {
+          "type": "string"
+        },
+        "end": {
+          "type": "string"
+        },
+        "markerStart": {
+          "type": "string"
+        },
+        "markerEnd": {
+          "type": "string"
+        },
+        "labelColor": {
           "$ref": "#/definitions/color"
         },
         "font": {
@@ -1492,6 +1567,22 @@
         "tileLayer": {
           "type": "string"
         },
+        "provider": {
+          "type": "string",
+          "description": "Optional map provider. Use \"leaflet\" to hydrate a live Leaflet/OpenStreetMap map when external resources are allowed; otherwise the viewer keeps the safe static fallback."
+        },
+        "mapProvider": {
+          "type": "string",
+          "description": "Alias for provider."
+        },
+        "tileUrl": {
+          "type": "string",
+          "description": "Leaflet tile URL template used when provider is leaflet."
+        },
+        "tileTemplate": {
+          "type": "string",
+          "description": "Alias for tileUrl."
+        },
         "snapshotUrl": {
           "type": "string"
         },
@@ -1524,6 +1615,29 @@
           "items": {
             "$ref": "#/definitions/safeObject"
           }
+        },
+        "heatmap": {
+          "type": "array",
+          "items": {}
+        },
+        "polylines": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/safeObject"
+          }
+        },
+        "polygons": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/safeObject"
+          }
+        },
+        "clustering": {
+          "type": "boolean"
+        },
+        "markerIcons": {
+          "type": "object",
+          "additionalProperties": true
         },
         "initialView": {
           "type": "string"

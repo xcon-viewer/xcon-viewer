@@ -8,6 +8,7 @@ import {
   fromJSON,
   fromJSONObject,
   fromSketch,
+  fromSketchLenient,
   fromTagless,
   fromXml,
   getAllPaths,
@@ -18,6 +19,7 @@ import {
   toJSONObject,
   serializeBySyntax,
   toTagless,
+  toSketch,
   toXml,
   validate,
 } from './index.js';
@@ -478,6 +480,183 @@ screen "Checkout" 390x844
     expect(() => fromSketch('screen 360x220\n\tbad: label "Bad" at 0 0 10 10')).toThrow(
       /line 2: Tabs are not supported/,
     );
+  });
+
+  test('lenient SKETCH parsing drops only invalid local blocks and keeps renderable content', () => {
+    const result = fromSketchLenient(`
+      screen "Flow" 480x260 bg #ffffff
+      title: label "Renderable title" at 20 20 260 32
+
+      badPanel: panel
+        color #2563eb
+        width 3
+        label "Broken local block"
+
+      cta: button "Still visible" at 20 80 160 44
+        bg #2563eb
+    `);
+
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0]).toMatchObject({
+      line: 5,
+    });
+    expect(result.errors[0].message).toContain('Expected component layout');
+    expect(toJSONObject(result.document)).toMatchObject({
+      type: 'form',
+      name: 'Flow',
+      components: {
+        componentsOrder: 'title,cta',
+        title: {
+          type: 'label',
+          text: 'Renderable title',
+        },
+        cta: {
+          type: 'button',
+          label: 'Still visible',
+        },
+      },
+    });
+  });
+
+  test('parses document line primitives from SKETCH at and from/to forms', () => {
+    const doc = fromSketch(`
+      screen "Lines" 480x260 bg #ffffff
+      rule: line at 40 80 360 0
+        color #cbd5e1
+        width 2
+        style "dashed"
+      flow: line from 60 140 to 360 190
+        color #2563eb
+        width 3
+        end "arrow"
+        label "Message"
+    `);
+
+    expect(toJSONObject(doc)).toMatchObject({
+      type: 'form',
+      components: {
+        componentsOrder: 'rule,flow',
+        rule: {
+          type: 'line',
+          pos: [40, 80, 360, 0],
+          color: '#cbd5e1',
+          width: 2,
+          style: 'dashed',
+        },
+        flow: {
+          type: 'line',
+          pos: [60, 140, 300, 50],
+          from: [0, 0],
+          to: [300, 50],
+          color: '#2563eb',
+          width: 3,
+          end: 'arrow',
+          label: 'Message',
+        },
+      },
+    });
+  });
+
+  test('round-trips document line primitives through SKETCH serialization', () => {
+    const sketch = toSketch(fromJSONObject({
+      type: 'form',
+      name: 'Lines',
+      pos: [0, 0, 480, 260],
+      components: {
+        componentsOrder: 'rule,flow',
+        rule: {
+          type: 'line',
+          pos: [40, 80, 360, 0],
+          color: '#cbd5e1',
+          width: 2,
+        },
+        flow: {
+          type: 'line',
+          pos: [60, 140, 300, 50],
+          from: [0, 0],
+          to: [300, 50],
+          color: '#2563eb',
+          end: 'arrow',
+        },
+      },
+    }));
+
+    expect(sketch).toContain('rule: line at 40 80 360 0');
+    expect(sketch).toContain('flow: line from 60 140 to 360 190');
+    expect(toJSONObject(fromSketch(sketch))).toMatchObject({
+      components: {
+        rule: { type: 'line', pos: [40, 80, 360, 0] },
+        flow: { type: 'line', pos: [60, 140, 300, 50], from: [0, 0], to: [300, 50] },
+      },
+    });
+  });
+
+  test('parses anchor-based connector and arrow primitives from SKETCH', () => {
+    const doc = fromSketch(`
+      screen "Flow" 480x260 bg #ffffff
+      user: panel at 40 98 120 64
+      agent: panel at 320 98 120 64
+      message: arrow from user right to agent left
+        color #2563eb
+        width 3
+        label "Message"
+      reply: connector from agent.bottom to user.bottom
+        color #64748b
+    `);
+
+    expect(toJSONObject(doc)).toMatchObject({
+      type: 'form',
+      components: {
+        componentsOrder: 'user,agent,message,reply',
+        message: {
+          type: 'connector',
+          from: { target: 'user', anchor: 'right' },
+          to: { target: 'agent', anchor: 'left' },
+          color: '#2563eb',
+          width: 3,
+          end: 'arrow',
+          label: 'Message',
+        },
+        reply: {
+          type: 'connector',
+          from: { target: 'agent', anchor: 'bottom' },
+          to: { target: 'user', anchor: 'bottom' },
+          color: '#64748b',
+        },
+      },
+    });
+  });
+
+  test('round-trips anchor-based connectors through SKETCH serialization', () => {
+    const sketch = toSketch(fromJSONObject({
+      type: 'form',
+      name: 'Flow',
+      pos: [0, 0, 480, 260],
+      components: {
+        componentsOrder: 'user,agent,message',
+        user: { type: 'panel', pos: [40, 98, 120, 64] },
+        agent: { type: 'panel', pos: [320, 98, 120, 64] },
+        message: {
+          type: 'connector',
+          from: { target: 'user', anchor: 'right' },
+          to: { target: 'agent', anchor: 'left' },
+          color: '#2563eb',
+          end: 'arrow',
+        },
+      },
+    }));
+
+    expect(sketch).toContain('message: connector from user.right to agent.left');
+    expect(toJSONObject(fromSketch(sketch))).toMatchObject({
+      components: {
+        message: {
+          type: 'connector',
+          from: { target: 'user', anchor: 'right' },
+          to: { target: 'agent', anchor: 'left' },
+          end: 'arrow',
+        },
+      },
+    });
   });
 
   test('ignores slash comments outside strings', () => {

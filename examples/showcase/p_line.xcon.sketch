@@ -1,0 +1,64 @@
+screen "Line and Connector Primitives" 480x300 bg @surface
+  title: label "Lines and connectors" at 32 24 260 32
+    color @ink
+    font
+      size 24
+      weight 800
+  subtitle: label "Use line for dividers and connector for anchor-based arrows." at 32 60 390 24
+    color @ink-2
+    font
+      size 13
+      weight 500
+  rule: line at 32 98 416 0
+    color @border
+    width 2
+    style "dashed"
+  user: panel at 36 132 112 72
+    backgroundColor @surface2
+    border
+      visible true
+      color @border
+      radius 16
+    label: label "User" at 20 24 72 22
+      color @ink
+      font
+        size 16
+        weight 800
+      textAlign "center"
+  agent: panel at 200 132 112 72
+    backgroundColor @surface2
+    border
+      visible true
+      color @border
+      radius 16
+    label: label "Agent" at 20 24 72 22
+      color @ink
+      font
+        size 16
+        weight 800
+      textAlign "center"
+  desk: panel at 364 132 84 72
+    backgroundColor @surface2
+    border
+      visible true
+      color @border
+      radius 16
+    label: label "Desk" at 12 24 60 22
+      color @ink
+      font
+        size 16
+        weight 800
+      textAlign "center"
+  a1: connector from user.right to agent.left
+    color @accent
+    width 3
+    end "arrow"
+    label "request"
+  a2: arrow from agent right to desk left
+    color @accent
+    width 3
+    label "render"
+  footerRule: line at 32 244 416 0
+    color @border
+    width 1
+    style "dotted"

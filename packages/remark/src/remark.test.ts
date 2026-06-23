@@ -21,6 +21,27 @@ describe('@xcon-viewer/remark', () => {
     expect(html).toContain('Hello Sketch');
   });
 
+  test('renders recoverable SKETCH code nodes while reporting local parse errors', () => {
+    const html = renderXconNode(
+      [
+        'screen 360x220 bg #fff',
+        'title: label "Visible title" at 0 0 220 40',
+        'badPanel: panel',
+        '  color #2563eb',
+        '  width 3',
+        'cta: button "Visible button" at 0 60 160 44',
+      ].join('\n'),
+      'xcon-sketch',
+    );
+
+    expect(html).toContain('data-xcon-remark');
+    expect(html).toContain('Visible title');
+    expect(html).toContain('Visible button');
+    expect(html).toContain('xcon-remark-diagnostics');
+    expect(html).toContain('line 3');
+    expect(html).not.toContain('badPanel: panel');
+  });
+
   test('transforms xcons shorthand code nodes', () => {
     const tree: MdastNode = {
       type: 'root',

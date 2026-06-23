@@ -1,0 +1,18 @@
+.xcon-viewer-host,
+.partial-xcon-host {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  max-width: 100%;
+  background: transparent;
+  isolation: isolate;
+}
+
+.xcon-viewer-host > .xa-al-form-root,
+.xcon-viewer-host > [data-xcon-type],
+.partial-xcon-host > .xa-al-form-root,
+.partial-xcon-host > [data-xcon-type] {
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+}

@@ -42,21 +42,622 @@ XCON/XML is a compatibility syntax for UI tools, comments, metadata, and designe
 
 XCON/TAGLESS is a symbolic compatibility syntax for transport-friendly serialization. Marker sets can be selected at the document level to reduce delimiter conflicts. If marker characters appear in data, escape them or choose another marker set.
 
-## Template Studio
+## XCON/SKETCH Hard Rules
 
-Template Studio combines Markdown document shells, JSON fixture data, XCON Chain SUGAR expressions, XCON/SKETCH visual blocks, and XCON Workflow sketch blocks. Use it for data-bound Markdown UI documents such as invoices, bulletins, reports, campaign briefs, dashboards, and operating plans. Keep visible authoring examples SKETCH + SUGAR first; JSON should appear as fixture data, not as the primary authoring language.
+- Every renderable `xcon-sketch` fence must start with `screen`.
+- Root screen must always include explicit width and height: `screen 960x640 bg #F1F5F9`.
+- All visual components must have stable dimensions using `at x y width height`.
+- Do not rely on implicit sizing for primary layout.
+- Use color tokens such as `@surface`, `@surface2`, `@ink`, `@ink-2`, `@ink-3`, `@border`, `@accent` for neutral product screens.
+- Use concrete hex values for operational/monitoring screens where status semantics matter.
+- External images must use `https://...`.
 
-## Meta Lab
+## Named Component IDs (Hard Rule)
 
-Meta Lab experiments with path-addressed metadata contracts that can drive fixture selection, SUGAR data binding, XCON/SKETCH visual blocks, and XCON Workflow blocks from the same catalog. Use it to model reusable document contracts where a metadata path selects both the business data shape and the rendered workflow/dashboard pattern.
+Every component inside a screen must carry a semantic ID prefix. Anonymous components are not valid XCON/SKETCH.
+
+Bad — anonymous:
+```xcon-sketch
+screen "Card" 400x180 bg @surface
+  panel at 20 20 360 80
+    label "Revenue" at 20 16 200 22
+    label "84,000" at 20 44 200 34
+```
+
+Good — named:
+```xcon-sketch
+screen "Revenue Card" 400x180 bg @surface
+  kpiCard: panel at 20 20 360 80
+    bg @surface2
+    radius 14
+    metricLabel: label "Revenue" at 20 14 160 20
+      color @ink-2
+      font
+        size 12
+        weight 700
+    metricValue: label "84,000" at 20 38 200 34
+      color @accent
+      font
+        size 26
+        weight 800
+```
+
+Choose names that describe the component role: `hero`, `kpiRow`, `k1`, `statusBadge`, `trend`, `alertStrip`, `title`, `eyebrow`, `timestamp`, `cta`. Avoid generic names like `box` or `item1`.
+
+## Color Guidance
+
+### Token Colors (neutral / brand screens)
+
+Use `@surface`, `@surface2`, `@surface3`, `@ink`, `@ink-2`, `@ink-3`, `@border`, `@accent` for mobile apps, document cards, and general product screens.
+
+### Operational Hex Palettes
+
+Use concrete hex values when the screen has a monitoring, dashboard, or status-tracking tone.
+
+Dark command bar (hero sections, app bars):
+- Background: `#111827`
+- Primary value: `#60a5fa`
+- Eyebrow / category: `#93c5fd`
+- Positive label: `#a7f3d0`
+- Muted label: `#64748b`
+
+Status color pairs (badge, label, card backgrounds):
+- OK / Ready / On track — card bg `#dcfce7`, text `#166534`
+- Watch / Warning / Queued — card bg `#fef3c7`, text `#92400e`
+- Critical / Error / Overdue — card bg `#fee2e2`, text `#991b1b`
+
+KPI card palettes:
+- Primary blue — card bg `#eff6ff`, value `#1d4ed8`
+- Positive green — card bg `#f0fdf4`, value `#059669`
+- Utilization amber — card bg `#fff7ed`, value `#c2410c`
+- Neutral — card bg `#f8fafc`, value `#1e293b`
+
+## Typography Hierarchy
+
+Every screen must use at least two distinct size + weight levels. Prefer three.
+
+| Level   | Size  | Weight  | Use for                                    |
+|---------|-------|---------|--------------------------------------------|
+| Display | 28–44 | 800–900 | Primary KPI value, hero number, score      |
+| Heading | 18–26 | 700–800 | Section title, card title                  |
+| Eyebrow | 10–13 | 700–800 | Category, unit, timestamp, badge label     |
+| Body    | 13–15 | 500–600 | Secondary text, description                |
+
+The difference between display and its supporting eyebrow must be at least 12 px. Never use the same size and weight for more than one level in the same component.
+
+## Component Quick Reference
+
+> Partial patterns (components without a `screen` wrapper) are code fragments — compose them inside a `screen` block. Only `xcon-sketch` fences that start with `screen` are complete, renderable documents.
+
+### label
+
+Text display for titles, values, captions, and eyebrows.
+
+```xcon-sketch
+screen "Label Demo" 400x160 bg @surface
+  title: label "Revenue" at 24 24 260 36
+    color @ink
+    font
+      size 28
+      weight 800
+  sub: label "Last 30 days" at 24 66 200 20
+    color @ink-2
+    font
+      size 13
+      weight 500
+  eyebrow: label "MONTHLY KPI" at 24 96 200 18
+    color @ink-3
+    font
+      size 11
+      weight 700
+```
+
+### button
+
+```xcon-sketch
+  cta: button "Get Started" at 24 24 160 44
+    backgroundColor @accent
+    color white
+    border
+      visible false
+      radius 10
+    font
+      size 14
+      weight 600
+  secondary: button "Learn More" at 200 24 140 44
+    backgroundColor @surface2
+    color @ink
+    border
+      visible true
+      color @border
+      radius 10
+```
+
+### panel (card / container)
+
+```xcon-sketch
+  card: panel at 24 24 312 120
+    bg @surface2
+    radius 18
+    border
+      visible true
+      color @border
+    shadow
+      color rgba(0,0,0,0.06)
+      x 0
+      y 4
+      blur 12
+    cardTitle: label "Sessions" at 20 16 200 22
+      color @ink-2
+      font
+        size 13
+        weight 700
+    cardValue: label "14,823" at 20 46 200 36
+      color @ink
+      font
+        size 28
+        weight 800
+```
+
+### chart
+
+```xcon-sketch
+  trend: chart at 24 24 560 240
+    chartType "line"
+    chartData {"labels":["Mon","Tue","Wed","Thu","Fri"],"datasets":[{"label":"Revenue","data":[420,580,510,670,720],"borderColor":"#2563eb","backgroundColor":"rgba(37,99,235,0.08)","tension":0.4}]}
+```
+
+Supported chart types: `"line"`, `"bar"`, `"pie"`, `"doughnut"`, `"radar"`, `"scatter"`, `"bubble"`.
+
+### spanGrid (table / spreadsheet)
+
+```xcon-sketch
+  grid: spanGrid at 24 24 560 220
+    backgroundColor @surface
+    readonly true
+    data [["Team","Owner","Status"],["Sales","Mina","Ready"],["Ops","Ari","Launch"]]
+    columns [{"id":"team","title":"Team","width":180},{"id":"owner","title":"Owner","width":160},{"id":"status","title":"Status","width":160}]
+```
+
+### list
+
+Lists must include both data and a named cell layout.
+
+```xcon-sketch
+  productList: list at 20 32 362 250
+    backgroundColor @surface
+    direction "vertical"
+    itemSize
+      width 362
+      height 96
+    separator
+      size 12
+      color @surface
+    dataTemplate {"type":"template","template":{"tabledata":[{"title":"Studio chair","price":"$89","image":"https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=600&q=80"}]}}
+    templates {"cell":{"card":{"type":"panel","pos":[0,0,362,96],"backgroundColor":"@surface2","border":{"visible":true,"color":"@border","radius":18},"components":{"componentsOrder":"thumb,title,price","thumb":{"type":"image","src":"{{item.image}}","pos":[12,12,72,72],"objectFit":"cover","border":{"visible":false,"radius":14}},"title":{"type":"label","text":"{{item.title}}","pos":[96,20,180,22],"color":"@ink","font":{"size":16,"weight":800}},"price":{"type":"label","text":"{{item.price}}","pos":[96,52,100,20],"color":"@accent","font":{"size":14,"weight":700}}}},"itemSize":{"width":362,"height":96}}}
+```
+
+### image
+
+```xcon-sketch
+  hero: image "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80" at 0 0 960 300
+    objectFit cover
+    border
+      visible false
+      radius 0
+```
+
+### banner
+
+Banner is a full-bleed image container with optional overlay labels and buttons as child elements.
+
+```xcon-sketch
+  heroBanner: banner at 24 24 912 220
+    src "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80"
+    objectFit cover
+    radius 20
+    overlay
+      color rgba(0,0,0,0.45)
+    heroTitle: label "2025 Product Launch" at 48 60 500 52
+      color white
+      font
+        size 40
+        weight 800
+    heroCta: button "Explore Now" at 48 140 160 48
+      backgroundColor white
+      color #111827
+      border
+        visible false
+        radius 24
+```
+
+### badge
+
+`badge` is a dedicated status label component. Use `variant` to control appearance.
+
+```xcon-sketch
+  okBadge: badge "ACTIVE" at 24 24 80 28
+    variant "filled"
+    backgroundColor #dcfce7
+    color #166534
+    size "medium"
+  warnBadge: badge "WATCH" at 120 24 80 28
+    variant "filled"
+    backgroundColor #fef3c7
+    color #92400e
+    size "medium"
+  criticalBadge: badge "CRITICAL" at 216 24 90 28
+    variant "filled"
+    backgroundColor #fee2e2
+    color #991b1b
+    size "medium"
+  outlineBadge: badge "Beta" at 322 24 70 28
+    variant "outline"
+    color "#7c6af7"
+    size "medium"
+```
+
+Key props: `text`, `variant` (`"filled"` | `"outline"` | `"dot"`), `size` (`"small"` | `"medium"` | `"large"`), `backgroundColor`, `color`.
+
+### map
+
+```xcon-sketch
+  regionMap: map at 24 24 560 320
+    center
+      lat 37.5665
+      lng 126.9780
+    zoom 10
+    markers [{"lat":37.5665,"lng":126.9780,"label":"Seoul HQ","color":"#2563eb"},{"lat":35.1796,"lng":129.0756,"label":"Busan Office","color":"#059669"}]
+```
+
+### networkDiagram
+
+```xcon-sketch
+  topology: networkDiagram at 24 24 560 320
+    nodes [{"id":"gw","label":"Gateway","x":280,"y":40,"color":"#1d4ed8","shape":"circle"},{"id":"a","label":"Server A","x":140,"y":160,"color":"#059669"},{"id":"b","label":"Server B","x":420,"y":160,"color":"#059669"}]
+    edges [{"from":"gw","to":"a"},{"from":"gw","to":"b"}]
+```
+
+### alert
+
+```xcon-sketch
+  warnAlert: alert at 24 24 560 80
+    title "High memory usage"
+    message "Worker node mem-02 is at 91% capacity. Consider scaling."
+    severity "warning"
+    showIcon true
+```
+
+Key props: `title`, `message`, `severity` (`"info"` | `"success"` | `"warning"` | `"error"`), `showIcon`, `dismissible`.
+
+### progressBar
+
+```xcon-sketch
+  progress: progressBar at 24 24 400 72
+    label "Monthly target"
+    value 68
+    max 100
+    showText true
+    color "#2563eb"
+    backgroundColor "#e2e8f0"
+```
+
+Key props: `label`, `value`, `max`, `showText`, `animated "true"`, `variant` (`"default"` | `"b"` | `"c"` | `"d"`), `color`, `backgroundColor`.
+
+### tabs
+
+```xcon-sketch
+  nav: tabs at 24 24 400 44
+    items ["Overview", "Activity", "Settings"]
+    selectedIndex 0
+    activeColor @accent
+    inactiveColor @ink-2
+```
+
+### accordion
+
+```xcon-sketch
+  faq: accordion at 24 24 400 200
+    items [{"title":"What is XCON?","content":"XCON is a declarative document format that renders rich UI from Markdown."},{"title":"How do I get started?","content":"Visit xconviewer.dev/play to try the live editor."}]
+    openIndex 0
+```
+
+### qrCode
+
+```xcon-sketch
+  qr: qrCode at 24 24 120 120
+    value "https://xconviewer.dev"
+    foregroundColor #111827
+    backgroundColor white
+```
+
+> Note: Component examples above without a `screen` declaration are partial patterns — intended to be composed inside a `screen` block. Only use `xcon-sketch` with a `screen` declaration for a complete, renderable document.
+
+## Minimum Component Density
+
+Production screens are not sparse. Use these as minimums:
+
+| Canvas size               | Min named components | Typical sections                              |
+|---------------------------|----------------------|-----------------------------------------------|
+| 360×220 compact card      | 5–8                  | header, value, status, badge, CTA             |
+| 720×480 embedded          | 10–16                | hero, 2–3 KPI cards, chart or list            |
+| 960×640 desktop dashboard | 18–30                | hero bar, KPI row, chart, table, alert strip  |
+| 402×812 mobile app        | 16–24                | header, search, hero, categories, list, nav   |
+
+If a 960×640 screen has fewer than 14 named components, it is too sparse. Add a `chart`, `spanGrid`, additional KPI cards, or an alert section.
+
+## Dashboard Composition Order
+
+For dashboards and monitoring screens, follow this section order:
+
+1. Hero bar — title, scope, timestamp, primary KPI value, status badge. Dark background (`#111827`). Height 100–130 px.
+2. KPI row — 3–5 metric cards, each with eyebrow label, value, and optional badge. Height 100–120 px.
+3. Main visual — `chart` for trends, `map` for location, `networkDiagram` for topology.
+4. Supporting table — `spanGrid` for queues, incident lists, or inventory.
+5. Alert strip — active alerts, SLA exceptions, or escalation items. Optional but recommended for operational screens.
+
+The hero bar and KPI row together should occupy the top 28–35% of the canvas.
+
+## Complete Dashboard Example (960×640)
+
+```xcon-sketch
+screen "Smart Factory Monitor" 960x640 bg #f1f5f9
+  hero: panel at 24 24 912 118
+    bg #111827
+    radius 24
+    eyebrow: label "SMART FACTORY — LINE A" at 28 20 300 18
+      color #93c5fd
+      font
+        size 12
+        weight 800
+    title: label "Production Monitor" at 28 44 400 32
+      color white
+      font
+        size 26
+        weight 800
+    oeeValue: label "91.2%" at 28 82 180 34
+      color #60a5fa
+      font
+        size 28
+        weight 800
+    oeeLabel: label "OEE" at 212 92 80 18
+      color #a7f3d0
+      font
+        size 13
+        weight 700
+    statusBadge: label "RUNNING" at 768 24 120 28
+      bg #166534
+      color white
+      radius 14
+      align center
+      font
+        size 11
+        weight 800
+    timestamp: label "09:42 KST" at 768 60 120 18
+      color #64748b
+      align center
+      font
+        size 12
+        weight 500
+  kpiRow: panel at 24 166 912 110
+    bg white
+    radius 18
+    border
+      visible true
+      color #e2e8f0
+    k1: panel at 22 18 196 74
+      bg #eff6ff
+      radius 14
+      k1Label: label "Throughput" at 16 10 150 18
+        color #1d4ed8
+        font
+          size 11
+          weight 800
+      k1Value: label "1,248" at 16 34 130 26
+        color #1d4ed8
+        font
+          size 22
+          weight 800
+      k1Unit: label "units / hr" at 16 64 130 16
+        color #93c5fd
+        font
+          size 10
+          weight 700
+    k2: panel at 238 18 196 74
+      bg #f0fdf4
+      radius 14
+      k2Label: label "Defect rate" at 16 10 150 18
+        color #059669
+        font
+          size 11
+          weight 800
+      k2Value: label "0.8%" at 16 34 100 26
+        color #059669
+        font
+          size 22
+          weight 800
+      k2Delta: label "▼ LOW" at 16 64 80 16
+        color #059669
+        font
+          size 10
+          weight 800
+    k3: panel at 454 18 196 74
+      bg #fff7ed
+      radius 14
+      k3Label: label "Downtime" at 16 10 150 18
+        color #c2410c
+        font
+          size 11
+          weight 800
+      k3Value: label "4.2 min" at 16 34 140 26
+        color #c2410c
+        font
+          size 22
+          weight 800
+      k3Delta: label "▲ WATCH" at 16 64 90 16
+        color #c2410c
+        font
+          size 10
+          weight 800
+    k4: panel at 670 18 196 74
+      bg #f8fafc
+      radius 14
+      k4Label: label "Machines" at 16 10 150 18
+        color #475569
+        font
+          size 11
+          weight 800
+      k4Value: label "18 / 20" at 16 34 130 26
+        color #1e293b
+        font
+          size 22
+          weight 800
+      k4Status: label "2 IDLE" at 16 64 80 16
+        color #64748b
+        font
+          size 10
+          weight 700
+  trend: chart at 24 302 432 220
+    chartType "line"
+    chartData {"labels":["08:00","08:30","09:00","09:30","10:00"],"datasets":[{"label":"Throughput","data":[1180,1210,1248,1230,1255],"borderColor":"#2563eb","backgroundColor":"rgba(37,99,235,0.08)","tension":0.4},{"label":"Target","data":[1200,1200,1200,1200,1200],"borderColor":"#94a3b8","borderDash":[6,4],"backgroundColor":"transparent"}]}
+  machineGrid: spanGrid at 476 302 460 220
+    backgroundColor @surface2
+    readonly true
+    data [["Machine","Status","OEE","Alert"],["Press-01","Running","94%","—"],["Weld-03","Running","88%","—"],["CNC-07","Idle","—","Coolant"],["Pack-02","Running","91%","—"],["QC-Line","Watch","79%","Temp hi"]]
+    columns [{"id":"m","title":"Machine","width":130},{"id":"s","title":"Status","width":100},{"id":"o","title":"OEE","width":80},{"id":"a","title":"Alert","width":120}]
+  alertStrip: panel at 24 540 912 72
+    bg white
+    radius 14
+    border
+      visible true
+      color #fde68a
+    alertIcon: label "⚠" at 20 22 30 28
+      color #92400e
+      font
+        size 20
+        weight 800
+    alertTitle: label "QC-Line Temperature Warning" at 58 14 400 22
+      color #92400e
+      font
+        size 14
+        weight 800
+    alertBody: label "Cooling fan check required. Assigned: Lee / 09:38" at 58 40 550 20
+      color #78350f
+      font
+        size 13
+        weight 500
+    alertBadge: label "WATCH" at 820 22 68 28
+      bg #fef3c7
+      color #92400e
+      radius 14
+      align center
+      font
+        size 11
+        weight 800
+```
+
+## Data Binding — XCON Chain + Template Studio
+
+XCON documents can be generated once as a living template and then updated by changing only the underlying fixture data. This allows AI to generate a report layout once and refresh it by supplying new data each time.
+
+Four-layer anatomy of a data-bound XCON document:
+
+1. `xcon-chain-fixture` — inline JSON data source.
+2. `xcon-chain as alias` — SUGAR expressions that derive display values from fixture.
+3. Markdown prose — natural language context using `$alias` values inline.
+4. `xcon-sketch` — visual screen referencing `$alias` values.
+
+Example:
+
+````markdown
+```xcon-chain-fixture
+{
+  "report": {
+    "date": "2025-06-09",
+    "revenue": 1284000,
+    "growth": 8.4
+  }
+}
+```
+
+```xcon-chain as reportDate
+= report.date
+```
+
+```xcon-chain as revenueFormatted
+= report.revenue | format "$#,###"
+```
+
+```xcon-chain as growthFormatted
+= report.growth | format "#.#%"
+```
+
+## Daily Revenue Brief — $reportDate
+
+Total revenue reached **$revenueFormatted** with **$growthFormatted** growth vs. prior period.
+
+```xcon-sketch
+screen "Revenue Brief" 720x300 bg @surface
+  card: panel at 24 24 672 240
+    bg @surface2
+    radius 20
+    border
+      visible true
+      color @border
+    eyebrow: label "DAILY REVENUE" at 28 28 300 18
+      color @ink-3
+      font
+        size 12
+        weight 800
+    dateLabel: label "$reportDate" at 28 52 300 20
+      color @ink-2
+      font
+        size 14
+        weight 500
+    valueDisplay: label "$revenueFormatted" at 28 84 400 52
+      color @accent
+      font
+        size 44
+        weight 800
+    growthBadge: label "$growthFormatted ▲" at 28 148 160 28
+      bg #dcfce7
+      color #166534
+      radius 14
+      align center
+      font
+        size 13
+        weight 800
+```
+````
+
+When to use the four-layer template:
+- Recurring reports, dashboards, or briefings where only the data changes.
+- Documents with more than three data-driven values.
+
+When to use plain SKETCH without data binding:
+- One-off illustrative screens where no live refresh is needed.
+- Diagrams, onboarding cards, or UI mockups.
 
 ## Minimal XCON/SKETCH Example
 
 ```xcon-sketch
-screen 402x300 bg #F8FAFC
+screen "Hello XCON" 402x220 bg @surface
   title: label "Hello XCON" at 24 32 354 34
-    font 24 800
-    color #111827
+    font
+      size 24
+      weight 800
+    color @ink
+  sub: label "Declarative UI from Markdown" at 24 74 354 22
+    font
+      size 14
+      weight 500
+    color @ink-2
+  cta: button "Open in Viewer" at 24 140 180 44
+    backgroundColor @accent
+    color white
+    border
+      visible false
+      radius 12
 ```
 
 ## Minimal XCON/JSON Example
@@ -64,19 +665,42 @@ screen 402x300 bg #F8FAFC
 ```json
 {
   "type": "form",
-  "pos": [0, 0, 402, 300],
-  "backgroundColor": "#F8FAFC",
+  "pos": [0, 0, 402, 220],
+  "backgroundColor": "@surface",
   "components": {
     "title": {
       "type": "label",
       "pos": [24, 32, 354, 34],
       "text": "Hello XCON",
       "font": { "size": 24, "weight": 800 },
-      "color": "#111827"
+      "color": "@ink"
+    },
+    "sub": {
+      "type": "label",
+      "pos": [24, 74, 354, 22],
+      "text": "Declarative UI from Markdown",
+      "font": { "size": 14, "weight": 500 },
+      "color": "@ink-2"
+    },
+    "cta": {
+      "type": "button",
+      "pos": [24, 140, 180, 44],
+      "text": "Open in Viewer",
+      "backgroundColor": "@accent",
+      "color": "white",
+      "border": { "visible": false, "radius": 12 }
     }
   }
 }
 ```
+
+## Template Studio
+
+Template Studio combines Markdown document shells, JSON fixture data, XCON Chain SUGAR expressions, XCON/SKETCH visual blocks, and XCON Workflow sketch blocks. Use it for data-bound Markdown UI documents such as invoices, bulletins, reports, campaign briefs, dashboards, and operating plans. Keep visible authoring examples SKETCH + SUGAR first; JSON should appear as fixture data, not as the primary authoring language.
+
+## Meta Lab
+
+Meta Lab experiments with path-addressed metadata contracts that can drive fixture selection, SUGAR data binding, XCON/SKETCH visual blocks, and XCON Workflow blocks from the same catalog. Use it to model reusable document contracts where a metadata path selects both the business data shape and the rendered workflow/dashboard pattern.
 
 ## Packages
 
@@ -106,8 +730,27 @@ Use https://xconviewer.dev/examples as the public entry point. The repository al
 - *.xcon
 - README.md
 
-## Component Guidance
+## Component Reference
 
 Use the component reference at https://xconviewer.dev/docs for the detailed public property list. Keep property names LLM-friendly and CSS-adjacent where appropriate, such as backgroundColor, color, font, border, shadow, padding, margin, direction, alignment, items, components, and content.
 
+Supported public component types: `panel`, `label`, `button`, `textField`, `image`, `shape`, `banner`, `list`, `spanGrid`, `chart`, `networkDiagram`, `map`, `avatar`, `badge`, `alert`, `progressBar`, `spinner`, `tabs`, `accordion`, `select`, `switch`, `slider`, `rating`, `qrCode`.
+
+Do not generate removed or unsafe components: `webView`, `frame`, `import`, `fileUpload`, `filePicker`, `imagePicker`, `signaturePad`, or custom components.
+
 Unknown properties should be treated as strings unless the public property spec defines a clearer type.
+
+## Generation Self-Check
+
+Before returning any XCON/SKETCH output, verify:
+
+- Every `xcon-sketch` fence starts with `screen`.
+- Root screen has explicit width and height.
+- Every component inside the screen has a semantic named ID prefix.
+- Lists have `dataTemplate` and a named `templates.cell` layout.
+- Tables use `spanGrid` when the output is table-like.
+- No component position extends outside the screen bounds.
+- Typography uses at least two clearly distinct size and weight levels.
+- Dashboard screens include at least one `chart`, `spanGrid`, `map`, or `networkDiagram`.
+- The density of named components meets the canvas size minimum.
+- The result looks like a real product screen, not a wireframe or placeholder.

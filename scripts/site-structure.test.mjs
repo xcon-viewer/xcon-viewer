@@ -49,6 +49,9 @@ const publicTextFiles = [
   'site/index.html',
   'site/template-lab.html',
   'site/meta-lab.html',
+  'site/xcon-embed.css',
+  'site/xcon-embed.js',
+  'tools/xcon-workflow-runner/src/demo-runtime.mjs',
   'site/chatgpt-simulation.html',
   'site/chatgpt-markdown-sketch-simulation.html',
   'site/html-css-simulation.html',
@@ -121,6 +124,7 @@ describe('public site structure', () => {
     expect(homePage).toContain('href="/play">Try Live Editor</a>');
     expect(homePage).toContain('href="/play/sketch">Open SKETCH Editor</a>');
     expect(homePage).toContain('href="/play/markdown">Open Markdown Playground</a>');
+    expect(homePage).toContain('href="/workflow-runner/demo-lab"');
     expect(homePage).toContain('<code id="liveSketchCode"></code>');
     expect(homePage).toContain('id="liveSketchCursor"');
     expect(homePage).toContain('<div id="liveSketchPreview" class="live-sketch-preview" aria-live="polite"></div>');
@@ -192,6 +196,26 @@ describe('public site structure', () => {
     expect(sketchPlayground).toContain('../examples/showcase/p_xconbnb_main.xcon.sketch');
     expect(sketchPlayground).not.toContain('/__drafts/');
     expect(sketchPlayground).not.toContain('xcon-public-runtime.bundle.js');
+  });
+
+  test('serves the shared public demo runtime module', () => {
+    const runtimePath = resolvePublicPath('/xcon-demo-runtime.mjs');
+    const runtime = readFileSync(runtimePath, 'utf8');
+
+    expect(runtimePath).toBe(join(rootDir, 'tools', 'xcon-workflow-runner', 'src', 'demo-runtime.mjs'));
+    expect(runtime).toContain('export function extractDemoDocument');
+    expect(runtime).toContain('export function makeStreamFrames');
+  });
+
+  test('serves the shared public demo renderer module', () => {
+    const rendererPath = resolvePublicPath('/xcon-demo-renderer.mjs');
+    const renderer = readFileSync(rendererPath, 'utf8');
+
+    expect(rendererPath).toBe(join(rootDir, 'site', 'xcon-demo-renderer.mjs'));
+    expect(renderer).toContain('export function createInlineSketchRenderer');
+    expect(renderer).toContain('renderMarkdownWithInlineSketch');
+    expect(renderer).toContain('mountInlineSketchPreviews');
+    expect(renderer).toContain('mountStreamingSketchPreview');
   });
 
   test('serves the template document studio with Monaco, examples, and separated output tabs', () => {
@@ -364,8 +388,9 @@ describe('public site structure', () => {
     expect(metaLab).toContain('function copyActiveMetaJson');
     expect(metaLab).toContain('.meta-popup-tree-row.selected');
     expect(metaLab).toContain('.meta-popup-table');
-    expect(metaLab).toContain('contain: layout paint;');
-    expect(metaLab).toContain('position:relative;display:block;box-sizing:border-box');
+    expect(metaLab).toContain('href="/xcon-embed.css"');
+    expect(metaLab).toContain('src="/xcon-embed.js"');
+    expect(metaLab).toContain('window.XconEmbed.xconHostFrameStyle');
     expect(metaLab).toContain('chart at');
     expect(metaLab).toContain('spanGrid');
     expect(metaLab).toContain('networkDiagram');

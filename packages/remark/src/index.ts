@@ -1,4 +1,4 @@
-import { deserialize, parseBySyntax, type XconSyntax } from '@xcon-viewer/core';
+import { deserialize, fromSketchLenient, parseBySyntax, type SketchRecoveryError, type XconSyntax } from '@xcon-viewer/core';
 import { renderToHtml, type RenderOptions } from '@xcon-viewer/viewer';
 
 export interface RemarkXconOptions {
@@ -36,13 +36,19 @@ export function transformNode(node: MdastNode, options: RemarkXconOptions = {}):
 export function renderXconNode(source: string, language = 'xcon', options: RemarkXconOptions = {}): string {
   try {
     const syntax = languageToSyntax(language);
-    const document = syntax ? parseBySyntax(source, syntax) : deserialize(source);
+    const parsed = parseNodeDocument(source, syntax);
+    const document = parsed.document;
     const html = renderToHtml(document, options.renderOptions);
     const className = options.containerClass ?? 'xcon-remark-preview';
-    return `<div class="${escapeAttr(className)}" data-xcon-remark>${html}</div>`;
+    return `<div class="${escapeAttr(className)}" data-xcon-remark>${html}${renderDiagnostics(parsed.errors, 'xcon-remark-diagnostics')}</div>`;
   } catch (error) {
     return `<pre class="xcon-remark-error" data-xcon-error>${escapeHtml((error as Error).message)}</pre>`;
   }
+}
+
+function parseNodeDocument(source: string, syntax: XconSyntax | null): { document: ReturnType<typeof deserialize>; errors: SketchRecoveryError[] } {
+  if (syntax === 'sketch') return fromSketchLenient(source);
+  return { document: syntax ? parseBySyntax(source, syntax) : deserialize(source), errors: [] };
 }
 
 function languageToSyntax(language: string): XconSyntax | null {
@@ -64,4 +70,12 @@ function escapeHtml(value: string): string {
 
 function escapeAttr(value: string): string {
   return escapeHtml(value).replaceAll('`', '&#96;');
+}
+
+function renderDiagnostics(errors: SketchRecoveryError[], className: string): string {
+  if (errors.length === 0) return '';
+  const items = errors
+    .map((error) => `<li>${escapeHtml(error.message)}</li>`)
+    .join('');
+  return `<details class="${escapeAttr(className)}" data-xcon-diagnostics><summary>${errors.length} SKETCH parse warning${errors.length === 1 ? '' : 's'}</summary><ul>${items}</ul></details>`;
 }

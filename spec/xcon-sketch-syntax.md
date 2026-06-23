@@ -90,6 +90,32 @@ button "Save" at 24,120 size 120x44
 
 `size 120x44` maps to `size: [120, 44]`; `at 24 120 120 44` maps to `pos: [24, 120, 120, 44]`.
 
+Document line primitives support the normal `at` layout and a point-based `from ... to ...` layout. Use `line at x y width height` for dividers and `line from x y to x y` for absolute-coordinate arrows. The point-based form is normalized to `pos`, `from`, and `to` in the object model.
+
+Anchor connectors use component references instead of absolute coordinates. Use `connector from source.anchor to target.anchor` or the compatibility alias `arrow from source anchor to target anchor`. `arrow` is normalized to `type: "connector"` with `end: "arrow"`. Supported anchors are `left`, `right`, `top`, `bottom`, and `center`.
+
+```text
+rule: line at 48 140 720 0
+  color #cbd5e1
+  width 2
+  style "dashed"
+
+flow: line from 240 220 to 330 220
+  color #2563eb
+  width 3
+  end "arrow"
+  label "Message"
+
+message: connector from user.right to agent.left
+  color #2563eb
+  width 3
+  end "arrow"
+
+legacyMessage: arrow from user right to agent left
+  color #2563eb
+  width 3
+```
+
 ## Inline Properties
 
 Inline properties appear after the layout.

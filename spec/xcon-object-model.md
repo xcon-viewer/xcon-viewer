@@ -81,6 +81,35 @@ Common component props:
 | `backgroundColor`, `color` | CSS color | Public color format. Theme token aliases such as `@border` render as `var(--border)`. |
 | `font`, `border`, `shadow` | object | Grouped style props |
 
+Document primitives include `line` for dividers, arrows, and lightweight diagrams. A `line` can use `pos: [x,y,width,height]` alone, or combine `pos` with local `from` and `to` points:
+
+```json
+{
+  "type": "line",
+  "pos": [60, 140, 300, 50],
+  "from": [0, 0],
+  "to": [300, 50],
+  "color": "#2563eb",
+  "width": 3,
+  "end": "arrow",
+  "label": "Message"
+}
+```
+
+Use `connector` when a line should attach to named component anchors instead of fixed coordinates. The public renderer resolves `from` and `to` against component keys, `name`, or `id`.
+
+```json
+{
+  "type": "connector",
+  "from": { "target": "user", "anchor": "right" },
+  "to": { "target": "agent", "anchor": "left" },
+  "color": "#2563eb",
+  "width": 3,
+  "end": "arrow",
+  "label": "Message"
+}
+```
+
 ## Path Reading
 
 The public core exposes read-only path utilities.

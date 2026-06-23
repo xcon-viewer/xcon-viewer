@@ -95,6 +95,26 @@ Rules:
 | `objectFit` | string | Image fit mode such as `cover`, `contain`, or `fill`. |
 | `icon` | string or object | Icon name or icon configuration. |
 
+Line-specific props:
+
+| Prop | Type | Notes |
+|---|---|---|
+| `from`, `to` | `[x, y]` | Local line endpoints. When omitted, the viewer draws from `[0,0]` to `[pos.width,pos.height]`. |
+| `width` / `strokeWidth` / `weight` | number or string | Stroke width. |
+| `style` / `lineStyle` | string | `solid`, `dashed`, `dotted`, or a CSS dash array. |
+| `start`, `end` | string | Use `arrow` to render an arrow marker at either end. |
+| `label` | string | Optional line label rendered near the midpoint. |
+
+Connector-specific props:
+
+| Prop | Type | Notes |
+|---|---|---|
+| `from`, `to` | object or string | Component endpoint reference, for example `{ "target": "user", "anchor": "right" }` or `"user.right"`. |
+| `end` | string | Defaults to `arrow` when authored with the SKETCH `arrow from ...` compatibility alias. |
+| `width` / `strokeWidth` / `weight` | number or string | Stroke width. |
+| `color` / `stroke` / `strokeColor` | `Color` | Connector stroke color. |
+| `label` | string | Optional connector label rendered near the midpoint. |
+
 ## Component Types
 
 ### Structure and Layout
@@ -103,6 +123,8 @@ Rules:
 |---|---|
 | `form` | Root screen container. |
 | `panel` | General container. |
+| `line` | Document line primitive for dividers, absolute-coordinate arrows, and lightweight diagrams. |
+| `connector` | Anchor-based connector between named components. |
 | `grid` | Grid layout visual. |
 | `flexBox` | Flex layout visual. |
 | `stack` | Stack layout visual. |
@@ -155,7 +177,7 @@ Rules:
 | `dataViz` | Data visualization container. |
 | `spanGrid` | Spreadsheet-like data grid preview. Public rendering is read-only by default. |
 | `networkDiagram` | Network graph visualization. |
-| `map` | Read-only static map container. Use `snapshotUrl` for an actual map image snapshot and `markers` for marker overlays; without `snapshotUrl`, the viewer renders a generated schematic fallback. |
+| `map` | Read-only map container. Use `provider "leaflet"` with `latitude`, `longitude`, `zoom`, and optional `markers` to hydrate a Leaflet/OpenStreetMap map when external resources are allowed. Use `snapshotUrl` for a static map image, or omit both for the generated schematic fallback. |
 | `calendar` | Calendar container. |
 | `qrCode` | QR code display. |
 | `barcode` | Barcode display. |

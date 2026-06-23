@@ -121,7 +121,7 @@ render(xconDocument, document.getElementById('root'));
 Embed it in HTML:
 
 ```html
-<script type="module" src="https://unpkg.com/@xcon-viewer/viewer@0.1.6/dist/web-component.js"></script>
+<script type="module" src="https://unpkg.com/@xcon-viewer/viewer@0.1.7/dist/web-component.js"></script>
 
 <xcon-viewer src="./home.xcon.json"></xcon-viewer>
 ```
@@ -234,7 +234,7 @@ export default {
 **GitHub Actions:**
 
 ```yaml
-- uses: xcon-viewer/xcon-viewer/packages/github-action@v0.1.6
+- uses: xcon-viewer/xcon-viewer/packages/github-action@v0.1.7
   with:
     files: README.md,docs
     out-dir: xcon-rendered
@@ -314,6 +314,21 @@ npm run site:build
 The generated `dist-site/` directory is the recommended nginx document root.
 See [docs/deployment.md](./docs/deployment.md) for Ubuntu, nginx, TLS.
 See [docs/release-and-publishing.md](./docs/release-and-publishing.md) for GitHub/npm publish steps.
+
+---
+
+## Ecosystem
+
+XCON Viewer is the middle layer of a three-project open-source stack:
+
+| Layer | Project | Role |
+|-------|---------|------|
+| Primitives | [Pomelo Suite](https://github.com/xcon-viewer/pomelo-suite) | Canvas UI components (SpanGrid, diagram, scheduler, workqueue) used internally by the viewer |
+| **Format + Engine** | **XCON Viewer** (this repo) | Document format, parser, renderer, CLI, framework adapters |
+| Product | XV Desk (`tools/xcon-viewer-desk`) | Electron developer workbench — multi-terminal, MCP bridge, XCON live preview |
+
+See [docs/ecosystem.md](./docs/ecosystem.md) for a full breakdown of how the
+layers connect, where to start, and why they are separate repositories.
 
 ---
 

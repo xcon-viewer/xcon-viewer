@@ -6,11 +6,11 @@ This guide is the canonical process for publishing the XCON Viewer monorepo.
 
 ## 0) Pre-release version plan
 
-1. Determine target version (example: `0.1.6`).
+1. Determine target version (example: `0.1.7`).
 2. Confirm all workspace packages use the same version number.
 3. Confirm `package-lock.json` root and workspace metadata are consistent with that version.
 4. Decide what changed vs previous release and prepare `CHANGELOG.md` entry.
-5. If target version skips one or more patch levels (e.g. `0.1.2 -> 0.1.6`), this is allowed. Add an explicit changelog note describing what was merged into the target version.
+5. If target version skips one or more patch levels (e.g. `0.1.2 -> 0.1.7`), this is allowed. Add an explicit changelog note describing what was merged into the target version.
 
 ## 1) Version sync verification
 
@@ -25,9 +25,9 @@ node -e "const fs = require('fs'); const root = JSON.parse(fs.readFileSync('pack
 
 Validation checklist:
 
-- Root package version is `0.1.6`.
-- All workspace package versions under `packages/*/package.json` are `0.1.6`.
-- Internal package dependencies (for inter-package imports) reference `0.1.6`.
+- Root package version is `0.1.7`.
+- All workspace package versions under `packages/*/package.json` are `0.1.7`.
+- Internal package dependencies (for inter-package imports) reference `0.1.7`.
 - If any patch versions were skipped before this release, ensure the changelog entry describes the skip and that the first published version is the same across all packages.
 
 ## 2) Build + test + site build
@@ -76,8 +76,8 @@ git add \
 Commit and tag:
 
 ```bash
-git commit -m "chore: release v0.1.6"
-git tag v0.1.6
+git commit -m "chore: release v0.1.7"
+git tag v0.1.7
 ```
 
 ## 4) npm publish order
@@ -121,9 +121,9 @@ npm pack --workspace @xcon-viewer/viewer --dry-run
 Post-publish verification:
 
 ```bash
-npm view @xcon-viewer/core@0.1.6 version
-npm view @xcon-viewer/viewer@0.1.6 version
-npm view @xcon-viewer/github-action@0.1.6 version
+npm view @xcon-viewer/core@0.1.7 version
+npm view @xcon-viewer/viewer@0.1.7 version
+npm view @xcon-viewer/github-action@0.1.7 version
 ```
 
 ## 5) GitHub release publishing
@@ -132,10 +132,10 @@ After successful npm publish:
 
 ```bash
 git push origin main --follow-tags
-gh release create v0.1.6 --title "xcon-viewer v0.1.6" --notes "Release note summary is in CHANGELOG.md (0.1.6)."
+gh release create v0.1.7 --title "xcon-viewer v0.1.7" --notes "Release note summary is in CHANGELOG.md (0.1.7)."
 ```
 
-If `gh` is not configured, use GitHub UI to create a Release attached to tag `v0.1.6`.
+If `gh` is not configured, use GitHub UI to create a Release attached to tag `v0.1.7`.
 
 ## 6) Public static site deployment
 

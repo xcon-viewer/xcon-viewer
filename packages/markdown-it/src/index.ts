@@ -1,4 +1,4 @@
-import { deserialize, parseBySyntax, type XconSyntax } from '@xcon-viewer/core';
+import { deserialize, fromSketchLenient, parseBySyntax, type SketchRecoveryError, type XconSyntax } from '@xcon-viewer/core';
 import { renderToHtml, type RenderOptions } from '@xcon-viewer/viewer';
 
 export interface XconMarkdownItOptions {
@@ -51,14 +51,20 @@ export function renderXconFence(source: string, language = 'xcon', options: Xcon
   try {
     const normalizedLanguage = language.toLowerCase();
     const syntax = normalizedLanguage === 'xcon' ? detectXconSyntax(source) : languageToSyntax(normalizedLanguage);
-    const document = syntax ? parseBySyntax(source, syntax) : deserialize(source);
+    const parsed = parseFenceDocument(source, syntax);
+    const document = parsed.document;
     const html = renderToHtml(document, options.renderOptions);
     const className = options.containerClass ?? 'xcon-markdown-preview';
     const frameClassName = options.frameClass ?? 'xcon-markdown-frame';
-    return `<div class="${escapeAttr(className)}" data-xcon-markdown style="${escapeAttr(xconContainerStyle())}"><div class="${escapeAttr(frameClassName)}" style="${escapeAttr(xconFrameStyle(document))}">${html}</div></div>`;
+    return `<div class="${escapeAttr(className)}" data-xcon-markdown style="${escapeAttr(xconContainerStyle())}"><div class="${escapeAttr(frameClassName)}" style="${escapeAttr(xconFrameStyle(document))}">${html}</div>${renderDiagnostics(parsed.errors, 'xcon-markdown-diagnostics')}</div>`;
   } catch (error) {
     return `<pre class="xcon-markdown-error" data-xcon-error>${escapeHtml((error as Error).message)}</pre>`;
   }
+}
+
+function parseFenceDocument(source: string, syntax: XconSyntax | null): { document: ReturnType<typeof deserialize>; errors: SketchRecoveryError[] } {
+  if (syntax === 'sketch') return fromSketchLenient(source);
+  return { document: syntax ? parseBySyntax(source, syntax) : deserialize(source), errors: [] };
 }
 
 function languageToSyntax(language: string): XconSyntax | null {
@@ -116,6 +122,14 @@ function readXconField(document: unknown, key: string): unknown {
 function readXconDimension(pos: unknown, index: number, fallback: number): number {
   const value = Array.isArray(pos) ? Number(pos[index]) : NaN;
   return Number.isFinite(value) && value > 0 ? Math.round(value) : fallback;
+}
+
+function renderDiagnostics(errors: SketchRecoveryError[], className: string): string {
+  if (errors.length === 0) return '';
+  const items = errors
+    .map((error) => `<li>${escapeHtml(error.message)}</li>`)
+    .join('');
+  return `<details class="${escapeAttr(className)}" data-xcon-diagnostics><summary>${errors.length} SKETCH parse warning${errors.length === 1 ? '' : 's'}</summary><ul>${items}</ul></details>`;
 }
 
 function escapeHtml(value: string): string {

@@ -1,6 +1,6 @@
 {
   "name": "@xcon-viewer/viewer",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "type": "module",
   "description": "XCON viewer-only renderer. Renders XCON documents safely — scripts are blocked by design. Embed UI in Markdown, share from anyone, open anywhere.",
   "keywords": [
@@ -54,7 +54,7 @@
     "prepublishOnly": "npm run test && npm run build"
   },
   "dependencies": {
-    "@xcon-viewer/core": "0.1.6"
+    "@xcon-viewer/core": "0.1.7"
   },
   "devDependencies": {
     "tsup": "^8.0.0",

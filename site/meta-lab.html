@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Meta Lab - XCON Viewer</title>
   <meta name="description" content="Experiment with path-based metadata, fixture binding, XCON Chain, XCON Workflow, and SKETCH rendering.">
+  <link rel="stylesheet" href="/xcon-embed.css">
+  <script src="/xcon-embed.js"></script>
   <script type="importmap">
     {
       "imports": {
@@ -267,25 +269,11 @@
       padding: 1px 5px;
       font-size: 0.9em;
     }
-    .xcon-viewer-host {
-      background: transparent;
-      display: block;
-      position: relative;
-      max-width: 100%;
-      overflow: auto;
-      border-radius: 18px;
-      box-shadow: 0 18px 48px rgba(15, 23, 42, 0.12);
-      isolation: isolate;
-      contain: layout paint;
-    }
     .lab-xcon-block {
       width: 100%;
-      overflow: auto;
+      overflow: visible;
       padding: 4px 0;
       display: block;
-    }
-    .lab-xcon-block > .xcon-viewer-host > [data-xcon-type] {
-      position: absolute;
     }
     .workflow-wrap {
       border: 1px solid var(--line);
@@ -1897,9 +1885,15 @@
       try {
         if (!modules.viewerCore || !modules.viewerRenderer) throw new Error('XCON Viewer packages are not available.');
         const documentModel = modules.viewerCore.parseBySyntax(source, 'sketch');
+        const hostStyle = window.XconEmbed.xconHostFrameStyle(documentModel, {
+          overflow: 'visible',
+          defaultWidth: 900,
+          defaultHeight: 650,
+          fillWhenMissing: false
+        });
         const html = [
           '<div class="lab-xcon-block">',
-          `<div class="xcon-viewer-host" style="${escapeAttr(xconHostFrameStyle(documentModel))}">`,
+          `<div class="xcon-viewer-host" style="${escapeAttr(hostStyle)}">`,
           modules.viewerRenderer.renderToHtml(documentModel, { allowExternalResources: true, allowHtml: false }),
           '</div>',
           '</div>'
@@ -2061,14 +2055,6 @@
         if (arg.startsWith('as:')) return arg.slice(3).trim();
       }
       return '';
-    }
-
-    function xconHostFrameStyle(documentModel) {
-      const pos = Array.isArray(documentModel?.pos) ? documentModel.pos : documentModel?.pos;
-      const parts = typeof pos === 'string' ? pos.split(',').map(Number) : pos;
-      const width = Number(parts?.[2]) || 900;
-      const height = Number(parts?.[3]) || 650;
-      return `position:relative;display:block;box-sizing:border-box;width:${width}px;max-width:100%;height:${height}px;max-height:none;overflow:auto;isolation:isolate;contain:layout paint;`;
     }
 
     function splitPipes(source) {

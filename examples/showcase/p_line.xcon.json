@@ -1,0 +1,103 @@
+{
+  "type": "form",
+  "name": "Line and Connector Primitives",
+  "pos": [0, 0, 480, 300],
+  "backgroundColor": "@surface",
+  "components": {
+    "componentsOrder": "title,subtitle,rule,user,agent,desk,a1,a2,footerRule",
+    "title": {
+      "type": "label",
+      "text": "Lines and connectors",
+      "pos": [32, 24, 260, 32],
+      "color": "@ink",
+      "font": { "size": 24, "weight": 800 }
+    },
+    "subtitle": {
+      "type": "label",
+      "text": "Use line for dividers and connector for anchor-based arrows.",
+      "pos": [32, 60, 390, 24],
+      "color": "@ink-2",
+      "font": { "size": 13, "weight": 500 }
+    },
+    "rule": {
+      "type": "line",
+      "pos": [32, 98, 416, 0],
+      "color": "@border",
+      "width": 2,
+      "style": "dashed"
+    },
+    "user": {
+      "type": "panel",
+      "pos": [36, 132, 112, 72],
+      "backgroundColor": "@surface2",
+      "border": { "visible": true, "color": "@border", "radius": 16 },
+      "components": {
+        "label": {
+          "type": "label",
+          "text": "User",
+          "pos": [20, 24, 72, 22],
+          "color": "@ink",
+          "font": { "size": 16, "weight": 800 },
+          "textAlign": "center"
+        }
+      }
+    },
+    "agent": {
+      "type": "panel",
+      "pos": [200, 132, 112, 72],
+      "backgroundColor": "@surface2",
+      "border": { "visible": true, "color": "@border", "radius": 16 },
+      "components": {
+        "label": {
+          "type": "label",
+          "text": "Agent",
+          "pos": [20, 24, 72, 22],
+          "color": "@ink",
+          "font": { "size": 16, "weight": 800 },
+          "textAlign": "center"
+        }
+      }
+    },
+    "desk": {
+      "type": "panel",
+      "pos": [364, 132, 84, 72],
+      "backgroundColor": "@surface2",
+      "border": { "visible": true, "color": "@border", "radius": 16 },
+      "components": {
+        "label": {
+          "type": "label",
+          "text": "Desk",
+          "pos": [12, 24, 60, 22],
+          "color": "@ink",
+          "font": { "size": 16, "weight": 800 },
+          "textAlign": "center"
+        }
+      }
+    },
+    "a1": {
+      "type": "connector",
+      "from": { "target": "user", "anchor": "right" },
+      "to": { "target": "agent", "anchor": "left" },
+      "color": "@accent",
+      "width": 3,
+      "end": "arrow",
+      "label": "request"
+    },
+    "a2": {
+      "type": "connector",
+      "from": { "target": "agent", "anchor": "right" },
+      "to": { "target": "desk", "anchor": "left" },
+      "color": "@accent",
+      "width": 3,
+      "end": "arrow",
+      "label": "render"
+    },
+    "footerRule": {
+      "type": "line",
+      "pos": [32, 244, 416, 0],
+      "color": "@border",
+      "width": 1,
+      "style": "dotted"
+    }
+  }
+}

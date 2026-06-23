@@ -30,6 +30,18 @@ export class SketchParseError extends SyntaxError {
   }
 }
 
+export interface SketchRecoveryError {
+  line: number;
+  column: number;
+  message: string;
+  source: string;
+}
+
+export interface SketchLenientParseResult {
+  document: XconDocument;
+  errors: SketchRecoveryError[];
+}
+
 export function parseXconSketch(source: string): XconDocument {
   return fromSketch(source);
 }
@@ -39,6 +51,39 @@ export function fromSketch(source: string): XconDocument {
   const root = parseRoot(lines);
   normalizeSketchAliases(root);
   return fromJSONObject(root);
+}
+
+export function fromSketchLenient(source: string, options: { maxRecoveries?: number } = {}): SketchLenientParseResult {
+  const activeLines = source.replace(/\r\n/g, '\n').split('\n').map((text, index) => ({
+    text,
+    originalNumber: index + 1,
+  }));
+  const errors: SketchRecoveryError[] = [];
+  const maxRecoveries = options.maxRecoveries ?? Math.max(8, activeLines.length);
+
+  for (let attempt = 0; attempt <= maxRecoveries; attempt += 1) {
+    const currentSource = activeLines.map((line) => line.text).join('\n');
+    try {
+      return { document: fromSketch(currentSource), errors };
+    } catch (error) {
+      if (!(error instanceof SketchParseError)) throw error;
+      const lineIndex = error.line - 1;
+      const activeLine = activeLines[lineIndex];
+      if (!activeLine) throw error;
+
+      errors.push({
+        line: activeLine.originalNumber,
+        column: error.column,
+        message: rewriteErrorLine(error.message, error.line, activeLine.originalNumber),
+        source: activeLine.text.trim(),
+      });
+
+      activeLines.splice(lineIndex, removableSketchBlockLineCount(activeLines, lineIndex));
+      if (activeLines.length === 0) throw error;
+    }
+  }
+
+  throw new SketchParseError(`Could not recover after ${maxRecoveries} SKETCH parse error(s).`, 1);
 }
 
 export function toSketch(document: XconObject, options: { pretty?: boolean } = {}): string {
@@ -185,6 +230,33 @@ function stripComment(raw: string): string {
   return raw;
 }
 
+function rewriteErrorLine(message: string, currentLine: number, originalLine: number): string {
+  return message.replace(`line ${currentLine}:`, `line ${originalLine}:`);
+}
+
+function removableSketchBlockLineCount(lines: Array<{ text: string }>, startIndex: number): number {
+  const start = lines[startIndex];
+  if (!start) return 1;
+  const baseIndent = leadingSpaceCount(start.text);
+  let count = 1;
+
+  for (let index = startIndex + 1; index < lines.length; index += 1) {
+    const text = lines[index].text;
+    if (!text.trim()) {
+      count += 1;
+      continue;
+    }
+    if (leadingSpaceCount(text) <= baseIndent) break;
+    count += 1;
+  }
+
+  return count;
+}
+
+function leadingSpaceCount(text: string): number {
+  return text.length - text.trimStart().length;
+}
+
 function parseScreen(line: SketchLine): Record<string, unknown> {
   const tokens = tokenize(line.text);
   if (tokens.shift() !== 'screen') throw new SketchParseError('Expected screen declaration.', line.number);
@@ -210,6 +282,8 @@ function parseScreen(line: SketchLine): Record<string, unknown> {
 function isComponentDeclaration(text: string): boolean {
   return (
     /^[A-Za-z_][\w-]*\s*:\s*[A-Za-z_][\w-]*/.test(text) ||
+    /^line\s+from\s+/.test(text) ||
+    /^(?:connector|arrow)\s+from\s+/.test(text) ||
     /^[A-Za-z_][\w-]*(?:\s+"(?:[^"\\]|\\.)*")?\s+at\s+/.test(text)
   );
 }
@@ -233,6 +307,19 @@ function parseComponent(line: SketchLine, counts: Map<string, number>): SketchCo
   }
 
   const props: Record<string, unknown> = { type, name };
+
+  if (type === 'line' && tokens[0] === 'from') {
+    Object.assign(props, parseLineFromLayout(tokens, line));
+    applyInlineProps(props, tokens, line);
+    return { name, props, children: [] };
+  }
+
+  if ((type === 'connector' || type === 'arrow') && tokens[0] === 'from') {
+    Object.assign(props, parseConnectorLayout(tokens, line, type));
+    applyInlineProps(props, tokens, line);
+    return { name, props, children: [] };
+  }
+
   const text = tokens[0] && tokens[0] !== 'at' ? parseStringToken(tokens.shift() as string, line) : undefined;
   Object.assign(props, primaryText(type, text));
 
@@ -241,6 +328,64 @@ function parseComponent(line: SketchLine, counts: Map<string, number>): SketchCo
   applyInlineProps(props, tokens, line);
 
   return { name, props, children: [] };
+}
+
+function parseConnectorLayout(tokens: string[], line: SketchLine, declaredType: string): Record<string, unknown> {
+  if (tokens.shift() !== 'from') throw new SketchParseError('Expected connector layout: from source.anchor to target.anchor.', line.number);
+  const from = parseConnectorEndpoint(tokens, line, 'Expected connector source after from.');
+  if (tokens.shift() !== 'to') throw new SketchParseError('Expected connector layout: from source.anchor to target.anchor.', line.number);
+  const to = parseConnectorEndpoint(tokens, line, 'Expected connector target after to.');
+  return {
+    type: 'connector',
+    from,
+    to,
+    ...(declaredType === 'arrow' ? { end: 'arrow' } : {}),
+  };
+}
+
+function parseConnectorEndpoint(tokens: string[], line: SketchLine, message: string): Record<string, unknown> {
+  const ref = tokens.shift();
+  if (!ref || ref === 'to') throw new SketchParseError(message, line.number);
+  const parsed = parseStringToken(ref, line);
+  if (!parsed) throw new SketchParseError(message, line.number);
+  if (parsed.includes('.')) {
+    const parts = parsed.split('.');
+    const anchor = parts.pop() || 'center';
+    const target = parts.join('.');
+    if (!target) throw new SketchParseError(message, line.number);
+    return { target, anchor };
+  }
+
+  const anchor = tokens[0] && tokens[0] !== 'to' ? parseStringToken(tokens.shift() as string, line) : 'center';
+  return { target: parsed, anchor: anchor || 'center' };
+}
+
+function parseLineFromLayout(tokens: string[], line: SketchLine): Record<string, unknown> {
+  if (tokens.shift() !== 'from') throw new SketchParseError('Expected line layout: from x y to x y.', line.number);
+  const start = parsePoint(tokens, line, 'Expected line start point after from.');
+  if (tokens.shift() !== 'to') throw new SketchParseError('Expected line layout: from x y to x y.', line.number);
+  const end = parsePoint(tokens, line, 'Expected line end point after to.');
+  const left = Math.min(start[0], end[0]);
+  const top = Math.min(start[1], end[1]);
+  const width = Math.abs(end[0] - start[0]);
+  const height = Math.abs(end[1] - start[1]);
+
+  return {
+    pos: [left, top, width, height],
+    from: [start[0] - left, start[1] - top],
+    to: [end[0] - left, end[1] - top],
+  };
+}
+
+function parsePoint(tokens: string[], line: SketchLine, message: string): [number, number] {
+  const first = tokens.shift();
+  if (!first) throw new SketchParseError(message, line.number);
+  const point = parseNumberListToken(first, line);
+  while (point.length < 2 && tokens[0] && isNumberToken(tokens[0])) {
+    point.push(parseNumber(tokens.shift() as string, line));
+  }
+  if (point.length < 2) throw new SketchParseError(message, line.number);
+  return [point[0], point[1]];
 }
 
 function parsePosition(tokens: string[], line: SketchLine): number[] {
@@ -516,16 +661,53 @@ function writeSketchComponent(lines: string[], name: string, component: XconObje
   const primaryKey = primaryTextProperty(type, component);
   const primaryValue = primaryKey ? component.get(primaryKey) : undefined;
   const primary = typeof primaryValue === 'string' && primaryValue ? ` ${formatSketchScalar(primaryValue)}` : '';
+  const lineEndpoint = type === 'line' ? lineEndpointSketch(component, pos) : null;
+  const connectorEndpoint = type === 'connector' ? connectorEndpointSketch(component) : null;
 
-  lines.push(`${indent}${name}: ${type}${primary} at ${pos.join(' ')}`);
+  lines.push(
+    lineEndpoint
+      ? `${indent}${name}: ${type} from ${lineEndpoint.from.join(' ')} to ${lineEndpoint.to.join(' ')}`
+      : connectorEndpoint
+        ? `${indent}${name}: ${type} from ${connectorEndpoint.from} to ${connectorEndpoint.to}`
+        : `${indent}${name}: ${type}${primary} at ${pos.join(' ')}`,
+  );
   component.forEach((value, key) => {
     if (key === 'type' || key === 'pos' || key === 'components') return;
+    if (lineEndpoint && (key === 'from' || key === 'to')) return;
+    if (connectorEndpoint && (key === 'from' || key === 'to')) return;
     if (key === 'name' && value === name) return;
     if (key === primaryKey) return;
     writeSketchProperty(lines, `${indent}  `, key, value);
   });
 
   writeSketchComponents(lines, component.get('components'), `${indent}  `);
+}
+
+function lineEndpointSketch(component: XconObject, pos: number[]): { from: [number, number]; to: [number, number] } | null {
+  const from = pointParts(component.get('from'));
+  const to = pointParts(component.get('to'));
+  if (!from || !to) return null;
+  return {
+    from: [pos[0] + from[0], pos[1] + from[1]],
+    to: [pos[0] + to[0], pos[1] + to[1]],
+  };
+}
+
+function connectorEndpointSketch(component: XconObject): { from: string; to: string } | null {
+  const from = connectorEndpointPart(component.get('from'));
+  const to = connectorEndpointPart(component.get('to'));
+  if (!from || !to) return null;
+  return { from, to };
+}
+
+function connectorEndpointPart(value: XconValue | undefined): string | null {
+  if (typeof value === 'string' && value.trim()) return value.trim();
+  if (!isXconObject(value)) return null;
+  const target = value.get('target');
+  if (typeof target !== 'string' || !target.trim()) return null;
+  const anchor = value.get('anchor');
+  if (typeof anchor !== 'string' || !anchor.trim() || anchor.trim() === 'center') return target.trim();
+  return `${target.trim()}.${anchor.trim()}`;
 }
 
 function writeSketchProperty(lines: string[], indent: string, key: string, value: XconValue): void {
@@ -602,6 +784,22 @@ function rectParts(value: XconValue | undefined): [number, number, number, numbe
   }
 
   return [0, 0, 0, 0];
+}
+
+function pointParts(value: XconValue | undefined): [number, number] | null {
+  if (Array.isArray(value) && value.length >= 2) {
+    const parts = value.slice(0, 2).map((item) => (typeof item === 'number' && Number.isFinite(item) ? item : Number(item)));
+    if (parts.every((item) => Number.isFinite(item))) return parts as [number, number];
+  }
+
+  if (typeof value === 'string') {
+    const parts = value.split(',').map((item) => Number(item.trim()));
+    if (parts.length >= 2 && parts.slice(0, 2).every((item) => Number.isFinite(item))) {
+      return parts.slice(0, 2) as [number, number];
+    }
+  }
+
+  return null;
 }
 
 function isSimpleObject(object: XconObject): boolean {

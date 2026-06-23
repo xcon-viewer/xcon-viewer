@@ -124,12 +124,13 @@ Packages must be published in dependency order:
 1. `@xcon-viewer/core`
 2. `@xcon-viewer/viewer`
 3. `@xcon-viewer/cli`
-4. `@xcon-viewer/react`
-5. `@xcon-viewer/vue`
-6. `@xcon-viewer/markdown-it`
-7. `@xcon-viewer/remark`
-8. `@xcon-viewer/vite-plugin`
-9. `@xcon-viewer/github-action`
+4. `@xcon-viewer/document-importer`
+5. `@xcon-viewer/react`
+6. `@xcon-viewer/vue`
+7. `@xcon-viewer/markdown-it`
+8. `@xcon-viewer/remark`
+9. `@xcon-viewer/vite-plugin`
+10. `@xcon-viewer/github-action`
 
 Before publishing, update every package version and internal dependency version consistently.
 
@@ -154,6 +155,7 @@ Dry-run package contents:
 npm pack --workspace @xcon-viewer/core --dry-run
 npm pack --workspace @xcon-viewer/viewer --dry-run
 npm pack --workspace @xcon-viewer/cli --dry-run
+npm pack --workspace @xcon-viewer/document-importer --dry-run
 npm pack --workspace @xcon-viewer/react --dry-run
 npm pack --workspace @xcon-viewer/vue --dry-run
 npm pack --workspace @xcon-viewer/markdown-it --dry-run
@@ -169,6 +171,7 @@ npm login
 npm publish --workspace @xcon-viewer/core --access public
 npm publish --workspace @xcon-viewer/viewer --access public
 npm publish --workspace @xcon-viewer/cli --access public
+npm publish --workspace @xcon-viewer/document-importer --access public
 npm publish --workspace @xcon-viewer/react --access public
 npm publish --workspace @xcon-viewer/vue --access public
 npm publish --workspace @xcon-viewer/markdown-it --access public
@@ -208,13 +211,13 @@ npm run site:build
 node -e "console.log(require('./package.json').version)"
 ```
 
-3) Verify all workspace versions are aligned (expected: `0.1.6`)
+3) Verify all workspace versions are aligned (expected: `0.1.7`)
 
 ```bash
 node -e "const fs=require('fs');const path=require('path');const root=JSON.parse(fs.readFileSync('package.json','utf8')).version;const dirs=fs.readdirSync('packages',{withFileTypes:true}).filter(d=>d.isDirectory());const versions=dirs.map(d=>({name:d.name,version:JSON.parse(fs.readFileSync(path.join('packages',d.name,'package.json'),'utf8')).version}));console.log('root',root);console.log('packages',versions);if(!versions.every(v=>v.version===root)){process.exitCode=1;}"
 ```
 
-For strict review, confirm each `packages/*/package.json` and internal dependency uses `0.1.6`.
+For strict review, confirm each `packages/*/package.json` and internal dependency uses `0.1.7`.
 
 4) npm publish flow
 
@@ -223,6 +226,7 @@ npm login
 npm publish --workspace @xcon-viewer/core --access public
 npm publish --workspace @xcon-viewer/viewer --access public
 npm publish --workspace @xcon-viewer/cli --access public
+npm publish --workspace @xcon-viewer/document-importer --access public
 npm publish --workspace @xcon-viewer/react --access public
 npm publish --workspace @xcon-viewer/vue --access public
 npm publish --workspace @xcon-viewer/markdown-it --access public
@@ -235,19 +239,19 @@ npm publish --workspace @xcon-viewer/github-action --access public
 
 ```bash
 git add package.json package-lock.json packages/*/package.json README.md docs/deployment.md docs/integrations.md site/api.html CHANGELOG.md
-git commit -m "chore: bump to 0.1.6 and refresh release docs"
-git tag v0.1.6
+git commit -m "chore: bump to 0.1.7 and refresh release docs"
+git tag v0.1.7
 git push origin main --follow-tags
 ```
 
-If this release jumps patch versions (for example `0.1.2 -> 0.1.6`), keep the jump explicit in `CHANGELOG.md` and do not create intermediate release tags.
+If this release jumps patch versions (for example `0.1.2 -> 0.1.7`), keep the jump explicit in `CHANGELOG.md` and do not create intermediate release tags.
 
 6) Post-release validation (npm + deployment)
 
 ```bash
-npm view @xcon-viewer/core@0.1.6 version
-npm view @xcon-viewer/viewer@0.1.6 version
-npm view @xcon-viewer/github-action@0.1.6 version
+npm view @xcon-viewer/core@0.1.7 version
+npm view @xcon-viewer/viewer@0.1.7 version
+npm view @xcon-viewer/github-action@0.1.7 version
 curl -I https://xconviewer.dev/
 curl -I https://xconviewer.dev/play
 curl -I https://xconviewer.dev/play/markdown
@@ -259,24 +263,24 @@ curl -I https://xconviewer.dev/xcon.schema.json
 After npm publish succeeds, create a GitHub release/tag for humans:
 
 ```bash
-git tag v0.1.6
-git push origin v0.1.6
+git tag v0.1.7
+git push origin v0.1.7
 
-gh release create v0.1.6 \
+gh release create v0.1.7 \
   --repo xcon-viewer/xcon-viewer \
-  --title "xcon-viewer v0.1.6" \
-  --notes "Release note summary is in CHANGELOG.md (0.1.6)."
+  --title "xcon-viewer v0.1.7" \
+  --notes "Release note summary is in CHANGELOG.md (0.1.7)."
 ```
 
-For Marketplace users, keep the action example in `packages/github-action/README.md` aligned to the release tag (`v0.1.6`).
+For Marketplace users, keep the action example in `packages/github-action/README.md` aligned to the release tag (`v0.1.7`).
 
 ## GitHub Action Release Notes
 
 `@xcon-viewer/github-action` includes `action.yml` in its npm package. For GitHub Marketplace-style usage, also tag the repository release, for example:
 
 ```bash
-git tag v0.1.6
-git push origin v0.1.6
+git tag v0.1.7
+git push origin v0.1.7
 ```
 
 If the action is referenced by path inside this repository, keep the README examples aligned with the tag or branch name.

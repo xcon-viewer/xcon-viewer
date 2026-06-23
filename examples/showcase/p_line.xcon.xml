@@ -1,0 +1,17 @@
+<Form name="Line and Connector Primitives" pos="0,0,480,300" backgroundColor="@surface" componentsOrder="title,subtitle,rule,user,agent,desk,a1,a2,footerRule">
+  <Label name="title" text="Lines and connectors" pos="32,24,260,32" color="@ink" font="size:24; weight:800" />
+  <Label name="subtitle" text="Use line for dividers and connector for anchor-based arrows." pos="32,60,390,24" color="@ink-2" font="size:13; weight:500" />
+  <Line name="rule" pos="32,98,416,0" color="@border" width="2" style="dashed" />
+  <Panel name="user" pos="36,132,112,72" backgroundColor="@surface2" border="visible:true; color:@border; radius:16">
+    <Label name="label" text="User" pos="20,24,72,22" color="@ink" font="size:16; weight:800" textAlign="center" />
+  </Panel>
+  <Panel name="agent" pos="200,132,112,72" backgroundColor="@surface2" border="visible:true; color:@border; radius:16">
+    <Label name="label" text="Agent" pos="20,24,72,22" color="@ink" font="size:16; weight:800" textAlign="center" />
+  </Panel>
+  <Panel name="desk" pos="364,132,84,72" backgroundColor="@surface2" border="visible:true; color:@border; radius:16">
+    <Label name="label" text="Desk" pos="12,24,60,22" color="@ink" font="size:16; weight:800" textAlign="center" />
+  </Panel>
+  <Connector name="a1" from="target:user; anchor:right" to="target:agent; anchor:left" color="@accent" width="3" end="arrow" label="request" />
+  <Connector name="a2" from="target:agent; anchor:right" to="target:desk; anchor:left" color="@accent" width="3" end="arrow" label="render" />
+  <Line name="footerRule" pos="32,244,416,0" color="@border" width="1" style="dotted" />
+</Form>

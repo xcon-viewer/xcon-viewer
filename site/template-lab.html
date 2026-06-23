@@ -6,6 +6,8 @@
   <title>Template Studio - XCON Viewer</title>
   <meta name="description" content="Write UI like documentation. Structured UI documents for humans, AI, and Git workflows.">
   <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/xcon-embed.css">
+  <script src="/xcon-embed.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js"></script>
   <script type="importmap">
     {
@@ -2304,9 +2306,15 @@
           allowExternalResources: true,
           allowHtml: false
         };
+        const hostStyle = window.XconEmbed.xconHostFrameStyle(documentModel, {
+          display: 'inline-block',
+          overflow: 'visible',
+          verticalAlign: 'top',
+          fillWhenMissing: true
+        });
         const html = [
           '<div class="lab-xcon-block">',
-          `<div class="xcon-viewer-host" data-xcon-viewer-host style="${escapeAttr(xconHostFrameStyle(documentModel))}">`,
+          `<div class="xcon-viewer-host" data-xcon-viewer-host style="${escapeAttr(hostStyle)}">`,
           modules.viewerRenderer.renderToHtml(documentModel, renderOptions),
           '</div>',
           '</div>'
@@ -2318,51 +2326,6 @@
         env.diagnostics.push(message);
         return { html: renderError(message), source: `\n<!-- ${message} -->\n` };
       }
-    }
-
-    function xconHostFrameStyle(root) {
-      const pos = xconRectParts(xconValue(root, 'pos'));
-      const declarations = [
-        'position:relative',
-        'display:inline-block',
-        'box-sizing:border-box',
-        'max-width:100%',
-        'overflow:visible',
-        'vertical-align:top',
-        'isolation:isolate'
-      ];
-      if (pos) {
-        const width = Math.max(0, pos[0]) + pos[2];
-        const height = Math.max(0, pos[1]) + pos[3];
-        declarations.push(`width:${numberPx(width)}`, `height:${numberPx(height)}`);
-      } else {
-        declarations.push('width:100%', 'min-height:100%');
-      }
-      return declarations.join(';');
-    }
-
-    function xconValue(node, key) {
-      if (!node) return undefined;
-      if (typeof node.get === 'function') return node.get(key);
-      return node[key];
-    }
-
-    function xconRectParts(value) {
-      let parts = null;
-      if (Array.isArray(value)) {
-        parts = value;
-      } else if (typeof value === 'string') {
-        parts = value.split(/[,\s]+/).filter(Boolean);
-      } else if (value && typeof value === 'object') {
-        parts = [value.x, value.y, value.width, value.height];
-      }
-      if (!parts || parts.length < 4) return null;
-      const numbers = parts.slice(0, 4).map((part) => Number(part));
-      return numbers.every(Number.isFinite) ? numbers : null;
-    }
-
-    function numberPx(value) {
-      return `${Math.max(0, Math.round(Number(value) || 0))}px`;
     }
 
     function renderWorkflowFence(content, env, workflowCore) {

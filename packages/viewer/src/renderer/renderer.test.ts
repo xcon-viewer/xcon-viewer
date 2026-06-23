@@ -187,7 +187,8 @@ describe('viewer security renderer', () => {
     expect(source).toContain(':host{display:block;contain:content;position:relative}');
     expect(source).toContain('class="xcon-viewer-host"');
     expect(source).toContain('data-xcon-viewer-host');
-    expect(source).toContain('xconElementFrameStyle(document)');
+    expect(source).toContain('resolveRenderInput(source)');
+    expect(source).toContain('xconElementFrameStyle(resolved.root)');
   });
 
   test('uses componentsOrder and renders array-based layout items', () => {
@@ -288,6 +289,131 @@ describe('viewer security renderer', () => {
     expect(html).toContain('<span class="xa-showcase-stay-logo">air<span>bnb</span></span>');
     expect(html).not.toContain('onclick');
     expect(html).not.toContain('width:560px');
+  });
+
+  test('renders document line primitives as safe SVG lines with optional arrows and labels', () => {
+    const html = renderToHtml({
+      type: 'form',
+      pos: [0, 0, 480, 260],
+      components: {
+        componentsOrder: 'rule,flow',
+        rule: {
+          type: 'line',
+          pos: [40, 80, 360, 0],
+          color: '#cbd5e1',
+          width: 2,
+          style: 'dashed',
+        },
+        flow: {
+          type: 'line',
+          pos: [60, 140, 300, 50],
+          from: [0, 0],
+          to: [300, 50],
+          color: '#2563eb',
+          width: 3,
+          end: 'arrow',
+          label: 'Message',
+        },
+      },
+    });
+
+    expect(html).toContain('data-xcon-type="line"');
+    expect(html).toContain('data-component="line"');
+    expect(html).toContain('<svg');
+    expect(html).toContain('<line');
+    expect(html).toContain('stroke-dasharray="6 6"');
+    expect(html).toContain('marker-end="url(#');
+    expect(html).toContain('Message');
+    expect(html).not.toContain('<script');
+  });
+
+  test('renders anchor-based connectors between component bounds as safe SVG lines', () => {
+    const html = renderToHtml({
+      type: 'form',
+      pos: [0, 0, 480, 260],
+      components: {
+        componentsOrder: 'user,agent,message',
+        user: { type: 'panel', pos: [40, 98, 120, 64] },
+        agent: { type: 'panel', pos: [320, 98, 120, 64] },
+        message: {
+          type: 'connector',
+          from: { target: 'user', anchor: 'right' },
+          to: { target: 'agent', anchor: 'left' },
+          color: '#2563eb',
+          width: 3,
+          end: 'arrow',
+          label: 'Message',
+        },
+      },
+    });
+
+    expect(html).toContain('data-xcon-type="connector"');
+    expect(html).toContain('class="xa-line');
+    expect(html).toContain('left:160px;top:130px;width:160px;height:0px');
+    expect(html).toContain('marker-end="url(#');
+    expect(html).toContain('stroke="#2563eb"');
+    expect(html).toContain('Message');
+    expect(html).not.toContain('<script');
+  });
+
+  test('renders recoverable SKETCH string input while reporting skipped invalid components', () => {
+    const html = renderToHtml(`
+      screen 320x180
+        good: label "Good" at 16 16 120 28
+        broken: button "Broken" 16 56 120 32
+        after: button "After" at 16 104 120 36
+    `);
+
+    expect(html).toContain('Good');
+    expect(html).toContain('After');
+    expect(html).not.toContain('xa-al-btn__label">Broken');
+    expect(html).toContain('data-xcon-diagnostics');
+    expect(html).toContain('SKETCH parse warning');
+    expect(html).toContain('Expected component layout');
+  });
+
+  test('renders static chart preview from SKETCH chartData with weekly decimal series', () => {
+    const html = renderToHtml(`
+      screen "Weekly Weather" 720x420 bg "#f8fafc"
+        chartPanel: panel at 24 24 672 300
+          backgroundColor "#ffffff"
+          border
+            visible true
+            width 1
+            color "#dbe4ee"
+            radius 14
+          weeklyTrendChart: chart at 20 64 632 196
+            chartType "line"
+            chartData {"labels":["목","금","토","일","월","화","수"],"datasets":[{"label":"최고 기온","data":[25.2,27,30.1,30.6,33.1,31.6,33.7],"borderColor":"#38bdf8","backgroundColor":"rgba(56,189,248,0.18)"},{"label":"강수확률","data":[98,0,10,28,39,8,18],"borderColor":"#f59e0b","backgroundColor":"rgba(245,158,11,0.16)"}]}
+    `);
+
+    expect(html).toContain('class="xa-chart-container"');
+    expect(html).toContain('data-xcon-chart-type="line"');
+    expect(html).toContain('data-xcon-chart-data="{&quot;labels&quot;:[&quot;목&quot;');
+    expect(html).toContain('class="xa-chart-preview"');
+    expect(html).toContain('<polyline');
+    expect(html.match(/<polyline/g)?.length).toBe(2);
+    expect(html).toContain('stroke="#38bdf8"');
+    expect(html).toContain('stroke="#f59e0b"');
+    expect(html).not.toContain('SKETCH parse warning');
+  });
+
+  test('renders static chart preview from simple label value chartData arrays', () => {
+    const html = renderToHtml(`
+      screen "Market Report" 520x320 bg "#f8fafc"
+        chartPanel: panel at 24 24 452 260
+          backgroundColor "#ffffff"
+          weeklyChart: chart at 22 56 408 180
+            chartType "bar"
+            chartData [{"label":"6/8 코스피","value":-8.23,"color":"#dc2626"},{"label":"6/9 코스피","value":8.2,"color":"#059669"},{"label":"주간 리스크","value":7.5,"color":"#f59e0b"}]
+    `);
+
+    expect(html).toContain('class="xa-chart-preview"');
+    expect(html).toContain('6/8 코스피');
+    expect(html).toContain('6/9 코스피');
+    expect(html).toContain('fill="#dc2626"');
+    expect(html).toContain('fill="#059669"');
+    expect(html).not.toContain('SKETCH parse warning');
   });
 
   test('renders advanced XaShape style, image, transform, and accessibility properties', () => {
@@ -4189,6 +4315,16 @@ describe('viewer security renderer', () => {
     expect(snapshotSpanGrid).toContain('height:100px');
     expect(snapshotSpanGrid).toContain('position:sticky;top:0px;left:0px');
 
+    const lightSnapshotSpanGrid = renderToHtml(`
+      screen "Grid Contrast" 460x180 bg "#0f172a"
+        grid: spanGrid at 20 20 400 120
+          backgroundColor "#ffffff"
+          readonly true
+          snapshot {"width":400,"height":120,"cols":[{"width":120},{"width":120}],"rows":[{"height":34,"cells":[{"text":"Name","backColor":"#f1f5f9","foreColor":"#111827","textAlign":"MiddleCenter"},{"text":"Status","backColor":"#f1f5f9","foreColor":"#111827","textAlign":"MiddleCenter"}]},{"height":42,"cells":[{"text":"Mina","foreColor":"#111827","textAlign":"MiddleCenter"},{"text":"Ready","foreColor":"#111827","textAlign":"MiddleCenter"}]}],"fixed":{"row":0,"col":0}}
+    `);
+    expect(lightSnapshotSpanGrid).toContain('Mina');
+    expect(lightSnapshotSpanGrid).toContain('background-color:#ffffff;color:#111827');
+
     const flipbook = renderToHtml({
       type: 'flipbook',
       pages: 2,
@@ -4224,6 +4360,40 @@ describe('viewer security renderer', () => {
     const combined = [chart, codeEditor, richEditor, dataViz, spanGrid, flipbook, network, map, calendar].join('\n');
     expect(combined).not.toMatch(/\son(?:click|error|load)=/i);
     expect(combined).not.toContain('<script');
+  });
+
+  test('preserves xcon absolute positions on advanced component roots', () => {
+    const chart = renderToHtml({
+      type: 'chart',
+      pos: [24, 250, 424, 132],
+      chartType: 'line',
+      chartData: { labels: ['10', '11'], datasets: [{ data: [22, 24] }] },
+    });
+    const chartRoot = chart.match(/<div[^>]+data-xcon-type="chart"[^>]*>/)?.[0] ?? '';
+
+    expect(chartRoot).toContain('position:absolute');
+    expect(chartRoot).toContain('left:24px');
+    expect(chartRoot).toContain('top:250px');
+    expect(chartRoot).toContain('width:424px');
+    expect(chartRoot).toContain('height:132px');
+    expect(chartRoot).not.toMatch(/position:absolute[^"]*position:relative/);
+
+    const spanGrid = renderToHtml({
+      type: 'spanGrid',
+      pos: [468, 250, 228, 132],
+      data: [
+        ['Item', 'Value'],
+        ['Humidity', '64%'],
+      ],
+    });
+    const spanGridRoot = spanGrid.match(/<div[^>]+data-xcon-type="spanGrid"[^>]*>/)?.[0] ?? '';
+
+    expect(spanGridRoot).toContain('position:absolute');
+    expect(spanGridRoot).toContain('left:468px');
+    expect(spanGridRoot).toContain('top:250px');
+    expect(spanGridRoot).toContain('width:228px');
+    expect(spanGridRoot).toContain('height:132px');
+    expect(spanGridRoot).not.toMatch(/position:absolute[^"]*position:relative/);
   });
 
   test('keeps advanced network visual options aligned with draft XaNetworkDiagram', () => {
@@ -4318,6 +4488,85 @@ describe('viewer security renderer', () => {
     expect(html).toContain('title="City Hall"');
   });
 
+  test('hydrates Leaflet OpenStreetMap maps only when external resources are allowed', () => {
+    const map = {
+      type: 'map',
+      provider: 'leaflet',
+      latitude: 36.2,
+      longitude: 127.8,
+      zoom: 6,
+      tileLayer: 'OpenStreetMap',
+      attribution: '(C) OpenStreetMap contributors',
+      markers: [
+        { lat: 37.5665, lng: 126.978, label: 'Seoul 22.9C' },
+        { lat: 35.1796, lng: 129.0756, label: 'Busan drizzle' },
+      ],
+      heatmap: [
+        [37.5665, 126.978, 0.8],
+        [35.1796, 129.0756, 0.5],
+      ],
+      polylines: [{ points: [[37.5665, 126.978], [35.1796, 129.0756]], color: '#2563eb' }],
+      polygons: [{ points: [[37.5, 126.9], [37.6, 126.9], [37.6, 127.0]], color: '#14b8a6' }],
+      clustering: true,
+    };
+
+    const safeHtml = renderToHtml(map);
+    expect(safeHtml).not.toContain('data-xcon-leaflet-map');
+    expect(safeHtml).toContain('static map preview');
+
+    const liveHtml = renderToHtml(map, { allowExternalResources: true });
+    expect(liveHtml).toContain('data-xcon-leaflet-map');
+    expect(liveHtml).toContain('data-xcon-map-provider="leaflet"');
+    expect(liveHtml).toContain('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png');
+    expect(liveHtml).toContain('Seoul 22.9C');
+    expect(liveHtml).toContain('Busan drizzle');
+    expect(liveHtml).toContain('data-xcon-map-heatmap=');
+    expect(liveHtml).toContain('data-xcon-map-polylines=');
+    expect(liveHtml).toContain('data-xcon-map-polygons=');
+    expect(liveHtml).toContain('data-xcon-map-clustering="true"');
+    expect(viewerScript).toContain('hydrateLeafletMaps');
+    expect(viewerScript).toContain('applyLeafletMapLayers');
+    expect(viewerScript).toContain('_leaflet_map');
+    expect(viewerScript).toContain('ensureLeafletStyles(host.getRootNode');
+    expect(viewerScript).toContain('divIcon');
+    expect(viewerScript).toContain('leaflet@1.9.4/dist/leaflet.js');
+  });
+
+  test('renders D3-style static dataViz previews without requiring runtime D3', () => {
+    const hierarchy = {
+      name: 'Ops',
+      children: [
+        { name: 'Queue', value: 38 },
+        { name: 'Scheduler', value: 24 },
+        { name: 'Runner', value: 18 },
+      ],
+    };
+    const graph = {
+      nodes: [
+        { id: 'fixture', label: 'Fixture' },
+        { id: 'chain', label: 'Chain' },
+        { id: 'sketch', label: 'SKETCH' },
+      ],
+      links: [
+        { source: 'fixture', target: 'chain' },
+        { source: 'chain', target: 'sketch' },
+      ],
+    };
+
+    const treemap = renderToHtml({ type: 'dataViz', vizType: 'treemap', data: hierarchy });
+    const sunburst = renderToHtml({ type: 'dataViz', vizType: 'sunburst', data: hierarchy });
+    const forceGraph = renderToHtml({ type: 'dataViz', vizType: 'forceGraph', data: graph });
+
+    expect(treemap).toContain('xa-dataviz-preview--treemap');
+    expect(treemap).toContain('<svg');
+    expect(treemap).toContain('Queue');
+    expect(sunburst).toContain('xa-dataviz-preview--sunburst');
+    expect(sunburst).toContain('<path');
+    expect(forceGraph).toContain('xa-dataviz-preview--force-graph');
+    expect(forceGraph).toContain('Fixture');
+    expect(forceGraph).toContain('<line');
+  });
+
   test('keeps advanced chart and editor options visible like draft advanced components', () => {
     const chart = renderToHtml({
       type: 'chart',
@@ -4361,6 +4610,53 @@ describe('viewer security renderer', () => {
     expect(dataViz).toContain('data-xcon-dataviz-type="pie"');
     expect(dataViz).toContain('data-xcon-dataviz-config="{&quot;innerRadius&quot;:12}"');
     expect(dataViz).toContain('data-xcon-dataviz-interactive="false"');
+  });
+
+  test('renders distinct static chart previews for public chart gallery types', () => {
+    const chartData = {
+      labels: ['North', 'South', 'East', 'West', 'Central'],
+      datasets: [{ label: 'Score', data: [42, 31, 26, 18, 35] }],
+    };
+    const pointData = {
+      datasets: [
+        {
+          label: 'Signal',
+          data: [
+            { x: 1, y: 42, r: 9 },
+            { x: 2, y: 31, r: 7 },
+            { x: 3, y: 26, r: 6 },
+            { x: 4, y: 18, r: 5 },
+          ],
+        },
+      ],
+    };
+
+    const radar = renderToHtml({ type: 'chart', chartType: 'radar', chartData });
+    const polarArea = renderToHtml({ type: 'chart', chartType: 'polarArea', chartData });
+    const pie = renderToHtml({ type: 'chart', chartType: 'pie', chartData });
+    const doughnut = renderToHtml({ type: 'chart', chartType: 'doughnut', chartData });
+    const scatter = renderToHtml({ type: 'chart', chartType: 'scatter', chartData: pointData });
+    const bubble = renderToHtml({ type: 'chart', chartType: 'bubble', chartData: pointData });
+
+    expect(pie).toContain('xa-chart-preview--pie');
+    expect(pie).toContain('<path');
+    expect(pie).toContain('var(--xcon-chart-accent, var(--accent, #2563eb))');
+    expect(pie).not.toContain('stroke-dasharray');
+    expect(doughnut).toContain('xa-chart-preview--doughnut');
+    expect(doughnut).toContain('stroke-dasharray');
+    expect(doughnut).not.toBe(pie);
+    expect(radar).toContain('xa-chart-preview--radar');
+    expect(radar).toContain('<polygon');
+    expect(radar).not.toContain('<rect');
+    expect(polarArea).toContain('xa-chart-preview--polar-area');
+    expect(polarArea).toContain('<path');
+    expect(polarArea).not.toContain('<rect');
+    expect(scatter).toContain('xa-chart-preview--scatter');
+    expect(scatter).toContain('<circle');
+    expect(scatter).not.toContain('<rect');
+    expect(bubble).toContain('xa-chart-preview--bubble');
+    expect(bubble).toContain('<circle');
+    expect(bubble).not.toContain('<rect');
   });
 
   test('keeps advanced flipbook page sizing aligned with draft XaFlipbook options', () => {
@@ -4541,6 +4837,10 @@ describe('viewer security renderer', () => {
       'pageHeight',
       'nodeRadius',
       'markers',
+      'heatmap',
+      'polylines',
+      'polygons',
+      'clustering',
       'events',
     ].forEach((key) => expect(props).toHaveProperty(key));
   });
