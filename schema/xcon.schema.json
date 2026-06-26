@@ -486,6 +486,7 @@
         "chatBubble",
         "checkbox",
         "codeEditor",
+        "connector",
         "colorPicker",
         "dataViz",
         "datePicker",
@@ -498,6 +499,7 @@
         "icon",
         "image",
         "label",
+        "line",
         "list",
         "map",
         "modal",
@@ -750,7 +752,7 @@
           "$ref": "#/definitions/stringOrNumber"
         },
         "weight": {
-          "type": "number"
+          "$ref": "#/definitions/stringOrNumber"
         },
         "style": {
           "type": "string"
@@ -1387,6 +1389,9 @@
         "rotation": {
           "type": "number"
         },
+        "weight": {
+          "type": "number"
+        },
         "initials": {
           "type": "string"
         },
@@ -1409,13 +1414,7 @@
           "type": "boolean"
         },
         "theme": {
-          "type": "string",
-          "enum": [
-            "obsidian",
-            "light",
-            "auto",
-            "custom"
-          ]
+          "type": "string"
         },
         "backdropClose": {
           "type": "boolean"
@@ -1600,6 +1599,12 @@
           "type": "string"
         },
         "mapImage": {
+          "type": "string"
+        },
+        "objectFit": {
+          "type": "string"
+        },
+        "objectPosition": {
           "type": "string"
         },
         "attribution": {

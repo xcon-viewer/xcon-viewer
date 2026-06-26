@@ -21,6 +21,7 @@ const publicComponentTypes = [
   'chatBubble',
   'checkbox',
   'codeEditor',
+  'connector',
   'colorPicker',
   'dataViz',
   'datePicker',
@@ -33,6 +34,7 @@ const publicComponentTypes = [
   'icon',
   'image',
   'label',
+  'line',
   'list',
   'map',
   'modal',
@@ -70,7 +72,7 @@ const publicComponentTypes = [
   'tooltip',
   'treeView',
   'videoView',
-].sort((a, b) => a.localeCompare(b));
+];
 
 const forbiddenRuntimeProps = [
   'action',
@@ -140,7 +142,6 @@ const actionHolderProps = [
 const removedLocalFileProps = ['acceptedTypes', 'maxFiles', 'maxFileSize', 'uploadUrl'];
 
 const safePublicNetworkProps = {
-  theme: { type: 'string', enum: ['obsidian', 'light', 'auto', 'custom'] },
   showControls: { type: 'boolean' },
   showSearch: { type: 'boolean' },
   showFilters: { type: 'boolean' },
@@ -151,6 +152,13 @@ const safePublicNetworkProps = {
   clusterColors: { type: 'array', items: { $ref: '#/definitions/color' } },
   panelBackground: { $ref: '#/definitions/color' },
   edges: { type: 'array', items: { $ref: '#/definitions/safeObject' } },
+};
+const safePublicNetworkThemeProp = { type: 'string', enum: ['obsidian', 'light', 'auto', 'custom'] };
+
+const preservedSharedProps = {
+  weight: { $ref: '#/definitions/stringOrNumber' },
+  objectFit: { type: 'string' },
+  objectPosition: { type: 'string' },
 };
 
 schema.description =
@@ -173,6 +181,12 @@ for (const prop of [...forbiddenRuntimeProps, ...actionHolderProps]) {
 for (const prop of removedLocalFileProps) {
   delete props[prop];
 }
+Object.assign(props, preservedSharedProps);
+if (!props.theme) {
+  props.theme = safePublicNetworkThemeProp;
+} else if (props.theme.type === 'string') {
+  delete props.theme.enum;
+}
 Object.assign(props, safePublicNetworkProps);
 
 component.not = {
@@ -184,4 +198,23 @@ component.propertyNames = {
 delete component.patternProperties;
 schema.definitions.viewerOnlyForbiddenRequirements = component.not;
 
-writeFileSync(schemaPath, `${JSON.stringify(schema, null, 2)}\n`, 'utf8');
+let output = `${JSON.stringify(schema, null, 2)}\n`;
+output = preserveLegacyDuplicateComponentProps(output);
+
+writeFileSync(schemaPath, output, 'utf8');
+
+function preserveLegacyDuplicateComponentProps(outputText) {
+  let text = outputText;
+
+  text = text.replace(
+    /("rotation": \{\r?\n\s+"type": "number"\r?\n\s+\},\r?\n)(\s+"initials": \{)/,
+    `$1        "weight": {\n          "type": "number"\n        },\n$2`,
+  );
+
+  text = text.replace(
+    /("mapImage": \{\r?\n\s+"type": "string"\r?\n\s+\},\r?\n)(\s+"attribution": \{)/,
+    `$1        "objectFit": {\n          "type": "string"\n        },\n        "objectPosition": {\n          "type": "string"\n        },\n$2`,
+  );
+
+  return text;
+}
