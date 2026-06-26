@@ -59,68 +59,19 @@
         ◇512◆
         ◇244◆
       ♥
-      ♧backgroundColor♣◇#f8fafc◆
-      ♧nodeRadius♣◇28◆
-      ♧primaryColor♣◇#2563eb◆
-      ♧nodeColor♣◇#14b8a6◆
-      ♧accentColor♣◇#db2777◆
-      ♧linkColor♣◇#94a3b8◆
-      ♧refLinkColor♣◇#f59e0b◆
-      ♧textColor♣◇#0f172a◆
+      ♧theme♣◇obsidian◆
+      ♧nodeRadius♣◇18◆
+      ♧linkDistance♣◇92◆
+      ♧charge♣◇-900◆
+      ♧friction♣◇0.72◆
+      ♧showControls♣◇true◆
+      ♧showSearch♣◇true◆
+      ♧showFilters♣◇true◆
+      ♧showLegend♣◇true◆
       ♧showLabels♣◇true◆
       ♧showArrows♣◇true◆
-      ♧nodes♣
-      ♡
-        ♤
-          ♧id♣◇viewer◆
-          ♧label♣◇Viewer◆
-          ♧x♣◇400◆
-          ♧y♣◇110◆
-          ♧color♣◇#2563eb◆
-        ♠
-        ♤
-          ♧id♣◇core◆
-          ♧label♣◇Core◆
-          ♧x♣◇210◆
-          ♧y♣◇285◆
-          ♧color♣◇#14b8a6◆
-        ♠
-        ♤
-          ♧id♣◇sketch◆
-          ♧label♣◇SKETCH◆
-          ♧x♣◇400◆
-          ♧y♣◇285◆
-          ♧color♣◇#8b5cf6◆
-        ♠
-        ♤
-          ♧id♣◇docs◆
-          ♧label♣◇Docs◆
-          ♧x♣◇590◆
-          ♧y♣◇285◆
-          ♧color♣◇#db2777◆
-        ♠
-      ♥
-      ♧links♣
-      ♡
-        ♤
-          ♧source♣◇viewer◆
-          ♧target♣◇core◆
-        ♠
-        ♤
-          ♧source♣◇viewer◆
-          ♧target♣◇sketch◆
-        ♠
-        ♤
-          ♧source♣◇viewer◆
-          ♧target♣◇docs◆
-          ♧type♣◇ref◆
-        ♠
-        ♤
-          ♧source♣◇core◆
-          ♧target♣◇sketch◆
-          ♧type♣◇folder◆
-        ♠
-      ♥
+      ♧nodes♣◇[{"id":"viewer","label":"Viewer","group":"runtime","color":"#8b5cf6"},{"id":"core","label":"Core","group":"parser","color":"#38bdf8"},{"id":"sketch","label":"SKETCH","group":"syntax","color":"#22c55e"},{"id":"docs","label":"Docs","group":"content","color":"#f59e0b"},{"id":"site","label":"Public site","group":"content","color":"#ef4444"}]◆
+      ♧links♣◇[{"source":"viewer","target":"core"},{"source":"viewer","target":"sketch"},{"source":"viewer","target":"docs","type":"ref"},{"source":"docs","target":"site"},{"source":"core","target":"sketch","type":"folder"}]◆
     ♠
   ♠
 ♠
