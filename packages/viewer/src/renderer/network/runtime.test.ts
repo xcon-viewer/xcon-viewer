@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { hydrateNetworkDiagrams } from './runtime';
 import type { NetworkGraphModel, NetworkLink, NetworkNode } from './types';
 
@@ -6,6 +6,10 @@ describe('network runtime hydration', () => {
   beforeEach(() => {
     installDom();
     document.body.replaceChildren();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   test('hydrates a valid host with controls, rendered nodes, and local-only node selection', () => {
@@ -35,7 +39,8 @@ describe('network runtime hydration', () => {
 
   test('legacy callback strings are not executed during local selection', () => {
     const alert = vi.fn();
-    Object.assign(globalThis, { alert, window: { alert } });
+    vi.stubGlobal('alert', alert);
+    vi.stubGlobal('window', { alert });
     const host = hostForGraph(baseGraph());
     host.setAttribute('data-on-node-click', 'alert(1)');
 
