@@ -12,7 +12,7 @@ export function createNetworkState(graph: NetworkGraphModel): NetworkViewState {
   };
 }
 
-export function selectNode(state: NetworkViewState, nodeId: string): NetworkViewState {
+export function selectNode(state: NetworkViewState, nodeId: string | undefined): NetworkViewState {
   return cloneState(state, { selectedNodeId: nodeId });
 }
 
@@ -127,7 +127,7 @@ function selectedMutedSets(
 ): Pick<NetworkVisibleModel, 'mutedNodeIds' | 'mutedLinkIds'> {
   const mutedNodeIds = new Set<string>();
   const mutedLinkIds = new Set<string>();
-  if (!selectedNodeId) return { mutedNodeIds, mutedLinkIds };
+  if (!selectedNodeId || !highlightedNodeIds.has(selectedNodeId)) return { mutedNodeIds, mutedLinkIds };
 
   for (const node of visibleNodes) {
     if (!highlightedNodeIds.has(node.id)) mutedNodeIds.add(node.id);

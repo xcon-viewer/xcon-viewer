@@ -62,6 +62,21 @@ describe('network state helpers', () => {
     expect(visible.links.map((link) => link.id)).toEqual(['a-b']);
   });
 
+  test('does not highlight or mute when selected node is filtered out', () => {
+    const state = {
+      ...selectNode(createNetworkState(baseGraph()), 'a'),
+      search: 'Beta',
+    };
+    const visible = visibleNetworkModel(baseGraph(), state);
+
+    expect(visible.nodes.map((node) => node.id)).toEqual(['b']);
+    expect(visible.links).toEqual([]);
+    expect([...visible.highlightedNodeIds]).toEqual([]);
+    expect([...visible.highlightedLinkIds]).toEqual([]);
+    expect([...visible.mutedNodeIds]).toEqual([]);
+    expect([...visible.mutedLinkIds]).toEqual([]);
+  });
+
   test('helpers keep state sets immutable', () => {
     const state = createNetworkState(baseGraph());
     const expanded = expandFolder(state, 'folder');
