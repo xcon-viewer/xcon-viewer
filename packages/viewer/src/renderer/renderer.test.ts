@@ -4343,6 +4343,9 @@ describe('viewer security renderer', () => {
       nodes: [{ id: 'root', label: 'Root' }],
     });
     expect(network).toContain('class="xa-network-diagram-container"');
+    expect(network).toContain('data-xcon-network="true"');
+    expect(network).toContain('data-xcon-network-theme="obsidian"');
+    expect(network).toContain('data-xcon-network-model=');
     expect(network).toContain('id="network-diagram-root"');
     expect(network).toContain('class="network-svg"');
     expect(network).toContain('class="network-tooltip"');
@@ -4414,7 +4417,7 @@ describe('viewer security renderer', () => {
       showArrows: false,
     });
 
-    expect(html).toContain('background:linear-gradient(135deg,#101820 0%,#e2e8f0 100%)');
+    expect(html).toContain('--xcon-network-bg:#101820');
     expect(html).toContain('stroke="#556677"');
     expect(html).toContain('r="32"');
     expect(html).toContain('fill="#ff00aa"');

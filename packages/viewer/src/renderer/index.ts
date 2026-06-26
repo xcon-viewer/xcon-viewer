@@ -8,6 +8,7 @@ import {
   type SketchRecoveryError,
   type XconValue,
 } from '@xcon-viewer/core';
+import { renderNetworkStatic } from './network/static';
 
 export interface RenderOptions {
   allowExternalResources?: boolean;
@@ -7990,23 +7991,7 @@ function renderAdvancedFlipbook(component: XconObject, attrs: Record<string, str
 
 function renderAdvancedNetworkDiagram(component: XconObject, attrs: Record<string, string | undefined>): string {
   const key = componentDomKey(attrs);
-  const background = cssColor(component.get('backgroundColor')) ?? '#f7fafc';
-  const linkColor = cssColor(component.get('linkColor')) ?? '#cbd5e0';
-  const refLinkColor = cssColor(component.get('refLinkColor')) ?? '#a0aec0';
-  const primaryColor = cssColor(component.get('primaryColor')) ?? '#667eea';
-  const accentColor = cssColor(component.get('accentColor')) ?? '#f093fb';
-  const textColor = cssColor(component.get('textColor')) ?? '#2d3748';
-  const root = tag(
-    'div',
-    {
-      id: `network-container-${key}`,
-      class: 'xa-network-diagram-container',
-      'data-key': key,
-      style: `width:100%;height:100%;background:linear-gradient(135deg,${background} 0%,#e2e8f0 100%);--xcon-network-link:${linkColor};--xcon-network-ref-link:${refLinkColor};--xcon-network-primary:${primaryColor};--xcon-network-accent:${accentColor};--xcon-network-text:${textColor};`,
-    },
-    tag('svg', { id: `network-diagram-${key}`, class: 'network-svg', style: 'width:100%;height:100%;', viewBox: '0 0 800 600', role: 'img' }, renderStaticNetwork(component, key)) + tag('div', { class: 'network-tooltip' }, ''),
-  );
-  return tag('div', advancedAttrs(attrs, '', key, ''), root);
+  return renderNetworkStatic({ key, component, attrs: advancedAttrs(attrs, '', key, '') });
 }
 
 function renderAdvancedMap(component: XconObject, attrs: Record<string, string | undefined>, context: RenderContext): string {
@@ -9036,78 +9021,6 @@ function renderFlipbookMiniatures(component: XconObject, key: string, miniatureI
     return tag('button', { type: 'button', class: 'flipbook-miniature', 'data-xcon-flipbook-page': String(index + 1) }, src ? voidTag('img', { src, alt: `Page ${index + 1}` }) : escapeHtml(String(index + 1)));
   }).join('');
   return tag('div', { id: miniatureId, class: 'flipbook-miniatures', 'data-xcon-flipbook-miniatures-list': key }, items);
-}
-
-function renderStaticNetwork(component: XconObject, key = 'root'): string {
-  const nodesValue = toPlainValue(component.get('nodes') ?? []);
-  const linksValue = toPlainValue(component.get('links') ?? []);
-  const nodeRadius = Math.max(1, Number(component.get('nodeRadius') ?? 25) || 25);
-  const nodeColor = cssColor(component.get('nodeColor')) ?? '#667eea';
-  const linkColor = cssColor(component.get('linkColor')) ?? '#cbd5e0';
-  const refLinkColor = cssColor(component.get('refLinkColor')) ?? '#a0aec0';
-  const primaryColor = cssColor(component.get('primaryColor')) ?? '#667eea';
-  const textColor = cssColor(component.get('textColor')) ?? '#2d3748';
-  const showLabels = booleanOption(component.get('showLabels'), true);
-  const showArrows = booleanOption(component.get('showArrows'), true);
-  const nodes = Array.isArray(nodesValue) ? nodesValue.map((item, index) => networkNode(item, index)) : [];
-  const fallbackNodes = nodes.length ? nodes : [{ id: 'root', label: 'Root', x: 400, y: 300 }];
-  const positions = new Map(fallbackNodes.map((node, index) => {
-    const angle = (Math.PI * 2 * index) / Math.max(1, fallbackNodes.length);
-    return [node.id, { ...node, x: node.x ?? 400 + Math.cos(angle) * 190, y: node.y ?? 300 + Math.sin(angle) * 150 }];
-  }));
-  const defs = showArrows
-    ? tag(
-        'defs',
-        {},
-        tag('marker', { id: `arrow-${key}`, viewBox: '0 -5 10 10', refX: '10', refY: '0', markerWidth: '5', markerHeight: '5', orient: 'auto' }, tag('path', { d: 'M0,-5L10,0L0,5', class: 'network-arrow', fill: linkColor }, '')) +
-          tag('marker', { id: `ref-arrow-${key}`, viewBox: '0 -5 10 10', refX: '10', refY: '0', markerWidth: '5', markerHeight: '5', orient: 'auto' }, tag('path', { d: 'M0,-5L10,0L0,5', class: 'network-arrow ref-arrow', fill: refLinkColor }, '')),
-      )
-    : '';
-  const links = Array.isArray(linksValue) ? linksValue : [];
-  const linkSvg = links.map((item) => {
-    const plain = toPlainValue(item);
-    if (!plain || typeof plain !== 'object' || Array.isArray(plain)) return '';
-    const obj = plain as Record<string, unknown>;
-    const source = positions.get(String(obj.source ?? obj.from ?? ''));
-    const target = positions.get(String(obj.target ?? obj.to ?? ''));
-    if (!source || !target) return '';
-    const ref = String(obj.type ?? '').toLowerCase() === 'folder' || String(obj.type ?? '').toLowerCase() === 'ref';
-    return tag(
-      'line',
-      {
-        class: `network-link${ref ? ' ref-link' : ''}`,
-        x1: String(source.x),
-        y1: String(source.y),
-        x2: String(target.x),
-        y2: String(target.y),
-        stroke: ref ? refLinkColor : linkColor,
-        'marker-end': showArrows ? `url(#${ref ? 'ref-arrow' : 'arrow'}-${key})` : undefined,
-      },
-      '',
-    );
-  }).join('');
-  const nodeSvg = [...positions.values()].map((node, index) =>
-    tag(
-      'g',
-      { class: `network-node-group${index === 0 ? ' root-node' : ''}` },
-      tag('circle', { class: `network-node${index === 0 ? ' root-node' : ''}`, cx: String(node.x), cy: String(node.y), r: String(nodeRadius), fill: node.color ?? (index === 0 ? primaryColor : nodeColor) }, '') +
-        (showLabels ? tag('text', { class: `network-label${index === 0 ? ' root-label' : ''}`, x: String(node.x), y: String(Number(node.y) + nodeRadius + 19), 'text-anchor': 'middle', fill: textColor }, escapeHtml(node.label)) : ''),
-    )
-  ).join('');
-  return defs + linkSvg + nodeSvg;
-}
-
-function networkNode(item: unknown, index: number): { id: string; label: string; color?: string; x?: number; y?: number } {
-  const plain = toPlainValue(item);
-  if (!plain || typeof plain !== 'object' || Array.isArray(plain)) return { id: String(index), label: String(plain ?? index + 1) };
-  const obj = plain as Record<string, unknown>;
-  return {
-    id: String(obj.id ?? index),
-    label: String(obj.label ?? obj.name ?? obj.id ?? index + 1),
-    color: cssColor(obj.color),
-    x: Number(obj.x) || undefined,
-    y: Number(obj.y) || undefined,
-  };
 }
 
 function renderStaticMap(component: XconObject, context: RenderContext): string {
