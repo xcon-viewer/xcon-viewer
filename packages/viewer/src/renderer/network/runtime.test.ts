@@ -235,6 +235,26 @@ describe('network runtime hydration', () => {
     expect(link!.getAttribute('x1')).not.toBe(beforeX);
   });
 
+  test('reset after dragging restores cached layout positions', () => {
+    const host = hostForGraph(baseGraph(), { enableDrag: true });
+    hydrateNetworkDiagrams(document);
+
+    const alpha = host.querySelector<SVGGElement>('[data-network-node-id="a"]');
+    const reset = host.querySelector<HTMLButtonElement>('[data-xcon-network-reset]');
+    expect(alpha).not.toBeNull();
+    expect(reset).not.toBeNull();
+    const initialTransform = alpha!.getAttribute('transform');
+
+    alpha!.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 10, clientY: 10 }));
+    document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 35, clientY: 45 }));
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, clientX: 35, clientY: 45 }));
+    expect(alpha!.getAttribute('transform')).not.toBe(initialTransform);
+
+    reset!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(host.querySelector<SVGGElement>('[data-network-node-id="a"]')?.getAttribute('transform')).toBe(initialTransform);
+  });
+
   test('wheel zoom updates the viewport transform when zoom is enabled', () => {
     const host = hostForGraph(baseGraph(), { enableZoom: true });
     hydrateNetworkDiagrams(document);

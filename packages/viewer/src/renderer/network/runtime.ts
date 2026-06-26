@@ -121,6 +121,7 @@ function buildControls(
     delete host.dataset.xconNetworkSelected;
     if (search) search.value = '';
     context.transform = defaultTransform();
+    context.layoutCache.clear();
     updateState(createNetworkState(graph));
     syncFilterControls();
     applyViewportTransform(svg, context.transform);
