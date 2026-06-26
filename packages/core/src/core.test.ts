@@ -1272,6 +1272,34 @@ describe('converter, validator, and path utilities', () => {
     );
   });
 
+  test('rejects executable networkDiagram callback props with precise paths', () => {
+    const invalid = fromJSONObject({
+      type: 'form',
+      components: {
+        network: {
+          type: 'networkDiagram',
+          nodes: [],
+          onNodeClick: 'alert(1)',
+          onNodeHover: 'alert(2)',
+          onNodeDrag: 'alert(3)',
+          onLinkClick: 'alert(4)',
+        },
+      },
+    });
+
+    const result = validate(invalid);
+
+    expect(result.valid).toBe(false);
+    expect(result.errors.map((error) => error.path)).toEqual(
+      expect.arrayContaining([
+        'components.network.onNodeClick',
+        'components.network.onNodeHover',
+        'components.network.onNodeDrag',
+        'components.network.onLinkClick',
+      ]),
+    );
+  });
+
   test('validates component objects nested inside public array props', () => {
     const invalid = fromJSONObject({
       type: 'form',

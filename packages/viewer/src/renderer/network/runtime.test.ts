@@ -33,6 +33,23 @@ describe('network runtime hydration', () => {
     document.removeEventListener('xcon-network-select', listener);
   });
 
+  test('legacy callback strings are not executed during local selection', () => {
+    const alert = vi.fn();
+    Object.assign(globalThis, { alert, window: { alert } });
+    const host = hostForGraph(baseGraph());
+    host.setAttribute('data-on-node-click', 'alert(1)');
+
+    hydrateNetworkDiagrams(document);
+
+    const alpha = host.querySelector<SVGGElement>('[data-network-node-id="a"]');
+    expect(alpha).not.toBeNull();
+
+    alpha?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(window.alert).not.toHaveBeenCalled();
+    expect(host.dataset.xconNetworkSelected).toBe('a');
+  });
+
   test('invalid model JSON leaves fallback SVG intact and unbound', () => {
     const host = hostForGraph(baseGraph());
     host.dataset.xconNetworkModel = '{invalid';
