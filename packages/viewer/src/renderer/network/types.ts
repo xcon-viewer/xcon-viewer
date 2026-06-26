@@ -43,3 +43,21 @@ export interface NetworkSubfolder {
   nodes: NetworkNode[];
   links: NetworkLink[];
 }
+
+export type NetworkThemeName = 'obsidian' | 'light' | 'auto' | 'custom';
+
+export interface NetworkTheme {
+  name: Exclude<NetworkThemeName, 'auto'>;
+  backgroundColor: string;
+  nodeColor: string;
+  linkColor: string;
+  refLinkColor: string;
+  primaryColor: string;
+  accentColor: string;
+  textColor: string;
+  selectedColor: string;
+  neighborColor: string;
+  mutedOpacity: number;
+  panelBackground: string;
+  clusterColors: string[];
+}
