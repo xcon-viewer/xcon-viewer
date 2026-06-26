@@ -41,7 +41,6 @@ function hydrateHost(host: HTMLElement): void {
   const render = (): void => {
     const visible = visibleNetworkModel(graph, state);
     renderSvg(svg, visible, graph, options, host, state, updateState);
-    if (options.showControls) renderControls(host, graph, options, state, updateState);
   };
 
   const updateState = (nextState: NetworkViewState): void => {
@@ -49,29 +48,33 @@ function hydrateHost(host: HTMLElement): void {
     render();
   };
 
+  if (options.showControls) buildControls(host, svg, graph, options, () => state, updateState);
   render();
 }
 
-function renderControls(
+function buildControls(
   host: HTMLElement,
+  svg: SVGSVGElement,
   graph: NetworkGraphModel,
   options: NetworkRuntimeOptions,
-  state: NetworkViewState,
+  getState: () => NetworkViewState,
   updateState: (state: NetworkViewState) => void,
 ): void {
   const toolbar = ensureToolbar(host);
   toolbar.replaceChildren();
+  let search: HTMLInputElement | undefined;
 
   if (options.showSearch) {
-    const search = document.createElement('input');
-    search.type = 'search';
-    search.value = state.search;
-    search.placeholder = 'Search';
-    search.dataset.xconNetworkSearch = 'true';
-    search.addEventListener('input', () => {
-      updateState({ ...state, search: search.value });
+    const searchInput = document.createElement('input');
+    search = searchInput;
+    searchInput.type = 'search';
+    searchInput.value = getState().search;
+    searchInput.placeholder = 'Search';
+    searchInput.dataset.xconNetworkSearch = 'true';
+    searchInput.addEventListener('input', () => {
+      updateState({ ...getState(), search: searchInput.value });
     });
-    toolbar.append(search);
+    toolbar.append(searchInput);
   }
 
   const fit = document.createElement('button');
@@ -79,7 +82,8 @@ function renderControls(
   fit.textContent = 'Fit';
   fit.dataset.xconNetworkFit = 'true';
   fit.addEventListener('click', () => {
-    host.querySelector('svg')?.setAttribute('viewBox', `0 0 ${DEFAULT_WIDTH} ${DEFAULT_HEIGHT}`);
+    const { width, height } = svgSize(svg, host);
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
   });
   toolbar.append(fit);
 
@@ -89,6 +93,7 @@ function renderControls(
   reset.dataset.xconNetworkReset = 'true';
   reset.addEventListener('click', () => {
     delete host.dataset.xconNetworkSelected;
+    if (search) search.value = '';
     updateState(createNetworkState(graph));
   });
   toolbar.append(reset);
@@ -199,10 +204,10 @@ function layoutGraph(
     const fallback = fallbackPoint(index, nodes.length, width, height);
     return {
       ...node,
-      x: finiteNumber(node.x) ?? fallback.x,
-      y: finiteNumber(node.y) ?? fallback.y,
-      fx: node.fixed ? finiteNumber(node.x) ?? fallback.x : undefined,
-      fy: node.fixed ? finiteNumber(node.y) ?? fallback.y : undefined,
+      x: finiteCoordinate(node.x) ?? fallback.x,
+      y: finiteCoordinate(node.y) ?? fallback.y,
+      fx: node.fixed ? finiteCoordinate(node.x) ?? fallback.x : undefined,
+      fy: node.fixed ? finiteCoordinate(node.y) ?? fallback.y : undefined,
     };
   });
   const linkData = links.map((link) => ({ ...link }));
@@ -219,11 +224,88 @@ function layoutGraph(
 
 function parseGraph(value: string | undefined): NetworkGraphModel | null {
   const parsed = parseJson(value);
-  if (!parsed || typeof parsed !== 'object') return null;
+  if (!isPlainRecord(parsed)) return null;
   const graph = parsed as Partial<NetworkGraphModel>;
-  if (!Array.isArray(graph.nodes) || !Array.isArray(graph.links) || !Array.isArray(graph.groups)) return null;
-  if (!graph.subfolders || typeof graph.subfolders !== 'object' || Array.isArray(graph.subfolders)) return null;
+  if (!isNodeArray(graph.nodes)) return null;
+  if (!isLinkArray(graph.links)) return null;
+  if (!isGroupArray(graph.groups)) return null;
+  if (graph.rootNodeId !== undefined && typeof graph.rootNodeId !== 'string') return null;
+  if (!isSubfolderRecord(graph.subfolders)) return null;
   return graph as NetworkGraphModel;
+}
+
+function isNodeArray(value: unknown): value is NetworkNode[] {
+  return Array.isArray(value) && value.every(isNetworkNode);
+}
+
+function isNetworkNode(value: unknown): value is NetworkNode {
+  if (!isPlainRecord(value)) return false;
+  return (
+    isNonEmptyString(value.id) &&
+    typeof value.label === 'string' &&
+    isPlainRecord(value.metadata) &&
+    typeof value.isRoot === 'boolean' &&
+    isOptionalString(value.type) &&
+    isOptionalString(value.group) &&
+    isOptionalString(value.color) &&
+    isOptionalString(value.icon) &&
+    isOptionalString(value.parentId) &&
+    isOptionalFiniteNumber(value.x) &&
+    isOptionalFiniteNumber(value.y) &&
+    (value.fixed === undefined || typeof value.fixed === 'boolean')
+  );
+}
+
+function isLinkArray(value: unknown): value is NetworkLink[] {
+  return Array.isArray(value) && value.every(isNetworkLink);
+}
+
+function isNetworkLink(value: unknown): value is NetworkLink {
+  if (!isPlainRecord(value)) return false;
+  return (
+    isNonEmptyString(value.id) &&
+    isNonEmptyString(value.source) &&
+    isNonEmptyString(value.target) &&
+    isPlainRecord(value.metadata) &&
+    isOptionalString(value.type) &&
+    isOptionalString(value.label) &&
+    isOptionalFiniteNumber(value.weight)
+  );
+}
+
+function isGroupArray(value: unknown): value is NetworkGroup[] {
+  return Array.isArray(value) && value.every(isNetworkGroup);
+}
+
+function isNetworkGroup(value: unknown): value is NetworkGroup {
+  if (!isPlainRecord(value)) return false;
+  return isNonEmptyString(value.id) && typeof value.label === 'string' && isPlainRecord(value.metadata) && isOptionalString(value.color);
+}
+
+function isSubfolderRecord(value: unknown): value is NetworkGraphModel['subfolders'] {
+  if (!isPlainRecord(value)) return false;
+  return Object.values(value).every((subfolder) => {
+    if (!isPlainRecord(subfolder)) return false;
+    return typeof subfolder.parentId === 'string' && isNodeArray(subfolder.nodes) && isLinkArray(subfolder.links);
+  });
+}
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim() !== '';
+}
+
+function isOptionalString(value: unknown): boolean {
+  return value === undefined || typeof value === 'string';
+}
+
+function isOptionalFiniteNumber(value: unknown): boolean {
+  return value === undefined || (typeof value === 'number' && Number.isFinite(value));
 }
 
 function parseOptions(value: string | undefined): NetworkRuntimeOptions | null {
@@ -252,8 +334,8 @@ function parseJson(value: string | undefined): unknown {
 }
 
 function svgSize(svg: SVGSVGElement, host: HTMLElement): { width: number; height: number } {
-  const width = finiteNumber(host.clientWidth) ?? finiteNumber(svg.clientWidth) ?? DEFAULT_WIDTH;
-  const height = finiteNumber(host.clientHeight) ?? finiteNumber(svg.clientHeight) ?? DEFAULT_HEIGHT;
+  const width = positiveFiniteNumber(host.clientWidth) ?? positiveFiniteNumber(svg.clientWidth) ?? DEFAULT_WIDTH;
+  const height = positiveFiniteNumber(host.clientHeight) ?? positiveFiniteNumber(svg.clientHeight) ?? DEFAULT_HEIGHT;
   return { width: Math.max(1, width), height: Math.max(1, height) };
 }
 
@@ -306,7 +388,12 @@ function booleanOption(value: unknown, fallback: boolean): boolean {
   return fallback;
 }
 
-function finiteNumber(value: unknown): number | undefined {
+function finiteCoordinate(value: unknown): number | undefined {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : undefined;
+}
+
+function positiveFiniteNumber(value: unknown): number | undefined {
   const number = Number(value);
   return Number.isFinite(number) && number > 0 ? number : undefined;
 }

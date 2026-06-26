@@ -92,6 +92,57 @@ describe('network runtime hydration', () => {
     expect(renderedNodeIds(host)).toEqual(['b']);
     expect(host.querySelectorAll('[data-network-link-id]')).toHaveLength(0);
   });
+
+  test('search keeps the same input element across multiple input events', () => {
+    const host = hostForGraph(baseGraph());
+    hydrateNetworkDiagrams(document);
+
+    const search = host.querySelector<HTMLInputElement>('[data-xcon-network-search]');
+    expect(search).not.toBeNull();
+
+    search!.value = 'b';
+    search!.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(host.querySelector('[data-xcon-network-search]') === search).toBe(true);
+    expect(renderedNodeIds(host)).toEqual(['b']);
+
+    search!.value = 'beta';
+    search!.dispatchEvent(new Event('input', { bubbles: true }));
+
+    expect(host.querySelector('[data-xcon-network-search]') === search).toBe(true);
+    expect(renderedNodeIds(host)).toEqual(['b']);
+  });
+
+  test('parseable malformed graph JSON leaves fallback SVG intact and unbound', () => {
+    const host = hostForGraph(baseGraph());
+    host.dataset.xconNetworkModel = JSON.stringify({
+      nodes: [{ id: 'a', metadata: {}, isRoot: true }],
+      links: [],
+      groups: [],
+      subfolders: { bad: null },
+    });
+
+    expect(() => hydrateNetworkDiagrams(document)).not.toThrow();
+
+    expect(host.dataset.xconNetworkBound).toBe('false');
+    expect(host.querySelector('[data-fallback-circle]')).not.toBeNull();
+  });
+
+  test('fit control resets viewBox to current measured size', () => {
+    const host = hostForGraph(baseGraph());
+    Object.defineProperty(host, 'clientWidth', { value: 320, configurable: true });
+    Object.defineProperty(host, 'clientHeight', { value: 180, configurable: true });
+    hydrateNetworkDiagrams(document);
+
+    const svg = host.querySelector('svg');
+    const fit = host.querySelector<HTMLButtonElement>('[data-xcon-network-fit]');
+    expect(svg).not.toBeNull();
+    expect(fit).not.toBeNull();
+
+    svg!.setAttribute('viewBox', '0 0 12 34');
+    fit!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(svg!.getAttribute('viewBox')).toBe('0 0 320 180');
+  });
 });
 
 function hostForGraph(graph: NetworkGraphModel, options: Record<string, unknown> = {}): HTMLElement {
