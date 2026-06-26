@@ -2,6 +2,7 @@ import { isXconObject } from '@xcon-viewer/core';
 import type { NetworkGraphModel, NetworkGroup, NetworkLink, NetworkNode, NetworkSubfolder } from './types';
 
 type PlainRecord = Record<string, unknown>;
+type NetworkLinkDraft = Omit<NetworkLink, 'id'> & { id?: string };
 
 export function toNetworkPlainValue(value: unknown): unknown {
   if (isXconObject(value)) {
@@ -52,13 +53,13 @@ export function normalizeNetworkGraph(input: unknown): NetworkGraphModel {
   const nodes = rawNodes.map((item, index) => normalizeNode(item, index, rootNodeId));
   const nodeIds = new Set(nodes.map((node) => node.id));
   const linksSource = component.links !== undefined ? component.links : component.edges;
-  const links = arrayValue(linksSource)
-    .flatMap((item) => normalizeLink(item))
+  const linkDrafts = arrayValue(linksSource)
+    .flatMap((item) => normalizeLinkDraft(item))
     .filter((link) => nodeIds.has(link.source) && nodeIds.has(link.target));
 
   return {
     nodes,
-    links,
+    links: finalizeLinkIds(linkDrafts),
     groups: collectGroups(nodes),
     rootNodeId,
     subfolders: {},
@@ -70,7 +71,7 @@ function normalizeFullVersionData(data: PlainRecord, explicitRootNodeId?: string
   const infos = asRecord(data.infos) ?? {};
   const list = asRecord(data.list) ?? {};
   const rootNodeId = explicitRootNodeId ?? fullVersionRootNodeId(data);
-  const ids = Object.keys(list);
+  const ids = fullVersionNodeIds(data, rootNodeId);
 
   if (ids.length === 0) {
     const root = normalizeNode({ id: 'root', label: 'Root', isRoot: true }, 0, 'root');
@@ -101,15 +102,14 @@ function normalizeFullVersionData(data: PlainRecord, explicitRootNodeId?: string
     );
   });
   const nodeIds = new Set(nodes.map((node) => node.id));
-  const links: NetworkLink[] = [];
+  const linkDrafts: NetworkLinkDraft[] = [];
 
   for (const [source, targets] of Object.entries(list)) {
     if (!nodeIds.has(source)) continue;
     for (const target of arrayValue(targets)) {
       const targetId = stringValue(target);
       if (!targetId || targetId === source || !nodeIds.has(targetId)) continue;
-      links.push({
-        id: `${source}->${targetId}`,
+      linkDrafts.push({
         source,
         target: targetId,
         type: undefined,
@@ -122,7 +122,7 @@ function normalizeFullVersionData(data: PlainRecord, explicitRootNodeId?: string
 
   return {
     nodes,
-    links,
+    links: finalizeLinkIds(linkDrafts),
     groups: collectGroups(nodes),
     rootNodeId,
     subfolders: normalizeSubfolders(data.subfolders),
@@ -163,24 +163,37 @@ function normalizeSubfolders(value: unknown): Record<string, NetworkSubfolder> {
       );
     });
     const validNodeIds = new Set(nodes.map((node) => node.id));
-    const links: NetworkLink[] = [];
+    const adjacencyLinkDrafts: NetworkLinkDraft[] = [];
+    const adjacencyPairs = new Set<string>();
 
     for (const [source, targets] of Object.entries(list)) {
       if (!validNodeIds.has(source)) continue;
       for (const target of arrayValue(targets)) {
         const targetId = stringValue(target);
         if (!targetId || targetId === source || !validNodeIds.has(targetId)) continue;
-        links.push({
-          id: `${source}->${targetId}`,
+        adjacencyPairs.add(linkPairKey(source, targetId));
+        adjacencyLinkDrafts.push({
           source,
           target: targetId,
-          type: undefined,
+          type: 'folder',
           label: undefined,
           weight: undefined,
           metadata: {},
         });
       }
     }
+
+    const parentLinkDrafts = nodes
+      .filter((node) => !adjacencyPairs.has(linkPairKey(parentId, node.id)))
+      .map<NetworkLinkDraft>((node) => ({
+        source: parentId,
+        target: node.id,
+        type: 'folder',
+        label: undefined,
+        weight: undefined,
+        metadata: {},
+      }));
+    const links = finalizeLinkIds([...parentLinkDrafts, ...adjacencyLinkDrafts]);
 
     subfolders[parentId] = { parentId, nodes, links };
   }
@@ -209,7 +222,7 @@ function normalizeNode(item: unknown, index: number, rootNodeId?: string): Netwo
   };
 }
 
-function normalizeLink(item: unknown): NetworkLink[] {
+function normalizeLinkDraft(item: unknown): NetworkLinkDraft[] {
   const record = asRecord(item);
   if (!record) return [];
 
@@ -228,6 +241,20 @@ function normalizeLink(item: unknown): NetworkLink[] {
       metadata: asRecord(record.metadata) ?? {},
     },
   ];
+}
+
+function finalizeLinkIds(links: NetworkLinkDraft[]): NetworkLink[] {
+  const idCounts = new Map<string, number>();
+  return links.map((link) => ({
+    ...link,
+    id: uniqueLinkId(link.id ?? `${link.source}->${link.target}`, idCounts),
+  }));
+}
+
+function uniqueLinkId(baseId: string, idCounts: Map<string, number>): string {
+  const count = (idCounts.get(baseId) ?? 0) + 1;
+  idCounts.set(baseId, count);
+  return count === 1 ? baseId : `${baseId}#${count}`;
 }
 
 function collectGroups(nodes: NetworkNode[]): NetworkGroup[] {
@@ -252,6 +279,30 @@ function fullVersionRootNodeId(data: PlainRecord): string | undefined {
   return Object.keys(asRecord(data.list) ?? {})[0];
 }
 
+function fullVersionNodeIds(data: PlainRecord, rootNodeId?: string): string[] {
+  const list = asRecord(data.list) ?? {};
+  const names = asRecord(data.names) ?? {};
+  const infos = asRecord(data.infos) ?? {};
+  const ids: string[] = [];
+
+  addId(ids, rootNodeId);
+  for (const [source, targets] of Object.entries(list)) {
+    addId(ids, source);
+    for (const target of arrayValue(targets)) {
+      addId(ids, target);
+    }
+  }
+  for (const id of Object.keys(names)) addId(ids, id);
+  for (const id of Object.keys(infos)) addId(ids, id);
+
+  return uniqueStrings(ids);
+}
+
+function addId(ids: string[], value: unknown): void {
+  const id = stringValue(value);
+  if (id) ids.push(id);
+}
+
 function firstNodeId(nodes: unknown[]): string | undefined {
   if (nodes.length === 0) return undefined;
   const first = asRecord(nodes[0]);
@@ -270,6 +321,10 @@ function uniqueStrings(values: string[]): string[] {
   return [...new Set(values)];
 }
 
+function linkPairKey(source: string, target: string): string {
+  return `${source}\u0000${target}`;
+}
+
 function arrayValue(value: unknown): unknown[] {
   return Array.isArray(value) ? value : [];
 }
@@ -285,7 +340,10 @@ function isPlainRecord(value: unknown): value is PlainRecord {
 }
 
 function stringValue(value: unknown): string | undefined {
-  if (typeof value === 'string') return value;
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed === '' ? undefined : trimmed;
+  }
   if (typeof value === 'number' || typeof value === 'boolean') return String(value);
   return undefined;
 }
