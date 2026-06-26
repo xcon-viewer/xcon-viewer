@@ -17,11 +17,10 @@ export function renderNetworkStatic(input: RenderNetworkStaticInput): string {
   const theme = resolveNetworkTheme(component);
   const key = sanitizeKey(input.key);
   const options = networkOptions(component);
-  const hostAttrs = {
-    ...input.attrs,
+  const containerAttrs = {
     id: `network-container-${key}`,
-    class: className(input.attrs.class, 'xa-network-diagram-container'),
-    style: appendedStyle(input.attrs.style, `position:relative;width:100%;height:100%;background:var(--xcon-network-bg);${networkThemeStyle(theme)}`),
+    class: 'xa-network-diagram-container',
+    style: `position:relative;width:100%;height:100%;background:var(--xcon-network-bg);${networkThemeStyle(theme)}`,
     'data-key': key,
     'data-xcon-network': 'true',
     'data-xcon-network-bound': 'false',
@@ -30,9 +29,9 @@ export function renderNetworkStatic(input: RenderNetworkStaticInput): string {
     'data-xcon-network-options': jsonAttribute(options),
   };
 
-  return tag(
+  const container = tag(
     'div',
-    hostAttrs,
+    containerAttrs,
     tag('div', { class: 'xa-network-toolbar', 'data-xcon-network-toolbar': 'true' }, '') +
       tag(
         'svg',
@@ -40,6 +39,12 @@ export function renderNetworkStatic(input: RenderNetworkStaticInput): string {
         renderStaticSvg(graph, key, options, theme),
       ) +
       tag('div', { class: 'network-tooltip', 'data-xcon-network-tooltip': 'true' }, ''),
+  );
+
+  return tag(
+    'div',
+    input.attrs,
+    container,
   );
 }
 
@@ -162,35 +167,8 @@ function isReferenceLink(type: string | undefined): boolean {
   return normalized === 'folder' || normalized === 'ref';
 }
 
-function appendedStyle(existing: string | undefined, internal: string): string {
-  const existingStyle = existing ?? '';
-  const protectedProps = new Set<string>();
-  if (/\bposition\s*:/i.test(existingStyle)) protectedProps.add('position');
-  if (/\bwidth\s*:/i.test(existingStyle)) protectedProps.add('width');
-  if (/\bheight\s*:/i.test(existingStyle)) protectedProps.add('height');
-  const filteredInternal = internal
-    .split(';')
-    .map((part) => part.trim())
-    .filter((part) => {
-      if (!part) return false;
-      const prop = part.split(':', 1)[0]?.trim().toLowerCase();
-      return !protectedProps.has(prop);
-    })
-    .join(';');
-  return joinStyles(existingStyle, filteredInternal) ?? '';
-}
-
-function joinStyles(...styles: Array<string | undefined>): string | undefined {
-  const joined = styles.filter(Boolean).join(';').replaceAll(/;+/g, ';').replace(/^;|;$/g, '');
-  return joined || undefined;
-}
-
 function jsonAttribute(value: unknown): string {
   return JSON.stringify(value);
-}
-
-function className(...classes: Array<string | undefined>): string {
-  return classes.flatMap((value) => value?.split(/\s+/).filter(Boolean) ?? []).filter(Boolean).join(' ');
 }
 
 function sanitizeKey(value: string): string {

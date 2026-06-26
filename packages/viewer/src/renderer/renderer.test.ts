@@ -4425,6 +4425,28 @@ describe('viewer security renderer', () => {
     expect(html).not.toContain('marker-end=');
   });
 
+  test('preserves advanced network outer wrapper attributes and inner runtime container', () => {
+    const html = renderToHtml({
+      type: 'form',
+      components: {
+        topology: {
+          type: 'networkDiagram',
+          pos: [8, 16, 420, 260],
+          nodes: [{ id: 'root', label: 'Root' }],
+        },
+      },
+    });
+    const networkRoot = html.match(/<div\b(?=[^>]*data-xcon-type="networkDiagram")[^>]*>/)?.[0] ?? '';
+    const networkContainer = html.match(/<div\b(?=[^>]*data-xcon-network="true")[^>]*>/)?.[0] ?? '';
+
+    expect(networkRoot).toContain('data-xcon-type="networkDiagram"');
+    expect(networkRoot).toContain('data-key="root~topology"');
+    expect(networkRoot).toContain('position:absolute');
+    expect(networkRoot).not.toContain('data-xcon-network="true"');
+    expect(networkContainer).toContain('id="network-container-topology"');
+    expect(networkContainer).toContain('data-xcon-network="true"');
+  });
+
   test('keeps advanced calendar events visible like draft XaCalendar data', () => {
     const now = new Date();
     const year = now.getFullYear();
