@@ -64,20 +64,22 @@ const UNSAFE_CSS_VALUE = /javascript:|vbscript:|expression\s*\(|url\s*\(/i;
 
 export function resolveNetworkTheme(input: Record<string, unknown>): NetworkTheme {
   const requestedTheme = themeNameValue(input.theme);
+  let theme: NetworkTheme;
 
-  if (requestedTheme === 'light') return copyTheme(LIGHT_THEME);
-  if (requestedTheme === 'auto') return copyTheme(shouldUseLightTheme(input.backgroundColor) ? LIGHT_THEME : OBSIDIAN_THEME);
-  if (requestedTheme === 'custom') {
-    return applyCustomThemeOverrides(
-      {
-        ...copyTheme(OBSIDIAN_THEME),
-        name: 'custom',
-      },
-      input,
-    );
+  if (requestedTheme === 'light') {
+    theme = copyTheme(LIGHT_THEME);
+  } else if (requestedTheme === 'auto') {
+    theme = copyTheme(shouldUseLightTheme(input.backgroundColor) ? LIGHT_THEME : OBSIDIAN_THEME);
+  } else if (requestedTheme === 'custom') {
+    theme = {
+      ...copyTheme(OBSIDIAN_THEME),
+      name: 'custom',
+    };
+  } else {
+    theme = copyTheme(OBSIDIAN_THEME);
   }
 
-  return copyTheme(OBSIDIAN_THEME);
+  return applyThemeOverrides(theme, input);
 }
 
 export function networkThemeStyle(theme: NetworkTheme): string {
@@ -94,12 +96,12 @@ export function networkThemeStyle(theme: NetworkTheme): string {
     `--xcon-network-selected:${safeStyleColor(theme.selectedColor)}`,
     `--xcon-network-neighbor:${safeStyleColor(theme.neighborColor)}`,
     `--xcon-network-muted-opacity:${clampOpacity(theme.mutedOpacity)}`,
-    `--xcon-network-panel-bg:${safeStyleColor(theme.panelBackground)}`,
+    `--xcon-network-panel:${safeStyleColor(theme.panelBackground)}`,
     `--xcon-network-cluster-colors:${clusterColors.join(',')}`,
   ].join(';');
 }
 
-function applyCustomThemeOverrides(theme: NetworkTheme, input: Record<string, unknown>): NetworkTheme {
+function applyThemeOverrides(theme: NetworkTheme, input: Record<string, unknown>): NetworkTheme {
   for (const key of COLOR_KEYS) {
     const value = safeColorValue(input[key]);
     if (value) theme[key] = value;
@@ -122,7 +124,8 @@ function copyTheme(theme: NetworkTheme): NetworkTheme {
 }
 
 function themeNameValue(value: unknown): NetworkThemeName | undefined {
-  if (value === 'obsidian' || value === 'light' || value === 'auto' || value === 'custom') return value;
+  const name = stringValue(value)?.toLowerCase();
+  if (name === 'obsidian' || name === 'light' || name === 'auto' || name === 'custom') return name;
   return undefined;
 }
 
