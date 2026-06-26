@@ -170,4 +170,19 @@ describe('XCON JSON schema', () => {
     expect(schemaText).not.toContain('#/definitions/action');
     expect(schema.definitions.component.propertyNames).toEqual({ not: { pattern: '^on[A-Z]' } });
   });
+
+  test('restricts networkDiagram themes without narrowing global component themes', () => {
+    const component = schema.definitions.component;
+    const theme = component.properties.theme;
+    expect(theme).toBeTruthy();
+    expect(theme.type).toBe('string');
+    expect(theme.enum).toBeFalsy();
+
+    const networkThemeCondition = component.allOf?.find((entry) => {
+      return entry?.if?.properties?.type?.const === 'networkDiagram' && Array.isArray(entry?.then?.properties?.theme?.enum);
+    });
+
+    expect(networkThemeCondition).toBeTruthy();
+    expect(networkThemeCondition.then.properties.theme.enum).toEqual(['obsidian', 'light', 'auto', 'custom']);
+  });
 });

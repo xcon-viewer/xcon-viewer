@@ -6,14 +6,27 @@ interface NetworkRuntimeOptions {
   nodeRadius: number;
   linkDistance: number;
   charge: number;
+  friction: number;
   showControls: boolean;
   showSearch: boolean;
+  showFilters: boolean;
   showLegend: boolean;
   showLabels: boolean;
   showArrows: boolean;
+  enableDrag: boolean;
+  enableZoom: boolean;
+  enablePan: boolean;
+  enableHover: boolean;
 }
 
 type PositionedNode = NetworkNode & d3.SimulationNodeDatum & { x: number; y: number };
+type ViewportTransform = { x: number; y: number; k: number };
+
+interface NetworkRuntimeContext {
+  layoutCache: Map<string, Map<string, PositionedNode>>;
+  layout: Map<string, PositionedNode>;
+  transform: ViewportTransform;
+}
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const DEFAULT_WIDTH = 800;
@@ -37,10 +50,15 @@ function hydrateHost(host: HTMLElement): void {
 
   host.dataset.xconNetworkBound = 'true';
   let state = createNetworkState(graph);
+  const context: NetworkRuntimeContext = {
+    layoutCache: new Map(),
+    layout: new Map(),
+    transform: defaultTransform(),
+  };
 
   const render = (): void => {
     const visible = visibleNetworkModel(graph, state);
-    renderSvg(svg, visible, graph, options, host, state, updateState);
+    renderSvg(svg, visible, graph, options, host, state, context, updateState);
   };
 
   const updateState = (nextState: NetworkViewState): void => {
@@ -48,7 +66,10 @@ function hydrateHost(host: HTMLElement): void {
     render();
   };
 
-  if (options.showControls) buildControls(host, svg, graph, options, () => state, updateState);
+  bindViewportInteractions(svg, options, context);
+  if (options.showControls) {
+    buildControls(host, svg, graph, options, context, () => state, updateState);
+  }
   render();
 }
 
@@ -57,12 +78,14 @@ function buildControls(
   svg: SVGSVGElement,
   graph: NetworkGraphModel,
   options: NetworkRuntimeOptions,
+  context: NetworkRuntimeContext,
   getState: () => NetworkViewState,
   updateState: (state: NetworkViewState) => void,
 ): void {
   const toolbar = ensureToolbar(host);
   toolbar.replaceChildren();
   let search: HTMLInputElement | undefined;
+  let syncFilterControls = (): void => undefined;
 
   if (options.showSearch) {
     const searchInput = document.createElement('input');
@@ -73,6 +96,7 @@ function buildControls(
     searchInput.dataset.xconNetworkSearch = 'true';
     searchInput.addEventListener('input', () => {
       updateState({ ...getState(), search: searchInput.value });
+      syncFilterControls();
     });
     toolbar.append(searchInput);
   }
@@ -84,6 +108,8 @@ function buildControls(
   fit.addEventListener('click', () => {
     const { width, height } = svgSize(svg, host);
     svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    context.transform = defaultTransform();
+    applyViewportTransform(svg, context.transform);
   });
   toolbar.append(fit);
 
@@ -94,12 +120,21 @@ function buildControls(
   reset.addEventListener('click', () => {
     delete host.dataset.xconNetworkSelected;
     if (search) search.value = '';
+    context.transform = defaultTransform();
     updateState(createNetworkState(graph));
+    syncFilterControls();
+    applyViewportTransform(svg, context.transform);
   });
   toolbar.append(reset);
 
   if (options.showLegend && graph.groups.length > 0) {
     toolbar.append(renderLegend(graph.groups));
+  }
+
+  if (options.showFilters) {
+    syncFilterControls = buildFilterControls(host, toolbar, graph, getState, updateState);
+  } else {
+    host.querySelector<HTMLElement>('[data-xcon-network-filters]')?.remove();
   }
 }
 
@@ -126,6 +161,101 @@ function renderLegend(groups: NetworkGroup[]): HTMLElement {
   return legend;
 }
 
+function setToggleButtonState(button: HTMLButtonElement, enabled: boolean): void {
+  button.setAttribute('aria-pressed', String(enabled));
+  setClassTokens(button, ['xa-network-filter-toggle', enabled ? 'enabled' : 'disabled']);
+}
+
+function linkTypes(graph: NetworkGraphModel): string[] {
+  return Array.from(new Set(allGraphLinks(graph).map(linkType))).sort();
+}
+
+function allGraphLinks(graph: NetworkGraphModel): NetworkLink[] {
+  return [
+    ...graph.links,
+    ...Object.values(graph.subfolders).flatMap((subfolder) => subfolder.links),
+  ];
+}
+
+function linkType(link: NetworkLink): string {
+  return link.type ?? 'normal';
+}
+
+function buildFilterControls(
+  host: HTMLElement,
+  toolbar: HTMLElement,
+  graph: NetworkGraphModel,
+  getState: () => NetworkViewState,
+  updateState: (state: NetworkViewState) => void,
+): () => void {
+  const existing = host.querySelector<HTMLElement>('[data-xcon-network-filters]');
+  existing?.remove();
+  const filters = document.createElement('div');
+  filters.className = 'xa-network-filters';
+  filters.dataset.xconNetworkFilters = 'true';
+
+  const commit = (state: NetworkViewState): void => {
+    updateState(state);
+    sync();
+  };
+
+  for (const group of graph.groups) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = group.label;
+    button.dataset.xconNetworkFilterGroup = group.id;
+    button.addEventListener('click', () => {
+      const enabledGroups = new Set(getState().enabledGroups);
+      if (enabledGroups.has(group.id)) enabledGroups.delete(group.id);
+      else enabledGroups.add(group.id);
+      commit({ ...getState(), enabledGroups });
+    });
+    filters.append(button);
+  }
+
+  for (const type of linkTypes(graph)) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = type;
+    button.dataset.xconNetworkFilterLinkType = type;
+    button.addEventListener('click', () => {
+      const enabledLinkTypes = new Set(getState().enabledLinkTypes);
+      if (enabledLinkTypes.has(type)) enabledLinkTypes.delete(type);
+      else enabledLinkTypes.add(type);
+      commit({ ...getState(), enabledLinkTypes });
+    });
+    filters.append(button);
+  }
+
+  const minDegree = document.createElement('input');
+  minDegree.type = 'number';
+  minDegree.min = '0';
+  minDegree.step = '1';
+  minDegree.dataset.xconNetworkMinDegree = 'true';
+  minDegree.addEventListener('input', () => {
+    const value = Math.max(0, Math.floor(Number(minDegree.value) || 0));
+    commit({ ...getState(), minDegree: value });
+  });
+  filters.append(minDegree);
+
+  toolbar.parentNode?.insertBefore(filters, toolbar.nextSibling);
+  sync();
+  return sync;
+
+  function sync(): void {
+    const state = getState();
+    for (const button of Array.from(filters.querySelectorAll<HTMLButtonElement>('[data-xcon-network-filter-group]'))) {
+      const group = button.dataset.xconNetworkFilterGroup ?? '';
+      setToggleButtonState(button, state.enabledGroups.has(group));
+    }
+    for (const button of Array.from(filters.querySelectorAll<HTMLButtonElement>('[data-xcon-network-filter-link-type]'))) {
+      const type = button.dataset.xconNetworkFilterLinkType ?? '';
+      setToggleButtonState(button, state.enabledLinkTypes.has(type));
+    }
+    minDegree.value = String(state.minDegree);
+  }
+}
+
 function renderSvg(
   svg: SVGSVGElement,
   visible: NetworkVisibleModel,
@@ -133,26 +263,40 @@ function renderSvg(
   options: NetworkRuntimeOptions,
   host: HTMLElement,
   state: NetworkViewState,
+  context: NetworkRuntimeContext,
   updateState: (state: NetworkViewState) => void,
 ): void {
   const { width, height } = svgSize(svg, host);
   svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
   svg.replaceChildren();
 
-  const layout = layoutGraph(visible.nodes, visible.links, options, width, height);
+  const layout = cachedLayout(visible.nodes, visible.links, options, width, height, context);
   const arrowId = `xcon-network-arrow-${safeId(host.dataset.key ?? host.id ?? 'root')}`;
   if (options.showArrows) svg.append(renderArrowDefs(arrowId));
+  const viewport = svgElement('g', {
+    class: 'network-viewport',
+    'data-xcon-network-viewport': 'true',
+    transform: transformAttribute(context.transform),
+  });
   const linkLayer = svgElement('g', { class: 'network-links' });
   const nodeLayer = svgElement('g', { class: 'network-nodes' });
-  svg.append(linkLayer, nodeLayer);
+  viewport.append(linkLayer, nodeLayer);
+  svg.append(viewport);
 
   for (const link of visible.links) {
     const source = layout.get(link.source);
     const target = layout.get(link.target);
     if (!source || !target) continue;
     const line = svgElement('line', {
-      class: classNames('network-link', visible.highlightedLinkIds.has(link.id) && 'highlighted', visible.mutedLinkIds.has(link.id) && 'muted'),
+      class: classNames(
+        'network-link',
+        ...linkClassTokens(link),
+        visible.highlightedLinkIds.has(link.id) && 'highlighted',
+        visible.mutedLinkIds.has(link.id) && 'muted',
+      ),
       'data-network-link-id': link.id,
+      'data-network-link-source': link.source,
+      'data-network-link-target': link.target,
       x1: String(source.x),
       y1: String(source.y),
       x2: String(target.x),
@@ -182,8 +326,15 @@ function renderSvg(
       const nextState = graph.subfolders[node.id] ? toggleFolder(selected, node.id) : selected;
       updateState(nextState);
     });
+    if (options.enableHover) bindHover(group, host, node);
+    if (options.enableDrag) bindDrag(group, svg, node.id, layout, context);
 
-    group.append(svgElement('circle', { class: 'network-node', r: String(options.nodeRadius), fill: safeSvgPaint(node.color) ?? 'currentColor' }));
+    group.append(svgElement('circle', {
+      class: classNames('network-node', node.isRoot && 'root-node'),
+      'data-network-node-circle': 'true',
+      r: String(options.nodeRadius),
+      fill: nodeFill(node),
+    }));
     if (options.showLabels) {
       const label = svgElement('text', { class: 'network-label', y: String(options.nodeRadius + 16), 'text-anchor': 'middle' });
       label.textContent = node.label;
@@ -191,6 +342,188 @@ function renderSvg(
     }
     nodeLayer.append(group);
   }
+}
+
+function bindViewportInteractions(svg: SVGSVGElement, options: NetworkRuntimeOptions, context: NetworkRuntimeContext): void {
+  if (options.enableZoom) {
+    svg.addEventListener('wheel', (event) => {
+      event.preventDefault();
+      const wheel = event as WheelEvent;
+      const factor = wheel.deltaY < 0 ? 1.12 : 0.88;
+      const previous = context.transform;
+      const nextScale = clamp(previous.k * factor, 0.2, 4);
+      if (nextScale === previous.k) return;
+      const anchorX = finiteCoordinate(wheel.clientX) ?? 0;
+      const anchorY = finiteCoordinate(wheel.clientY) ?? 0;
+      context.transform = {
+        x: anchorX - (anchorX - previous.x) * (nextScale / previous.k),
+        y: anchorY - (anchorY - previous.y) * (nextScale / previous.k),
+        k: nextScale,
+      };
+      applyViewportTransform(svg, context.transform);
+    });
+  }
+
+  if (options.enablePan) {
+    svg.addEventListener('mousedown', (event) => {
+      if (event.target !== svg) return;
+      const start = event as MouseEvent;
+      const startTransform = { ...context.transform };
+      const owner = svg.ownerDocument ?? document;
+      const move = (moveEvent: MouseEvent): void => {
+        context.transform = {
+          ...startTransform,
+          x: startTransform.x + moveEvent.clientX - start.clientX,
+          y: startTransform.y + moveEvent.clientY - start.clientY,
+        };
+        applyViewportTransform(svg, context.transform);
+      };
+      const end = (): void => {
+        owner.removeEventListener('mousemove', move);
+        owner.removeEventListener('mouseup', end);
+      };
+      owner.addEventListener('mousemove', move);
+      owner.addEventListener('mouseup', end);
+    });
+  }
+}
+
+function bindHover(group: SVGElement, host: HTMLElement, node: NetworkNode): void {
+  group.addEventListener('mouseenter', (event) => {
+    const tooltip = ensureTooltip(host);
+    tooltip.textContent = node.label;
+    const mouse = event as MouseEvent;
+    const style = `left:${trim(mouse.clientX + 12)}px;top:${trim(mouse.clientY + 12)}px`;
+    tooltip.setAttribute('style', style);
+    addClassToken(tooltip, 'show');
+  });
+  group.addEventListener('mouseleave', () => {
+    const tooltip = ensureTooltip(host);
+    tooltip.textContent = '';
+    removeClassToken(tooltip, 'show');
+  });
+}
+
+function bindDrag(
+  group: SVGElement,
+  svg: SVGSVGElement,
+  nodeId: string,
+  layout: Map<string, PositionedNode>,
+  context: NetworkRuntimeContext,
+): void {
+  group.addEventListener('mousedown', (event) => {
+    const point = layout.get(nodeId);
+    if (!point) return;
+    event.preventDefault();
+    const start = event as MouseEvent;
+    const startPoint = { x: point.x, y: point.y };
+    const owner = svg.ownerDocument ?? document;
+    const move = (moveEvent: MouseEvent): void => {
+      const scale = context.transform.k || 1;
+      point.x = startPoint.x + (moveEvent.clientX - start.clientX) / scale;
+      point.y = startPoint.y + (moveEvent.clientY - start.clientY) / scale;
+      updateRenderedNodePosition(svg, nodeId, point.x, point.y);
+    };
+    const end = (): void => {
+      owner.removeEventListener('mousemove', move);
+      owner.removeEventListener('mouseup', end);
+    };
+    owner.addEventListener('mousemove', move);
+    owner.addEventListener('mouseup', end);
+  });
+}
+
+function updateRenderedNodePosition(svg: SVGSVGElement, nodeId: string, x: number, y: number): void {
+  const group = svg.querySelector<SVGElement>(`[data-network-node-id="${cssAttrValue(nodeId)}"]`);
+  group?.setAttribute('transform', `translate(${trim(x)} ${trim(y)})`);
+  for (const link of Array.from(svg.querySelectorAll<SVGElement>('[data-network-link-id]'))) {
+    if (link.getAttribute('data-network-link-source') === nodeId) {
+      link.setAttribute('x1', String(x));
+      link.setAttribute('y1', String(y));
+    }
+    if (link.getAttribute('data-network-link-target') === nodeId) {
+      link.setAttribute('x2', String(x));
+      link.setAttribute('y2', String(y));
+    }
+  }
+}
+
+function nodeFill(node: NetworkNode): string {
+  return safeSvgPaint(node.color) ?? (node.isRoot ? 'var(--xcon-network-primary)' : 'var(--xcon-network-node)');
+}
+
+function linkClassTokens(link: NetworkLink): string[] {
+  const type = link.type?.trim();
+  if (!type) return [];
+  const typed = `${safeClassToken(type)}-link`;
+  const tokens = [typed];
+  if (isReferenceLink(type)) tokens.push('ref-link');
+  return Array.from(new Set(tokens));
+}
+
+function isReferenceLink(type: string | undefined): boolean {
+  const normalized = type?.toLowerCase();
+  return normalized === 'folder' || normalized === 'ref';
+}
+
+function ensureTooltip(host: HTMLElement): HTMLElement {
+  const existing = host.querySelector<HTMLElement>('[data-xcon-network-tooltip]');
+  if (existing) return existing;
+  const tooltip = document.createElement('div');
+  tooltip.className = 'network-tooltip';
+  tooltip.dataset.xconNetworkTooltip = 'true';
+  host.append(tooltip);
+  return tooltip;
+}
+
+function applyViewportTransform(svg: SVGSVGElement, transform: ViewportTransform): void {
+  svg.querySelector<SVGElement>('[data-xcon-network-viewport]')?.setAttribute('transform', transformAttribute(transform));
+}
+
+function defaultTransform(): ViewportTransform {
+  return { x: 0, y: 0, k: 1 };
+}
+
+function transformAttribute(transform: ViewportTransform): string {
+  return `translate(${trim(transform.x)} ${trim(transform.y)}) scale(${trim(transform.k)})`;
+}
+
+function cachedLayout(
+  nodes: NetworkNode[],
+  links: NetworkLink[],
+  options: NetworkRuntimeOptions,
+  width: number,
+  height: number,
+  context: NetworkRuntimeContext,
+): Map<string, PositionedNode> {
+  const key = layoutCacheKey(nodes, links, options, width, height);
+  const cached = context.layoutCache.get(key);
+  if (cached) {
+    context.layout = cached;
+    return cached;
+  }
+  const layout = layoutGraph(nodes, links, options, width, height);
+  context.layoutCache.set(key, layout);
+  context.layout = layout;
+  return layout;
+}
+
+function layoutCacheKey(
+  nodes: NetworkNode[],
+  links: NetworkLink[],
+  options: NetworkRuntimeOptions,
+  width: number,
+  height: number,
+): string {
+  return JSON.stringify({
+    width,
+    height,
+    linkDistance: options.linkDistance,
+    charge: options.charge,
+    friction: options.friction,
+    nodes: nodes.map((node) => [node.id, node.x ?? null, node.y ?? null, node.fixed === true]),
+    links: links.map((link) => [link.id, link.source, link.target, link.type ?? null, link.weight ?? null]),
+  });
 }
 
 function layoutGraph(
@@ -216,6 +549,7 @@ function layoutGraph(
     .force('link', d3.forceLink<PositionedNode, typeof linkData[number]>(linkData).id((node) => node.id).distance(options.linkDistance))
     .force('charge', d3.forceManyBody<PositionedNode>().strength(options.charge))
     .force('center', d3.forceCenter(width / 2, height / 2))
+    .velocityDecay(1 - clamp(options.friction, 0, 1))
     .stop()
     .tick(80);
 
@@ -316,11 +650,17 @@ function parseOptions(value: string | undefined): NetworkRuntimeOptions | null {
     nodeRadius: numberOption(record.nodeRadius, 25, 1),
     linkDistance: numberOption(record.linkDistance, 80),
     charge: numberOption(record.charge, -1500),
+    friction: numberOption(record.friction, 0.75, 0),
     showControls: booleanOption(record.showControls, true),
     showSearch: booleanOption(record.showSearch, true),
+    showFilters: booleanOption(record.showFilters, true),
     showLegend: booleanOption(record.showLegend, true),
     showLabels: booleanOption(record.showLabels, true),
     showArrows: booleanOption(record.showArrows, true),
+    enableDrag: booleanOption(record.enableDrag, true),
+    enableZoom: booleanOption(record.enableZoom, true),
+    enablePan: booleanOption(record.enablePan, true),
+    enableHover: booleanOption(record.enableHover, true),
   };
 }
 
@@ -388,6 +728,10 @@ function booleanOption(value: unknown, fallback: boolean): boolean {
   return fallback;
 }
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
 function finiteCoordinate(value: unknown): number | undefined {
   const number = Number(value);
   return Number.isFinite(number) ? number : undefined;
@@ -402,12 +746,35 @@ function classNames(...tokens: Array<string | false | undefined>): string {
   return tokens.filter(Boolean).join(' ');
 }
 
+function setClassTokens(element: Element, tokens: string[]): void {
+  element.setAttribute('class', tokens.filter(Boolean).join(' '));
+}
+
+function addClassToken(element: Element, token: string): void {
+  const tokens = new Set((element.getAttribute('class') ?? '').split(/\s+/).filter(Boolean));
+  tokens.add(token);
+  element.setAttribute('class', Array.from(tokens).join(' '));
+}
+
+function removeClassToken(element: Element, token: string): void {
+  const tokens = (element.getAttribute('class') ?? '').split(/\s+/).filter(Boolean).filter((item) => item !== token);
+  element.setAttribute('class', tokens.join(' '));
+}
+
 function trim(value: number): string {
   return Number(value.toFixed(3)).toString();
 }
 
 function safeId(value: string): string {
   return value.replace(/[^a-zA-Z0-9_-]/g, '-') || 'root';
+}
+
+function safeClassToken(value: string): string {
+  return value.trim().toLowerCase().replace(/[^a-z0-9_-]+/g, '-') || 'typed';
+}
+
+function cssAttrValue(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
 const SAFE_SVG_PAINT = /^(?:#(?:[\da-f]{3}|[\da-f]{6})|[a-zA-Z]+|var\(\s*--[a-zA-Z0-9_-]+\s*\)|rgba?\([^)]+\)|hsla?\([^)]+\))$/i;

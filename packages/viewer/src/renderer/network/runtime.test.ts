@@ -1,4 +1,14 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+
+vi.mock('d3', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('d3')>();
+  return {
+    ...actual,
+    forceSimulation: vi.fn(actual.forceSimulation),
+  };
+});
+
+import * as d3 from 'd3';
 import { hydrateNetworkDiagrams } from './runtime';
 import type { NetworkGraphModel, NetworkLink, NetworkNode } from './types';
 
@@ -165,6 +175,119 @@ describe('network runtime hydration', () => {
 
     expect(svg!.getAttribute('viewBox')).toBe('0 0 320 180');
   });
+
+  test('filter controls filter groups, link types, and minimum degree locally', () => {
+    const host = hostForGraph(baseGraph(), { showFilters: true });
+    hydrateNetworkDiagrams(document);
+
+    const secondary = host.querySelector<HTMLButtonElement>('[data-xcon-network-filter-group="secondary"]');
+    const folderType = host.querySelector<HTMLButtonElement>('[data-xcon-network-filter-link-type="folder"]');
+    const minDegree = host.querySelector<HTMLInputElement>('[data-xcon-network-min-degree]');
+    expect(secondary).toBeInstanceOf(HTMLButtonElement);
+    expect(folderType).toBeInstanceOf(HTMLButtonElement);
+    expect(minDegree).toBeInstanceOf(HTMLInputElement);
+
+    secondary!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(renderedNodeIds(host)).toEqual(['a', 'folder']);
+
+    folderType!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(renderedLinkIds(host)).toEqual([]);
+
+    minDegree!.value = '2';
+    minDegree!.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(renderedNodeIds(host)).toEqual(['a']);
+  });
+
+  test('hover tooltip updates and resets when hover is enabled', () => {
+    const host = hostForGraph(baseGraph(), { enableHover: true });
+    hydrateNetworkDiagrams(document);
+
+    const alpha = host.querySelector<SVGGElement>('[data-network-node-id="a"]');
+    const tooltip = host.querySelector<HTMLElement>('[data-xcon-network-tooltip]');
+    expect(alpha).not.toBeNull();
+    expect(tooltip).not.toBeNull();
+
+    alpha!.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true, clientX: 30, clientY: 40 }));
+    expect(tooltip!.textContent).toContain('Alpha');
+    expect(tooltip!.getAttribute('class')).toContain('show');
+
+    alpha!.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+    expect(tooltip!.textContent).toBe('');
+    expect(tooltip!.getAttribute('class')).not.toContain('show');
+  });
+
+  test('dragging a node updates its transform and connected link endpoint when enabled', () => {
+    const host = hostForGraph(baseGraph(), { enableDrag: true });
+    hydrateNetworkDiagrams(document);
+
+    const alpha = host.querySelector<SVGGElement>('[data-network-node-id="a"]');
+    const link = host.querySelector<SVGLineElement>('[data-network-link-id="a-b"]');
+    expect(alpha).not.toBeNull();
+    expect(link).not.toBeNull();
+    const beforeTransform = alpha!.getAttribute('transform');
+    const beforeX = link!.getAttribute('x1');
+
+    alpha!.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, clientX: 10, clientY: 10 }));
+    document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientX: 35, clientY: 45 }));
+    document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, clientX: 35, clientY: 45 }));
+
+    expect(alpha!.getAttribute('transform')).not.toBe(beforeTransform);
+    expect(link!.getAttribute('x1')).not.toBe(beforeX);
+  });
+
+  test('wheel zoom updates the viewport transform when zoom is enabled', () => {
+    const host = hostForGraph(baseGraph(), { enableZoom: true });
+    hydrateNetworkDiagrams(document);
+
+    const viewport = host.querySelector<SVGGElement>('[data-xcon-network-viewport]');
+    const svg = host.querySelector<SVGSVGElement>('svg');
+    expect(viewport).not.toBeNull();
+    expect(svg).not.toBeNull();
+    expect(viewport!.getAttribute('transform')).toBe('translate(0 0) scale(1)');
+
+    svg!.dispatchEvent(new WheelEvent('wheel', { bubbles: true, deltaY: -100, clientX: 200, clientY: 150 }));
+
+    expect(viewport!.getAttribute('transform')).not.toBe('translate(0 0) scale(1)');
+  });
+
+  test('applies hydrated visual semantics after node selection', () => {
+    const host = hostForGraph(baseGraph());
+    hydrateNetworkDiagrams(document);
+
+    host.querySelector<SVGGElement>('[data-network-node-id="b"]')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    const rootGroup = host.querySelector<SVGGElement>('[data-network-node-id="a"]');
+    const selectedGroup = host.querySelector<SVGGElement>('[data-network-node-id="b"]');
+    const mutedGroup = host.querySelector<SVGGElement>('[data-network-node-id="folder"]');
+    const rootCircle = rootGroup?.querySelector<SVGCircleElement>('[data-network-node-circle]');
+    const selectedCircle = selectedGroup?.querySelector<SVGCircleElement>('[data-network-node-circle]');
+    const highlightedLink = host.querySelector<SVGLineElement>('[data-network-link-id="a-b"]');
+    const folderLink = host.querySelector<SVGLineElement>('[data-network-link-id="a-folder"]');
+
+    expect(rootGroup?.getAttribute('class')).toContain('highlighted');
+    expect(selectedGroup?.getAttribute('class')).toContain('selected');
+    expect(selectedGroup?.getAttribute('class')).toContain('highlighted');
+    expect(mutedGroup?.getAttribute('class')).toContain('muted');
+    expect(rootCircle?.getAttribute('fill')).toBe('var(--xcon-network-primary)');
+    expect(selectedCircle?.getAttribute('fill')).toBe('var(--xcon-network-node)');
+    expect(highlightedLink?.getAttribute('class')).toContain('highlighted');
+    expect(folderLink?.getAttribute('class')).toContain('muted');
+    expect(folderLink?.getAttribute('class')).toContain('folder-link');
+  });
+
+  test('selection-only render reuses cached layout without rerunning simulation', () => {
+    const forceSimulation = vi.mocked(d3.forceSimulation);
+    forceSimulation.mockClear();
+    const host = hostForGraph(baseGraph());
+    hydrateNetworkDiagrams(document);
+    const beforeTransforms = renderedNodeTransforms(host);
+    expect(forceSimulation).toHaveBeenCalledTimes(1);
+
+    host.querySelector<SVGGElement>('[data-network-node-id="b"]')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(forceSimulation).toHaveBeenCalledTimes(1);
+    expect(renderedNodeTransforms(host)).toEqual(beforeTransforms);
+  });
 });
 
 function hostForGraph(graph: NetworkGraphModel, options: Record<string, unknown> = {}): HTMLElement {
@@ -194,13 +317,24 @@ function hostForGraph(graph: NetworkGraphModel, options: Record<string, unknown>
   fallback.setAttribute('cy', '20');
   fallback.setAttribute('r', '10');
   svg.append(fallback);
-  host.append(toolbar, svg);
+  const tooltip = document.createElement('div');
+  tooltip.className = 'network-tooltip';
+  tooltip.dataset.xconNetworkTooltip = 'true';
+  host.append(toolbar, svg, tooltip);
   document.body.append(host);
   return host;
 }
 
 function renderedNodeIds(host: ParentNode): string[] {
   return Array.from(host.querySelectorAll<SVGGElement>('[data-network-node-id]')).map((node) => node.dataset.networkNodeId ?? '');
+}
+
+function renderedLinkIds(host: ParentNode): string[] {
+  return Array.from(host.querySelectorAll<SVGLineElement>('[data-network-link-id]')).map((link) => link.dataset.networkLinkId ?? '');
+}
+
+function renderedNodeTransforms(host: ParentNode): string[] {
+  return Array.from(host.querySelectorAll<SVGGElement>('[data-network-node-id]')).map((node) => node.getAttribute('transform') ?? '');
 }
 
 function baseGraph(): NetworkGraphModel {
@@ -254,6 +388,7 @@ type Listener = (event: TestEvent) => void;
 
 class TestEvent {
   bubbles: boolean;
+  defaultPrevented = false;
   type: string;
   target: unknown;
   currentTarget: unknown;
@@ -262,9 +397,31 @@ class TestEvent {
     this.type = type;
     this.bubbles = init.bubbles ?? false;
   }
+
+  preventDefault(): void {
+    this.defaultPrevented = true;
+  }
 }
 
-class TestMouseEvent extends TestEvent {}
+class TestMouseEvent extends TestEvent {
+  clientX: number;
+  clientY: number;
+
+  constructor(type: string, init: { bubbles?: boolean; clientX?: number; clientY?: number } = {}) {
+    super(type, init);
+    this.clientX = init.clientX ?? 0;
+    this.clientY = init.clientY ?? 0;
+  }
+}
+
+class TestWheelEvent extends TestMouseEvent {
+  deltaY: number;
+
+  constructor(type: string, init: { bubbles?: boolean; clientX?: number; clientY?: number; deltaY?: number } = {}) {
+    super(type, init);
+    this.deltaY = init.deltaY ?? 0;
+  }
+}
 
 class TestNode {
   childNodes: TestNode[] = [];
@@ -429,6 +586,7 @@ function installDom(): void {
     SVGElement: TestElement,
     Event: TestEvent,
     MouseEvent: TestMouseEvent,
+    WheelEvent: TestWheelEvent,
   });
 }
 

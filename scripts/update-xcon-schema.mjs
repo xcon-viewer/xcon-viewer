@@ -183,11 +183,12 @@ for (const prop of removedLocalFileProps) {
 }
 Object.assign(props, preservedSharedProps);
 if (!props.theme) {
-  props.theme = safePublicNetworkThemeProp;
+  props.theme = { type: 'string' };
 } else if (props.theme.type === 'string') {
   delete props.theme.enum;
 }
 Object.assign(props, safePublicNetworkProps);
+upsertNetworkThemeCondition(component);
 
 component.not = {
   anyOf: forbiddenRuntimeProps.map((prop) => ({ required: [prop] })),
@@ -217,4 +218,28 @@ function preserveLegacyDuplicateComponentProps(outputText) {
   );
 
   return text;
+}
+
+function upsertNetworkThemeCondition(componentSchema) {
+  const conditions = Array.isArray(componentSchema.allOf) ? componentSchema.allOf : [];
+  componentSchema.allOf = [
+    ...conditions.filter((entry) => !isNetworkThemeCondition(entry)),
+    {
+      if: {
+        properties: {
+          type: { const: 'networkDiagram' },
+        },
+        required: ['type'],
+      },
+      then: {
+        properties: {
+          theme: safePublicNetworkThemeProp,
+        },
+      },
+    },
+  ];
+}
+
+function isNetworkThemeCondition(entry) {
+  return entry?.if?.properties?.type?.const === 'networkDiagram' && Array.isArray(entry?.then?.properties?.theme?.enum);
 }

@@ -1935,7 +1935,34 @@
         "not": {
           "pattern": "^on[A-Z]"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "networkDiagram"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "theme": {
+                "type": "string",
+                "enum": [
+                  "obsidian",
+                  "light",
+                  "auto",
+                  "custom"
+                ]
+              }
+            }
+          }
+        }
+      ]
     },
     "stringList": {
       "oneOf": [
