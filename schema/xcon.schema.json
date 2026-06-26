@@ -486,7 +486,6 @@
         "chatBubble",
         "checkbox",
         "codeEditor",
-        "connector",
         "colorPicker",
         "dataViz",
         "datePicker",
@@ -499,7 +498,6 @@
         "icon",
         "image",
         "label",
-        "line",
         "list",
         "map",
         "modal",
@@ -752,7 +750,7 @@
           "$ref": "#/definitions/stringOrNumber"
         },
         "weight": {
-          "$ref": "#/definitions/stringOrNumber"
+          "type": "number"
         },
         "style": {
           "type": "string"
@@ -1389,9 +1387,6 @@
         "rotation": {
           "type": "number"
         },
-        "weight": {
-          "type": "number"
-        },
         "initials": {
           "type": "string"
         },
@@ -1414,7 +1409,13 @@
           "type": "boolean"
         },
         "theme": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "obsidian",
+            "light",
+            "auto",
+            "custom"
+          ]
         },
         "backdropClose": {
           "type": "boolean"
@@ -1601,12 +1602,6 @@
         "mapImage": {
           "type": "string"
         },
-        "objectFit": {
-          "type": "string"
-        },
-        "objectPosition": {
-          "type": "string"
-        },
         "attribution": {
           "type": "string"
         },
@@ -1687,6 +1682,44 @@
         },
         "accent": {
           "$ref": "#/definitions/color"
+        },
+        "showControls": {
+          "type": "boolean"
+        },
+        "showSearch": {
+          "type": "boolean"
+        },
+        "showFilters": {
+          "type": "boolean"
+        },
+        "showLegend": {
+          "type": "boolean"
+        },
+        "selectedColor": {
+          "$ref": "#/definitions/color"
+        },
+        "neighborColor": {
+          "$ref": "#/definitions/color"
+        },
+        "mutedOpacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "clusterColors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/color"
+          }
+        },
+        "panelBackground": {
+          "$ref": "#/definitions/color"
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/safeObject"
+          }
         }
       },
       "not": {

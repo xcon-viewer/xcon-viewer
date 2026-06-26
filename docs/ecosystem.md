@@ -165,7 +165,7 @@ iterations, and approve file changes before they land.
 | Connection | What it means in practice |
 |-----------|--------------------------|
 | SpanGrid → XCON Viewer | XCON's `spanGrid` component renders using `@pomelo-suite/spangrid` internally |
-| Diagram → XCON Viewer | XCON's `networkDiagram` component renders using `@pomelo-suite/diagram` |
+| Diagram -> XCON Viewer | XCON's `networkDiagram` component renders a safe static SVG fallback and hydrates to a bundled D3 graph in the public viewer runtime. |
 | Figma plugin → XCON | `grideditor` exports SpanGrid table → XCON Chain fixture |
 | XCON Chain → XV Desk | Template Studio in XV Desk edits fixtures and binds them to documents |
 | MCP → XCON | AI agents call `render_document` over MCP; XV Desk renders the result live |

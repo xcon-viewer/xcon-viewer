@@ -176,7 +176,7 @@ Connector-specific props:
 | `chart` | Static chart container. |
 | `dataViz` | Data visualization container. |
 | `spanGrid` | Spreadsheet-like data grid preview. Public rendering is read-only by default. |
-| `networkDiagram` | Network graph visualization. |
+| `networkDiagram` | Obsidian-like D3 network graph. Supports static fallback, local-only search/filter/selection, `nodes`/`links`, and full-version `data.list` compatibility. |
 | `map` | Read-only map container. Use `provider "leaflet"` with `latitude`, `longitude`, `zoom`, and optional `markers` to hydrate a Leaflet/OpenStreetMap map when external resources are allowed. Use `snapshotUrl` for a static map image, or omit both for the generated schematic fallback. |
 | `calendar` | Calendar container. |
 | `qrCode` | QR code display. |

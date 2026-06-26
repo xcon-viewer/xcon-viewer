@@ -139,6 +139,19 @@ describe('XCON JSON schema', () => {
     const componentProps = schema.definitions.component.properties;
     const forbidden = schema.definitions.viewerOnlyForbiddenRequirements;
     const schemaText = JSON.stringify(schema);
+    const safePublicNetworkProps = [
+      'theme',
+      'showControls',
+      'showSearch',
+      'showFilters',
+      'showLegend',
+      'selectedColor',
+      'neighborColor',
+      'mutedOpacity',
+      'clusterColors',
+      'panelBackground',
+      'edges',
+    ];
 
     expect(schema.definitions.action).toBeFalsy();
     expect(schema.definitions.actionType).toBeFalsy();
@@ -150,6 +163,9 @@ describe('XCON JSON schema', () => {
     for (const prop of forbiddenRuntimeProps) {
       expect(componentProps[prop], prop).toBeFalsy();
       expect(JSON.stringify(forbidden), prop).toContain(`"required":["${prop}"]`);
+    }
+    for (const prop of safePublicNetworkProps) {
+      expect(componentProps[prop], prop).toBeTruthy();
     }
     expect(schemaText).not.toContain('#/definitions/action');
     expect(schema.definitions.component.propertyNames).toEqual({ not: { pattern: '^on[A-Z]' } });

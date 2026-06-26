@@ -73,6 +73,8 @@ Prefer these public-safe component types:
 - `networkDiagram`
 - `map`
 
+Prefer `links` over compatibility-only `edges`; use `theme "obsidian"` for dense relationship maps.
+
 Do not generate removed or unsafe components such as:
 
 - `webView`

@@ -32,6 +32,7 @@ Rules:
 6. Use `spanGrid` for tables that should look like real tables.
 7. Use `chart` for metric visualization.
 8. Use `networkDiagram` for relationship or dependency visualization.
+   Prefer `links` over compatibility-only `edges`; use `theme "obsidian"` for dense relationship maps.
 9. Keep each visual block self-contained and renderable.
 
 Return:

@@ -139,6 +139,20 @@ const actionHolderProps = [
 
 const removedLocalFileProps = ['acceptedTypes', 'maxFiles', 'maxFileSize', 'uploadUrl'];
 
+const safePublicNetworkProps = {
+  theme: { type: 'string', enum: ['obsidian', 'light', 'auto', 'custom'] },
+  showControls: { type: 'boolean' },
+  showSearch: { type: 'boolean' },
+  showFilters: { type: 'boolean' },
+  showLegend: { type: 'boolean' },
+  selectedColor: { $ref: '#/definitions/color' },
+  neighborColor: { $ref: '#/definitions/color' },
+  mutedOpacity: { type: 'number', minimum: 0, maximum: 1 },
+  clusterColors: { type: 'array', items: { $ref: '#/definitions/color' } },
+  panelBackground: { $ref: '#/definitions/color' },
+  edges: { type: 'array', items: { $ref: '#/definitions/safeObject' } },
+};
+
 schema.description =
   'Public viewer-only XCON/JSON schema for declarative UI documents. It covers renderable component documents and nested data for XCON/SKETCH, XCON/JSON, XCON/XML, and XCON/TAGLESS conversion.';
 schema.definitions.componentType.enum = publicComponentTypes;
@@ -159,6 +173,7 @@ for (const prop of [...forbiddenRuntimeProps, ...actionHolderProps]) {
 for (const prop of removedLocalFileProps) {
   delete props[prop];
 }
+Object.assign(props, safePublicNetworkProps);
 
 component.not = {
   anyOf: forbiddenRuntimeProps.map((prop) => ({ required: [prop] })),

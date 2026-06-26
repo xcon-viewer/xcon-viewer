@@ -29,6 +29,7 @@ Output requirements:
 6. Use `spanGrid` for table/spreadsheet-like content.
 7. Use `chart` for metrics when appropriate.
 8. Use `networkDiagram` for relationship maps when appropriate.
+   Prefer `links` over compatibility-only `edges`; use `theme "obsidian"` for dense relationship maps.
 9. Use `map` only when a static location preview is useful.
 10. Do not use unsupported components.
 11. Do not include app-host actions unless explicitly requested.

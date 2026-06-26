@@ -314,8 +314,9 @@ Key props: `text`, `variant` (`"filled"` | `"outline"` | `"dot"`), `size` (`"sma
 
 ```xcon-sketch
   topology: networkDiagram at 24 24 560 320
-    nodes [{"id":"gw","label":"Gateway","x":280,"y":40,"color":"#1d4ed8","shape":"circle"},{"id":"a","label":"Server A","x":140,"y":160,"color":"#059669"},{"id":"b","label":"Server B","x":420,"y":160,"color":"#059669"}]
-    edges [{"from":"gw","to":"a"},{"from":"gw","to":"b"}]
+    theme "obsidian"
+    nodes [{"id":"gw","label":"Gateway","x":280,"y":40,"color":"#8b5cf6"},{"id":"a","label":"Server A","x":140,"y":160,"group":"app"},{"id":"b","label":"Server B","x":420,"y":160,"group":"app"}]
+    links [{"source":"gw","target":"a"},{"source":"gw","target":"b"}]
 ```
 
 ### alert

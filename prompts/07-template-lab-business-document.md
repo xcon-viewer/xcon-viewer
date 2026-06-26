@@ -32,6 +32,7 @@ Rules:
    checklists, scorecards, or operating plans.
 5. Use `chart` for metrics.
 6. Use `networkDiagram` for flow, approval, dependency, or handoff maps.
+   Prefer `links` over compatibility-only `edges`; use `theme "obsidian"` for dense relationship maps.
 7. Use `xcon-sketch` for the final visual document block.
 8. Every xcon-sketch fence must start with `screen`.
 9. Keep visual blocks document-friendly: avoid tiny text, overlapping elements,
