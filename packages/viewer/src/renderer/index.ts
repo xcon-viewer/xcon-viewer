@@ -8,6 +8,7 @@ import {
   type SketchRecoveryError,
   type XconValue,
 } from '@xcon-viewer/core';
+import { hydrateNetworkDiagrams } from './network/runtime';
 import { renderNetworkStatic } from './network/static';
 
 export interface RenderOptions {
@@ -2037,6 +2038,7 @@ export function hydrateXconViewer(root: ParentNode = document): void {
   hydrateFlipbooks(root);
   hydrateSpanGrids(root);
   hydrateLeafletMaps(root);
+  hydrateNetworkDiagrams(root);
 }
 
 function hydrateTextFields(root: ParentNode = document): void {
