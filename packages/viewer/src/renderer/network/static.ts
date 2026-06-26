@@ -33,7 +33,7 @@ export function renderNetworkStatic(input: RenderNetworkStaticInput): string {
   return tag(
     'div',
     hostAttrs,
-    tag('div', { 'data-xcon-network-toolbar': 'true' }, '') +
+    tag('div', { class: 'xa-network-toolbar', 'data-xcon-network-toolbar': 'true' }, '') +
       tag(
         'svg',
         { id: `network-diagram-${key}`, class: 'network-svg', style: 'width:100%;height:100%;', viewBox: '0 0 800 600', role: 'img' },

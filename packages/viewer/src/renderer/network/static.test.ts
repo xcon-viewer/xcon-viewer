@@ -20,6 +20,8 @@ describe('renderNetworkStatic', () => {
     expect(html).toContain('data-xcon-network="true"');
     expect(html).toContain('data-xcon-network-model=');
     expect(html).toContain('data-xcon-network-theme="obsidian"');
+    expect(html).toContain('class="xa-network-toolbar"');
+    expect(html).toContain('data-xcon-network-toolbar="true"');
     expect(html).toContain('id="network-diagram-root"');
     expect(html).toContain('Root');
     expect(html).toContain('Child &lt;script&gt;');
