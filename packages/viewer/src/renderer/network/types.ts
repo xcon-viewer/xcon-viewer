@@ -44,6 +44,24 @@ export interface NetworkSubfolder {
   links: NetworkLink[];
 }
 
+export interface NetworkViewState {
+  selectedNodeId?: string;
+  search: string;
+  expandedFolderIds: Set<string>;
+  enabledGroups: Set<string>;
+  enabledLinkTypes: Set<string>;
+  minDegree: number;
+}
+
+export interface NetworkVisibleModel {
+  nodes: NetworkNode[];
+  links: NetworkLink[];
+  highlightedNodeIds: Set<string>;
+  highlightedLinkIds: Set<string>;
+  mutedNodeIds: Set<string>;
+  mutedLinkIds: Set<string>;
+}
+
 export type NetworkThemeName = 'obsidian' | 'light' | 'auto' | 'custom';
 
 export interface NetworkTheme {
