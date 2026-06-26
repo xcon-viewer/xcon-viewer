@@ -1347,6 +1347,87 @@ describe('converter, validator, and path utilities', () => {
     expect(result.valid).toBe(true);
   });
 
+  test('coerces networkDiagram professional viewer options', () => {
+    const doc = fromSketch(`
+      screen "Network" 640x420
+        network: networkDiagram at 0 0 640 420
+          theme "obsidian"
+          showControls true
+          showSearch true
+          showFilters true
+          showLegend true
+          enableDrag true
+          enableZoom true
+          enablePan true
+          enableHover true
+          selectedColor "#f8fafc"
+          neighborColor "#60a5fa"
+          mutedOpacity 0.18
+          clusterColors ["#60a5fa","#34d399"]
+          panelBackground "#111827"
+          nodes [{"id":"a","label":"A"}]
+          edges [{"from":"a","to":"b"}]
+    `);
+
+    const network = getByPath(doc, 'components.network');
+    expect(network).toBeInstanceOf(XconObject);
+    if (!(network instanceof XconObject)) throw new Error('network not parsed');
+
+    expect(network.get('theme')).toBe('obsidian');
+    expect(network.get('showControls')).toBe(true);
+    expect(network.get('showSearch')).toBe(true);
+    expect(network.get('showFilters')).toBe(true);
+    expect(network.get('showLegend')).toBe(true);
+    expect(network.get('enableDrag')).toBe(true);
+    expect(network.get('enableZoom')).toBe(true);
+    expect(network.get('enablePan')).toBe(true);
+    expect(network.get('enableHover')).toBe(true);
+    expect(network.get('selectedColor')).toBe('#f8fafc');
+    expect(network.get('neighborColor')).toBe('#60a5fa');
+    expect(network.get('mutedOpacity')).toBe(0.18);
+    expect(network.get('clusterColors')).toEqual(['#60a5fa', '#34d399']);
+    expect(network.get('panelBackground')).toBe('#111827');
+    expect(normalize(network.get('edges'))).toEqual([{ from: 'a', to: 'b' }]);
+
+    expect(toJSONObject(fromXml(`
+      <NetworkDiagram
+        theme="obsidian"
+        showControls="true"
+        showSearch="true"
+        showFilters="true"
+        showLegend="true"
+        enableDrag="true"
+        enableZoom="true"
+        enablePan="true"
+        enableHover="true"
+        selectedColor="#f8fafc"
+        neighborColor="#60a5fa"
+        mutedOpacity="0.18"
+        clusterColors='["#60a5fa","#34d399"]'
+        panelBackground="#111827"
+        nodes='[{"id":"a","label":"A"}]'
+        edges='[{"from":"a","to":"b"}]' />
+    `))).toEqual({
+      type: 'networkDiagram',
+      theme: 'obsidian',
+      showControls: true,
+      showSearch: true,
+      showFilters: true,
+      showLegend: true,
+      enableDrag: true,
+      enableZoom: true,
+      enablePan: true,
+      enableHover: true,
+      selectedColor: '#f8fafc',
+      neighborColor: '#60a5fa',
+      mutedOpacity: 0.18,
+      clusterColors: ['#60a5fa', '#34d399'],
+      panelBackground: '#111827',
+      nodes: [{ id: 'a', label: 'A' }],
+      edges: [{ from: 'a', to: 'b' }],
+    });
+  });
+
   test('rejects host-only and local-file components from the public schema', () => {
     const removedTypes = ['webView', 'frame', 'import', 'fileUpload', 'filePicker', 'imagePicker', 'signaturePad'];
     const doc = fromJSONObject({

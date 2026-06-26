@@ -54,9 +54,11 @@
     "prepublishOnly": "npm run test && npm run build"
   },
   "dependencies": {
-    "@xcon-viewer/core": "0.1.7"
+    "@xcon-viewer/core": "0.1.7",
+    "d3": "^7.9.0"
   },
   "devDependencies": {
+    "@types/d3": "^7.4.3",
     "tsup": "^8.0.0",
     "typescript": "^5.0.0",
     "vitest": "^3.0.0"
