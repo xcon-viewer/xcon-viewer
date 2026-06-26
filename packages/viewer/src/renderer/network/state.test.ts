@@ -52,6 +52,27 @@ describe('network state helpers', () => {
     expect(visible.links.map((link) => link.id)).toEqual(['a-b', 'b-folder', 'c-a', 'folder-child-a', 'folder-child-b', 'child-a-child-b']);
   });
 
+  test('default state enables link types that appear only in subfolders', () => {
+    const graph = subfolderOnlyFolderLinkGraph();
+    const state = expandFolder(createNetworkState(graph), 'folder');
+    const visible = visibleNetworkModel(graph, state);
+
+    expect(visible.links.map((link) => link.id)).toEqual(['root-folder', 'folder-child']);
+  });
+
+  test('folder expansion deduplicates visible node and link ids in first occurrence order', () => {
+    const graph = duplicateExpandedGraph();
+    const state = expandFolder(expandFolder(createNetworkState(graph), 'folder'), 'other-folder');
+    const visible = visibleNetworkModel(graph, state);
+
+    expect(visible.nodes.map((node) => node.id)).toEqual(['root', 'folder', 'other-folder', 'child', 'extra']);
+    expect(visible.nodes.find((node) => node.id === 'root')?.label).toBe('Root');
+    expect(visible.nodes.find((node) => node.id === 'child')?.label).toBe('First Child');
+    expect(visible.links.map((link) => link.id)).toEqual(['root-folder', 'folder-other-folder', 'folder-child', 'other-extra']);
+    expect(visible.links.find((link) => link.id === 'root-folder')).toMatchObject({ source: 'root', target: 'folder' });
+    expect(visible.links.find((link) => link.id === 'folder-child')).toMatchObject({ source: 'folder', target: 'child' });
+  });
+
   test('link type filter removes disabled link types after endpoint filtering', () => {
     const state = {
       ...createNetworkState(baseGraph()),
@@ -116,6 +137,52 @@ function baseGraph(): NetworkGraphModel {
           link('folder-child-a', 'folder', 'child-a', 'folder'),
           link('folder-child-b', 'folder', 'child-b', 'folder'),
           link('child-a-child-b', 'child-a', 'child-b', 'folder'),
+        ],
+      },
+    },
+  };
+}
+
+function subfolderOnlyFolderLinkGraph(): NetworkGraphModel {
+  return {
+    nodes: [node('root', 'Root', undefined, true), node('folder', 'Folder')],
+    links: [link('root-folder', 'root', 'folder')],
+    groups: [],
+    rootNodeId: 'root',
+    subfolders: {
+      folder: {
+        parentId: 'folder',
+        nodes: [node('child', 'Child', undefined, false, 'folder')],
+        links: [link('folder-child', 'folder', 'child', 'folder')],
+      },
+    },
+  };
+}
+
+function duplicateExpandedGraph(): NetworkGraphModel {
+  return {
+    nodes: [node('root', 'Root', undefined, true), node('folder', 'Folder'), node('other-folder', 'Other Folder')],
+    links: [
+      link('root-folder', 'root', 'folder', 'folder'),
+      link('folder-other-folder', 'folder', 'other-folder', 'folder'),
+    ],
+    groups: [],
+    rootNodeId: 'root',
+    subfolders: {
+      folder: {
+        parentId: 'folder',
+        nodes: [node('root', 'Duplicate Root', undefined, false, 'folder'), node('child', 'First Child', undefined, false, 'folder')],
+        links: [
+          link('root-folder', 'folder', 'root', 'folder'),
+          link('folder-child', 'folder', 'child', 'folder'),
+        ],
+      },
+      'other-folder': {
+        parentId: 'other-folder',
+        nodes: [node('child', 'Second Child', undefined, false, 'other-folder'), node('extra', 'Extra', undefined, false, 'other-folder')],
+        links: [
+          link('folder-child', 'other-folder', 'child', 'folder'),
+          link('other-extra', 'other-folder', 'extra', 'folder'),
         ],
       },
     },

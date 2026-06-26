@@ -7,7 +7,7 @@ export function createNetworkState(graph: NetworkGraphModel): NetworkViewState {
     search: '',
     expandedFolderIds: new Set(),
     enabledGroups: new Set(graph.groups.map((group) => group.id)),
-    enabledLinkTypes: new Set(graph.links.map(linkType)),
+    enabledLinkTypes: new Set(allGraphLinks(graph).map(linkType)),
     minDegree: 0,
   };
 }
@@ -67,17 +67,45 @@ function cloneState(state: NetworkViewState, overrides: Partial<NetworkViewState
 }
 
 function expandedGraph(graph: NetworkGraphModel, state: NetworkViewState): Pick<NetworkGraphModel, 'nodes' | 'links'> {
-  const nodes = [...graph.nodes];
-  const links = [...graph.links];
+  const nodes: NetworkNode[] = [];
+  const links: NetworkLink[] = [];
+  const nodeIds = new Set<string>();
+  const linkIds = new Set<string>();
+
+  appendUniqueNodes(nodes, nodeIds, graph.nodes);
+  appendUniqueLinks(links, linkIds, graph.links);
 
   for (const folderId of state.expandedFolderIds) {
     const subfolder = graph.subfolders[folderId];
     if (!subfolder) continue;
-    nodes.push(...subfolder.nodes);
-    links.push(...subfolder.links);
+    appendUniqueNodes(nodes, nodeIds, subfolder.nodes);
+    appendUniqueLinks(links, linkIds, subfolder.links);
   }
 
   return { nodes, links };
+}
+
+function allGraphLinks(graph: NetworkGraphModel): NetworkLink[] {
+  return [
+    ...graph.links,
+    ...Object.values(graph.subfolders).flatMap((subfolder) => subfolder.links),
+  ];
+}
+
+function appendUniqueNodes(target: NetworkNode[], seenIds: Set<string>, nodes: NetworkNode[]): void {
+  for (const node of nodes) {
+    if (seenIds.has(node.id)) continue;
+    seenIds.add(node.id);
+    target.push(node);
+  }
+}
+
+function appendUniqueLinks(target: NetworkLink[], seenIds: Set<string>, links: NetworkLink[]): void {
+  for (const link of links) {
+    if (seenIds.has(link.id)) continue;
+    seenIds.add(link.id);
+    target.push(link);
+  }
 }
 
 function nodeDegrees(links: NetworkLink[]): Map<string, number> {
