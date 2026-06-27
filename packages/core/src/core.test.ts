@@ -1380,6 +1380,9 @@ describe('converter, validator, and path utilities', () => {
       screen "Advanced Visualization Aliases" 800x420
         usageTree: treemap at 24 24 220 160
           data {"name":"Workspace","children":[{"name":"Viewer","value":42}]}
+          config {"mode":"squarify","padding":2}
+          interactive false
+          allowPartial true
         flowCost: sankey at 260 24 220 160
           data {"nodes":[{"id":"a"},{"id":"b"}],"links":[{"source":"a","target":"b","value":7}]}
         radial: sunburst at 496 24 220 160
@@ -1398,6 +1401,9 @@ describe('converter, validator, and path utilities', () => {
 
     const components = normalize(getByPath(doc, 'components')) as Record<string, Record<string, unknown>>;
     expect(components.usageTree.type).toBe('treemap');
+    expect(components.usageTree.config).toEqual({ mode: 'squarify', padding: 2 });
+    expect(components.usageTree.interactive).toBe(false);
+    expect(components.usageTree.allowPartial).toBe(true);
     expect(components.flowCost.type).toBe('sankey');
     expect(components.radial.type).toBe('sunburst');
     expect(components.matrix.type).toBe('chord');
