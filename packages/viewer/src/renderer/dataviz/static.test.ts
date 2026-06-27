@@ -54,6 +54,66 @@ describe('dataViz static fallbacks', () => {
     expect(html).not.toMatch(/\son(?:click|load|error)=/i);
   });
 
+  test('drops unsafe paint values from svg attributes', () => {
+    const model = normalizeDataVizComponent({
+      type: 'dataViz',
+      vizType: 'sankey',
+      data: {
+        nodes: [
+          { id: 'source', label: 'Source', color: 'url(javascript:alert(1))' },
+          { id: 'target', label: 'Target' },
+        ],
+        links: [
+          { source: 'source', target: 'target', value: 4, color: 'url(javascript:alert(1))' },
+        ],
+      },
+    });
+
+    const html = renderDataVizStaticFallback(model);
+
+    expect(html).toContain('xa-dataviz-preview--sankey');
+    expect(html).not.toContain('url(javascript:alert(1))');
+    expect(html).not.toContain('javascript:');
+    expect(html).not.toContain('<script');
+    expect(html).not.toMatch(/<[^>]+\son(?:click|load|error)=/i);
+  });
+
+  test('escapes event-looking labels without creating inline event attributes', () => {
+    const label = '<img src=x onerror=alert(1)>';
+    const model = normalizeDataVizComponent({
+      type: 'dataViz',
+      vizType: 'treemap',
+      data: [{ label, value: 4 }],
+    });
+
+    const html = renderDataVizStaticFallback(model);
+
+    expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;');
+    expect(html).not.toContain('<img');
+    expect(html).not.toContain('<script');
+    expect(html).not.toMatch(/<[^>]+\sonerror=/i);
+  });
+
+  test.each([
+    ['sankey', { nodes: 'broken', links: [{ source: {}, target: null, value: 'bad' }] }],
+    ['chord', { nodes: [{ id: 'one' }], links: [{ source: 'one' }] }],
+    ['forceGraph', { nodes: [{ id: 'solo', label: { nested: true } }], links: 'broken' }],
+    ['plot', { data: [{ category: 'A', value: 'not numeric' }], marks: [{ type: 'barY', x: 'category', y: 'value' }] }],
+  ])('handles malformed %s data without throwing', (vizType, data) => {
+    const model = normalizeDataVizComponent({
+      type: 'dataViz',
+      vizType,
+      data,
+    });
+
+    expect(() => renderDataVizStaticFallback(model)).not.toThrow();
+    const html = renderDataVizStaticFallback(model);
+
+    expect(html).toMatch(/xa-dataviz-empty|<svg/);
+    expect(html).not.toContain('<script');
+    expect(html).not.toMatch(/<[^>]+\son(?:click|load|error)=/i);
+  });
+
   test.each([
     ['barX', { type: 'barX', x: 'value', y: 'category' }],
     ['line', { type: 'line', x: 'category', y: 'value' }],
