@@ -440,9 +440,11 @@ function renderWorkbench(root, statsTarget, markdown, index, state, rerender) {
       ${renderIssueFilters(index, state)}
       ${renderFileList(index, state)}
     </aside>
+    <div class="vault-splitter vault-splitter-left" role="separator" aria-orientation="vertical" aria-label="Resize file sidebar" tabindex="0" data-vault-splitter="left"></div>
     <article class="vault-reader">
       ${renderReader(markdown, selected, index)}
     </article>
+    <div class="vault-splitter vault-splitter-right" role="separator" aria-orientation="vertical" aria-label="Resize analysis sidebar" tabindex="0" data-vault-splitter="right"></div>
     <aside class="vault-analysis">
       ${renderGraphCard(index, selected, state)}
       ${renderMetadataCard(selected)}
@@ -452,6 +454,7 @@ function renderWorkbench(root, statsTarget, markdown, index, state, rerender) {
     </aside>
   `;
   bindWorkbenchEvents(root, index, state, rerender);
+  bindVaultSplitters(root);
   renderGraphInto(root.querySelector('[data-vault-graph-host]'), index, state, rerender);
 }
 
@@ -585,6 +588,91 @@ function bindWorkbenchEvents(root, index, state, rerender) {
       rerender();
     });
   });
+}
+
+function bindVaultSplitters(root) {
+  root.querySelectorAll('[data-vault-splitter]').forEach((splitter) => {
+    splitter.addEventListener('pointerdown', (event) => startVaultResize(root, splitter, event));
+    splitter.addEventListener('dblclick', () => resetVaultSplitter(root, splitter.dataset.vaultSplitter));
+    splitter.addEventListener('keydown', (event) => nudgeVaultSplitter(root, splitter.dataset.vaultSplitter, event));
+  });
+}
+
+function startVaultResize(root, splitter, event) {
+  const side = splitter.dataset.vaultSplitter;
+  if (side !== 'left' && side !== 'right') return;
+  event.preventDefault();
+  splitter.setPointerCapture(event.pointerId);
+  root.ownerDocument.body.classList.add('vault-resizing');
+
+  const resize = (moveEvent) => {
+    const width = widthFromPointer(root, side, moveEvent.clientX);
+    applyVaultPanelWidth(root, side, width);
+  };
+  const stop = (stopEvent) => {
+    if (splitter.hasPointerCapture(stopEvent.pointerId)) splitter.releasePointerCapture(stopEvent.pointerId);
+    root.ownerDocument.body.classList.remove('vault-resizing');
+    splitter.removeEventListener('pointermove', resize);
+    splitter.removeEventListener('pointerup', stop);
+    splitter.removeEventListener('pointercancel', stop);
+  };
+
+  resize(event);
+  splitter.addEventListener('pointermove', resize);
+  splitter.addEventListener('pointerup', stop);
+  splitter.addEventListener('pointercancel', stop);
+}
+
+function widthFromPointer(root, side, clientX) {
+  const rect = root.getBoundingClientRect();
+  const currentLeft = readVaultPanelWidth(root, 'left');
+  const currentRight = readVaultPanelWidth(root, 'right');
+  const splitterTotal = 16;
+  const readerMin = 420;
+  if (side === 'left') {
+    const max = Math.min(420, rect.width - currentRight - splitterTotal - readerMin);
+    return clamp(clientX - rect.left, 220, max);
+  }
+  const max = Math.min(560, rect.width - currentLeft - splitterTotal - readerMin);
+  return clamp(rect.right - clientX, 300, max);
+}
+
+function nudgeVaultSplitter(root, side, event) {
+  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+  event.preventDefault();
+  if (event.key === 'Home') return applyVaultPanelWidth(root, side, defaultVaultPanelWidth(side));
+  if (event.key === 'End') return applyVaultPanelWidth(root, side, side === 'left' ? 420 : 560);
+  const direction = event.key === 'ArrowLeft' ? -1 : 1;
+  const delta = side === 'right' ? -direction * 16 : direction * 16;
+  applyVaultPanelWidth(root, side, readVaultPanelWidth(root, side) + delta);
+}
+
+function resetVaultSplitter(root, side) {
+  applyVaultPanelWidth(root, side, defaultVaultPanelWidth(side));
+}
+
+function applyVaultPanelWidth(root, side, width) {
+  if (side === 'left') {
+    root.style.setProperty('--vault-sidebar-width', `${clamp(width, 220, 420)}px`);
+    return;
+  }
+  if (side === 'right') {
+    root.style.setProperty('--vault-analysis-width', `${clamp(width, 300, 560)}px`);
+  }
+}
+
+function readVaultPanelWidth(root, side) {
+  const property = side === 'left' ? '--vault-sidebar-width' : '--vault-analysis-width';
+  const fallback = defaultVaultPanelWidth(side);
+  return Number.parseFloat(getComputedStyle(root).getPropertyValue(property)) || fallback;
+}
+
+function defaultVaultPanelWidth(side) {
+  return side === 'left' ? 300 : 390;
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(value, Math.max(min, max)));
 }
 
 function filterNotes(index, state = {}) {

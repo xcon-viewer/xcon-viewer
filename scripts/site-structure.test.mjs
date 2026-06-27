@@ -338,6 +338,12 @@ describe('public site structure', () => {
 
     expect(page).toContain('Obsidian Vault Viewer Test');
     expect(page).toContain('id="vaultWorkbench"');
+    expect(page).toContain('--vault-sidebar-width');
+    expect(page).toContain('--vault-analysis-width');
+    expect(page).toContain('grid-template-columns: var(--vault-sidebar-width) 8px minmax(420px, 1fr) 8px var(--vault-analysis-width);');
+    expect(page).toContain('.vault-splitter');
+    expect(page).toContain('cursor: col-resize');
+    expect(page).toContain('.vault-splitter { display: none; }');
     expect(page).toContain('src="/vendor/markdown-it/markdown-it.min.js"');
     expect(page).toContain("from '/site/obsidian-vault-viewer-test-runtime.js'");
     expect(page).not.toContain('@xcon-viewer/viewer');
@@ -350,6 +356,14 @@ describe('public site structure', () => {
     expect(runtime).toContain('export function graphFromVaultIndex');
     expect(runtime).toContain('export function localGraphForNote');
     expect(runtime).toContain('export function mountObsidianVaultViewer');
+    expect(runtime).toContain('data-vault-splitter="left"');
+    expect(runtime).toContain('data-vault-splitter="right"');
+    expect(runtime).toContain('role="separator"');
+    expect(runtime).toContain('function bindVaultSplitters');
+    expect(runtime).toContain('setPointerCapture');
+    expect(runtime).toContain('--vault-sidebar-width');
+    expect(runtime).toContain('--vault-analysis-width');
+    expect(runtime).toContain('dblclick');
     expect(runtime).toContain('[[Network Diagram]]');
     expect(runtime).toContain('[[Missing Plugin Idea]]');
     expect(runtime).toContain('Orphan Note');
