@@ -91,6 +91,64 @@ describe('dataViz normalization', () => {
     expect(plot.options).toEqual({ grid: true });
   });
 
+  test('drops unsafe Plot style and color or range-like option values', () => {
+    const plot = normalizePlotSpec({
+      data: [{ day: 'Mon', value: 12 }],
+      marks: [{ type: 'barY', x: 'day', y: 'value' }],
+      options: {
+        grid: true,
+        width: 420,
+        height: 240,
+        marginLeft: 48,
+        style: 'background:url(javascript:alert(1))',
+        color: 'url(javascript:alert(1))',
+        range: ['#2563eb', 'url(javascript:alert(1))'],
+        x: {
+          label: 'Day',
+          domain: ['Mon', 'Tue'],
+          range: ['#fff', 'url(javascript:alert(1))'],
+          style: 'background:url(https://example.com/bad.png)',
+        },
+        y: {
+          label: 'Value',
+          domain: [0, 20],
+          tickFormat: () => 'unsafe',
+        },
+      },
+    });
+
+    expect(plot.options).toEqual({
+      grid: true,
+      width: 420,
+      height: 240,
+      marginLeft: 48,
+      x: { label: 'Day', domain: ['Mon', 'Tue'] },
+      y: { label: 'Value', domain: [0, 20] },
+    });
+  });
+
+  test('preserves safe primitive Plot options and safe color strings', () => {
+    const plot = normalizePlotSpec({
+      data: [{ day: 'Mon', value: 12 }],
+      marks: [{ type: 'barY', x: 'day', y: 'value' }],
+      options: {
+        grid: false,
+        margin: 24,
+        color: 'steelblue',
+        x: { label: 'Day', domain: ['Mon', 'Tue'] },
+        y: { label: 'Value', domain: [0, 20] },
+      },
+    });
+
+    expect(plot.options).toEqual({
+      grid: false,
+      margin: 24,
+      color: 'steelblue',
+      x: { label: 'Day', domain: ['Mon', 'Tue'] },
+      y: { label: 'Value', domain: [0, 20] },
+    });
+  });
+
   test('keeps only declarative plot rows and string mark fields', () => {
     const plot = normalizePlotSpec({
       data: [

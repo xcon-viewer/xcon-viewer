@@ -17,12 +17,14 @@ type PositionedForceLink = SimulationLinkDatum<PositionedForceNode> & { value: n
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const DEFAULT_WIDTH = 640;
 const DEFAULT_HEIGHT = 360;
+const MAX_HIERARCHY_NODES = 160;
+const MAX_HIERARCHY_DEPTH = 32;
 const palette = ['#2563eb', '#0ea5e9', '#16a34a', '#f59e0b', '#ef4444', '#8b5cf6', '#f97316', '#14b8a6'];
 
 export function hydrateDataVizComponents(root: ParentNode = document): void {
-  const hosts = Array.from(root.querySelectorAll<HTMLElement>('[data-xcon-dataviz-type]'));
+  const hosts = dataVizHosts(root);
   for (const host of hosts) {
-    if (host.dataset.xconDatavizBound) continue;
+    if (host.dataset.xconDatavizBound === 'true') continue;
     try {
       const rendered = renderHost(host);
       if (!rendered) continue;
@@ -32,6 +34,19 @@ export function hydrateDataVizComponents(root: ParentNode = document): void {
       // Preserve the static fallback and keep hydration failures local to this host.
     }
   }
+}
+
+function dataVizHosts(root: ParentNode): HTMLElement[] {
+  const hosts: HTMLElement[] = [];
+  if (isElementWithAttribute(root, 'data-xcon-dataviz-type')) hosts.push(root as HTMLElement);
+  for (const host of Array.from(root.querySelectorAll<HTMLElement>('[data-xcon-dataviz-type]'))) {
+    if (!hosts.includes(host)) hosts.push(host);
+  }
+  return hosts;
+}
+
+function isElementWithAttribute(value: ParentNode, name: string): boolean {
+  return typeof (value as Element).getAttribute === 'function' && (value as Element).getAttribute(name) !== null;
 }
 
 function renderHost(host: HTMLElement): Node | null {
@@ -319,27 +334,38 @@ function plotSpec(data: unknown, config: PlainRecord): PlotSpec {
 }
 
 function hierarchySource(data: unknown): PlainRecord {
-  const plain = toDataVizPlainValue(data);
-  if (Array.isArray(plain)) {
-    if (plain.length === 0) throw new Error('Empty hierarchy');
-    return { name: 'root', children: plain.map((item) => hierarchyNode(item)) };
-  }
-  const root = hierarchyNode(plain);
+  const budget = { count: 0 };
+  const root = Array.isArray(data)
+    ? boundedHierarchyNode({ name: 'root', children: data }, 0, budget)
+    : boundedHierarchyNode(data, 0, budget);
   const children = hierarchyChildren(root);
   if (children.length === 0 && nodeValue(root) <= 0) throw new Error('Invalid hierarchy');
   return root;
 }
 
-function hierarchyNode(value: unknown): PlainRecord {
-  const record = objectRecord(toDataVizPlainValue(value));
+function boundedHierarchyNode(value: unknown, depth: number, budget: { count: number }): PlainRecord {
+  if (depth > MAX_HIERARCHY_DEPTH) throw new Error('Hierarchy depth limit exceeded');
+  if (budget.count >= MAX_HIERARCHY_NODES) throw new Error('Hierarchy node limit exceeded');
+  budget.count += 1;
+
+  const record = objectRecord(value);
   if (!record) {
     const numeric = finiteNumber(value, Number.NaN);
     if (!Number.isFinite(numeric)) throw new Error('Invalid hierarchy node');
     return { name: String(value), value: numeric };
   }
+
+  const output = shallowHierarchyRecord(record);
   const children = hierarchyChildren(record);
-  if (children.length > 0) return { ...record, children: children.map((child) => hierarchyNode(child)) };
-  return record;
+  if (children.length > 0) {
+    const boundedChildren: PlainRecord[] = [];
+    for (const child of children) {
+      if (budget.count >= MAX_HIERARCHY_NODES) break;
+      boundedChildren.push(boundedHierarchyNode(child, depth + 1, budget));
+    }
+    if (boundedChildren.length > 0) output.children = boundedChildren;
+  }
+  return output;
 }
 
 function hierarchyChildren(record: PlainRecord): unknown[] {
@@ -347,6 +373,15 @@ function hierarchyChildren(record: PlainRecord): unknown[] {
   if (Array.isArray(record.items)) return record.items;
   if (Array.isArray(record.nodes)) return record.nodes;
   return [];
+}
+
+function shallowHierarchyRecord(record: PlainRecord): PlainRecord {
+  const output: PlainRecord = {};
+  for (const [key, value] of Object.entries(record)) {
+    if (key === 'children' || key === 'items' || key === 'nodes') continue;
+    if (value === null || ['string', 'number', 'boolean'].includes(typeof value)) output[key] = value;
+  }
+  return output;
 }
 
 function nodeValue(record: PlainRecord): number {

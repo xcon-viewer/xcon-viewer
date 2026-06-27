@@ -38,6 +38,48 @@ describe('dataViz runtime hydration', () => {
     expect(host.querySelector('[data-fallback]')).not.toBeNull();
   });
 
+  test('dataViz static inline marker is still hydratable by the ESM runtime', () => {
+    const host = hostForDataViz('treemap', {
+      name: 'Ops',
+      children: [{ name: 'Queue', value: 38 }],
+    });
+    host.dataset.xconDatavizBound = 'static';
+
+    hydrateDataVizComponents(document);
+
+    expect(host.dataset.xconDatavizBound).toBe('true');
+    expect(host.querySelector('[data-fallback]')).toBeNull();
+    expect(host.querySelectorAll('rect').length).toBeGreaterThan(0);
+  });
+
+  test('dataViz hydrates the root node itself when it is a host', () => {
+    const host = hostForDataViz('treemap', {
+      name: 'Ops',
+      children: [{ name: 'Queue', value: 38 }],
+    });
+
+    hydrateDataVizComponents(host);
+
+    expect(host.dataset.xconDatavizBound).toBe('true');
+    expect(host.querySelector('[data-fallback]')).toBeNull();
+  });
+
+  test('dataViz sunburst hydration renders partition paths', () => {
+    const host = hostForDataViz('sunburst', {
+      name: 'Ops',
+      children: [
+        { name: 'Queue', value: 38 },
+        { name: 'Runner', value: 18 },
+      ],
+    });
+
+    hydrateDataVizComponents(document);
+
+    expect(host.dataset.xconDatavizBound).toBe('true');
+    expect(host.querySelector('[data-fallback]')).toBeNull();
+    expect(host.querySelectorAll('path').length).toBeGreaterThan(0);
+  });
+
   test('dataViz forceGraph sankey chord and plot render non-empty runtime output', () => {
     const force = hostForDataViz('forceGraph', {
       nodes: [
@@ -91,6 +133,32 @@ describe('dataViz runtime hydration', () => {
     expect(host.dataset.xconDatavizBound).toBe('true');
     expect(host.childNodes.length).toBe(1);
     expect(host.firstChild).toBe(firstChild);
+  });
+
+  test('dataViz oversized hierarchy hydration renders a bounded result', () => {
+    const host = hostForDataViz('treemap', {
+      name: 'Root',
+      children: Array.from({ length: 300 }, (_, index) => ({ name: `Leaf ${index}`, value: 1 })),
+    });
+
+    expect(() => hydrateDataVizComponents(document)).not.toThrow();
+
+    expect(host.dataset.xconDatavizBound).toBe('true');
+    expect(host.querySelector('[data-fallback]')).toBeNull();
+    expect(host.querySelectorAll('rect').length).toBeLessThanOrEqual(80);
+  });
+
+  test('dataViz overly deep hierarchy hydration does not throw and preserves fallback safely', () => {
+    let node: Record<string, unknown> = { name: 'Leaf', value: 1 };
+    for (let index = 0; index < 80; index += 1) {
+      node = { name: `Level ${index}`, children: [node] };
+    }
+    const host = hostForDataViz('treemap', node);
+
+    expect(() => hydrateDataVizComponents(document)).not.toThrow();
+
+    expect(host.dataset.xconDatavizBound).not.toBe('true');
+    expect(host.querySelector('[data-fallback]')).not.toBeNull();
   });
 });
 

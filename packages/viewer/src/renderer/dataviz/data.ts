@@ -13,6 +13,8 @@ const plotMarkTypes = ['barY', 'barX', 'line', 'areaY', 'dot', 'ruleY', 'ruleX']
 const plotMarkFields = ['x', 'y', 'fill', 'stroke'] as const;
 const dataVizAliasSet = new Set<string>(dataVizAliasTypes);
 const plotMarkTypeSet = new Set<string>(plotMarkTypes);
+const unsafePlotStringPattern = /javascript:|vbscript:|expression\s*\(|url\s*\(/i;
+const safeColorPattern = /^(?:#(?:[\da-f]{3}|[\da-f]{6}|[\da-f]{8})|[a-zA-Z]+|var\(\s*--[a-zA-Z0-9_-]+\s*\)|rgba?\([^)]+\)|hsla?\([^)]+\))$/i;
 
 export const advancedDataVizAliases = dataVizAliasTypes;
 
@@ -100,7 +102,21 @@ function normalizePlotMark(value: unknown): PlotMarkSpec[] {
 
 function normalizePlotOptions(value: unknown): Record<string, unknown> {
   const options = asRecord(value);
-  return options ? sanitizeDeclarativeRecord(options) : {};
+  if (!options) return {};
+
+  const output: PlainRecord = {};
+  if (typeof options.grid === 'boolean') output.grid = options.grid;
+  for (const key of ['width', 'height', 'margin', 'marginTop', 'marginRight', 'marginBottom', 'marginLeft'] as const) {
+    const number = nonNegativeFiniteNumber(options[key], key === 'width' || key === 'height');
+    if (number !== undefined) output[key] = number;
+  }
+  const color = safePlotColor(options.color);
+  if (color !== undefined) output.color = color;
+  const x = normalizePlotScaleOptions(options.x);
+  const y = normalizePlotScaleOptions(options.y);
+  if (x) output.x = x;
+  if (y) output.y = y;
+  return output;
 }
 
 function sanitizeDeclarativeRecord(record: PlainRecord): PlainRecord {
@@ -128,6 +144,53 @@ function sanitizeDeclarativeValue(value: unknown): unknown {
   }
 
   return value;
+}
+
+function normalizePlotScaleOptions(value: unknown): PlainRecord | undefined {
+  const input = asRecord(value);
+  if (!input) return undefined;
+  const output: PlainRecord = {};
+  const label = safePlotText(input.label);
+  if (label !== undefined) output.label = label;
+  if (typeof input.grid === 'boolean') output.grid = input.grid;
+  if (typeof input.reverse === 'boolean') output.reverse = input.reverse;
+  const domain = safePlotDomain(input.domain);
+  if (domain !== undefined) output.domain = domain;
+  return Object.keys(output).length > 0 ? output : undefined;
+}
+
+function safePlotDomain(value: unknown): Array<string | number | boolean | null> | undefined {
+  if (!Array.isArray(value) || value.length > 64) return undefined;
+  const domain: Array<string | number | boolean | null> = [];
+  for (const item of value) {
+    if (item === null || typeof item === 'number' || typeof item === 'boolean') {
+      if (typeof item !== 'number' || Number.isFinite(item)) domain.push(item);
+      continue;
+    }
+    const text = safePlotText(item);
+    if (text === undefined) return undefined;
+    domain.push(text);
+  }
+  return domain;
+}
+
+function safePlotText(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  if (!trimmed || unsafePlotStringPattern.test(trimmed)) return undefined;
+  return trimmed;
+}
+
+function safePlotColor(value: unknown): string | undefined {
+  const color = safePlotText(value);
+  if (!color) return undefined;
+  return safeColorPattern.test(color) ? color : undefined;
+}
+
+function nonNegativeFiniteNumber(value: unknown, positive: boolean): number | undefined {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return undefined;
+  return positive ? (number > 0 ? number : undefined) : (number >= 0 ? number : undefined);
 }
 
 function isPlotMarkType(value: unknown): value is PlotMarkSpec['type'] {
