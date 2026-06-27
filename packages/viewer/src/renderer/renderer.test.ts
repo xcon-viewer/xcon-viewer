@@ -4577,10 +4577,27 @@ describe('viewer security renderer', () => {
         { source: 'chain', target: 'sketch' },
       ],
     };
+    const flow = {
+      nodes: [
+        { id: 'source', name: 'Source' },
+        { id: 'target', name: 'Target' },
+      ],
+      links: [{ source: 'source', target: 'target', value: 8 }],
+    };
+    const plotSpec = {
+      data: [
+        { category: 'A', value: 5 },
+        { category: 'B', value: 9 },
+      ],
+      marks: [{ type: 'barY', x: 'category', y: 'value' }],
+    };
 
     const treemap = renderToHtml({ type: 'dataViz', vizType: 'treemap', data: hierarchy });
     const sunburst = renderToHtml({ type: 'dataViz', vizType: 'sunburst', data: hierarchy });
     const forceGraph = renderToHtml({ type: 'dataViz', vizType: 'forceGraph', data: graph });
+    const sankey = renderToHtml({ type: 'dataViz', vizType: 'sankey', data: flow });
+    const chord = renderToHtml({ type: 'dataViz', vizType: 'chord', data: graph });
+    const plot = renderToHtml({ type: 'dataViz', vizType: 'plot', data: plotSpec });
 
     expect(treemap).toContain('xa-dataviz-preview--treemap');
     expect(treemap).toContain('<svg');
@@ -4590,6 +4607,12 @@ describe('viewer security renderer', () => {
     expect(forceGraph).toContain('xa-dataviz-preview--force-graph');
     expect(forceGraph).toContain('Fixture');
     expect(forceGraph).toContain('<line');
+    expect(sankey).toContain('xa-dataviz-preview--sankey');
+    expect(sankey).toContain('Source');
+    expect(chord).toContain('xa-dataviz-preview--chord');
+    expect(chord).toContain('<path');
+    expect(plot).toContain('xa-dataviz-preview--plot');
+    expect(plot).toContain('A');
   });
 
   test('keeps advanced chart and editor options visible like draft advanced components', () => {

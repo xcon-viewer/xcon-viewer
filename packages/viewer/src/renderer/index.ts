@@ -8,6 +8,8 @@ import {
   type SketchRecoveryError,
   type XconValue,
 } from '@xcon-viewer/core';
+import { normalizeDataVizComponent } from './dataviz/data';
+import { renderDataVizStaticFallback } from './dataviz/static';
 import { hydrateNetworkDiagrams } from './network/runtime';
 import { renderNetworkStatic } from './network/static';
 
@@ -7916,22 +7918,20 @@ function renderAdvancedRichEditor(component: XconObject, attrs: Record<string, s
 
 function renderAdvancedDataViz(component: XconObject, attrs: Record<string, string | undefined>): string {
   const key = componentDomKey(attrs);
-  const data = toPlainValue(component.get('data') ?? []);
-  const vizType = String(component.get('vizType') ?? component.get('variant') ?? 'bar');
-  const config = toPlainValue(component.get('config') ?? {});
-  const interactive = booleanOption(component.get('interactive'), true);
+  const model = normalizeDataVizComponent(component);
   const rootAttrs = advancedAttrs(attrs, 'xa-dataviz-container', key, 'position:relative;border:1px solid #ddd;border-radius:4px;background:white;box-sizing:border-box;overflow:hidden');
   const preview = tag(
     'div',
     {
       id: `dataviz-${key}`,
       style: 'width:100%;height:100%;',
-      'data-xcon-dataviz-type': vizType,
-      'data-xcon-dataviz-data': jsonAttr(data),
-      'data-xcon-dataviz-config': jsonAttr(config),
-      'data-xcon-dataviz-interactive': String(interactive),
+      'data-xcon-dataviz-type': model.vizType,
+      'data-xcon-dataviz-data': jsonAttr(model.data),
+      'data-xcon-dataviz-config': jsonAttr(model.config),
+      'data-xcon-dataviz-interactive': String(model.interactive),
+      'data-xcon-dataviz-allow-partial': model.allowPartial ? 'true' : undefined,
     },
-    renderStaticDataViz(data, vizType, config),
+    renderDataVizStaticFallback(model),
   );
   return tag('div', rootAttrs, preview + advancedLoading(`dataviz-loading-${key}`, 'dataviz-loading', '데이터 시각화 로딩 중...'));
 }
