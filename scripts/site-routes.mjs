@@ -41,6 +41,7 @@ const extraRoutes = [
   { path: '/claude-markdown-sketch-demo.html', file: 'site/claude-markdown-sketch-demo.html' },
   { path: '/advanced-visualization-test.html', file: 'site/advanced-visualization-test.html' },
   { path: '/network-diagram-test.html', file: 'site/network-diagram-test.html' },
+  { path: '/obsidian-vault-viewer-test.html', file: 'site/obsidian-vault-viewer-test.html' },
 ];
 
 const routeByPath = new Map([...publicRoutes, ...extraRoutes].map((route) => [route.path, route]));

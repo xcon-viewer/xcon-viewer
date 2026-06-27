@@ -323,6 +323,46 @@ describe('public site structure', () => {
     expect(runtime).not.toContain("from './network/static'");
   });
 
+  test('serves the obsidian vault viewer test page with static vault analysis runtime', () => {
+    const pagePath = join(rootDir, 'site', 'obsidian-vault-viewer-test.html');
+    const runtimePath = join(rootDir, 'site', 'obsidian-vault-viewer-test-runtime.js');
+    const buildScript = readFileSync(join(rootDir, 'scripts', 'build-public-site.mjs'), 'utf8');
+
+    expect(resolvePublicPath('/obsidian-vault-viewer-test.html')).toBe(pagePath);
+    expect(existsSync(pagePath)).toBe(true);
+    expect(existsSync(runtimePath)).toBe(true);
+    expect(contentTypeForPath(runtimePath)).toBe('text/javascript; charset=utf-8');
+
+    const page = readFileSync(pagePath, 'utf8');
+    const runtime = readFileSync(runtimePath, 'utf8');
+
+    expect(page).toContain('Obsidian Vault Viewer Test');
+    expect(page).toContain('id="vaultWorkbench"');
+    expect(page).toContain('src="/vendor/markdown-it/markdown-it.min.js"');
+    expect(page).toContain("from '/site/obsidian-vault-viewer-test-runtime.js'");
+    expect(page).not.toContain('@xcon-viewer/viewer');
+    expect(page).not.toContain('@xcon-viewer/core');
+    expect(page).not.toContain('https://cdn');
+
+    expect(runtime).toContain("from '/site/network-diagram-test-runtime.js'");
+    expect(runtime).toContain('export const vaultSamples');
+    expect(runtime).toContain('export function createVaultIndex');
+    expect(runtime).toContain('export function graphFromVaultIndex');
+    expect(runtime).toContain('export function localGraphForNote');
+    expect(runtime).toContain('export function mountObsidianVaultViewer');
+    expect(runtime).toContain('[[Network Diagram]]');
+    expect(runtime).toContain('[[Missing Plugin Idea]]');
+    expect(runtime).toContain('Orphan Note');
+    expect(runtime).toContain('#graph');
+    expect(runtime).toContain('aliases');
+    expect(runtime).toContain('unresolvedLinks');
+    expect(runtime).toContain('orphanNoteIds');
+
+    expect(buildScript).toContain("['site/obsidian-vault-viewer-test.html', 'obsidian-vault-viewer-test.html']");
+    expect(buildScript).toContain("['site/obsidian-vault-viewer-test.html', 'site/obsidian-vault-viewer-test.html']");
+    expect(buildScript).toContain("['site/obsidian-vault-viewer-test-runtime.js', 'site/obsidian-vault-viewer-test-runtime.js']");
+  });
+
   test('serves the template document studio with Monaco, examples, and separated output tabs', () => {
     const labPath = resolvePublicPath('/template-lab');
     const lab = readFileSync(labPath, 'utf8');

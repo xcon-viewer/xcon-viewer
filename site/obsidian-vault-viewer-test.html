@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Obsidian Vault Viewer Test - XCON Viewer</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --vault-bg: #0f1117;
+      --vault-panel: #151923;
+      --vault-panel-2: #10141d;
+      --vault-panel-3: #1d2430;
+      --vault-line: #2a3240;
+      --vault-line-2: #364154;
+      --vault-ink: #e5e7eb;
+      --vault-muted: #9ca3af;
+      --vault-faint: #6b7280;
+      --vault-accent: #8b5cf6;
+      --vault-blue: #38bdf8;
+      --vault-green: #22c55e;
+      --vault-yellow: #f59e0b;
+      --vault-red: #fb7185;
+      --vault-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--vault-bg); color: var(--vault-ink); }
+    button, input { font: inherit; }
+
+    .vault-app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      background:
+        radial-gradient(circle at 16% 10%, rgba(139, 92, 246, 0.18), transparent 24%),
+        radial-gradient(circle at 82% 6%, rgba(56, 189, 248, 0.12), transparent 26%),
+        var(--vault-bg);
+    }
+
+    .vault-topbar {
+      min-height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--vault-line);
+      background: rgba(15, 17, 23, 0.86);
+      backdrop-filter: blur(16px);
+    }
+
+    .vault-title { min-width: 0; }
+    .vault-title h1 { margin: 0; font-size: 18px; line-height: 1.2; letter-spacing: 0; }
+    .vault-title p { margin: 4px 0 0; color: var(--vault-muted); font-size: 12px; }
+
+    .vault-stats {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .vault-pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.66);
+      color: var(--vault-ink);
+      padding: 0 9px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .vault-shell {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(240px, 300px) minmax(420px, 1fr) minmax(300px, 390px);
+      gap: 1px;
+      background: var(--vault-line);
+    }
+
+    .vault-sidebar, .vault-reader, .vault-analysis {
+      min-width: 0;
+      min-height: 0;
+      background: rgba(16, 20, 29, 0.96);
+      overflow: auto;
+    }
+
+    .vault-sidebar, .vault-analysis { padding: 14px; }
+    .vault-reader { padding: 0; }
+
+    .vault-search {
+      width: 100%;
+      height: 36px;
+      border: 1px solid var(--vault-line-2);
+      border-radius: 8px;
+      background: #0c1018;
+      color: var(--vault-ink);
+      outline: none;
+      padding: 0 11px;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .vault-section { margin-top: 16px; }
+    .vault-section h2 {
+      margin: 0 0 8px;
+      color: var(--vault-muted);
+      font-size: 11px;
+      line-height: 1.2;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .vault-list { display: grid; gap: 6px; }
+    .vault-note-button, .vault-chip, .vault-toggle {
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      background: rgba(30, 36, 48, 0.72);
+      color: var(--vault-ink);
+      cursor: pointer;
+    }
+
+    .vault-note-button {
+      width: 100%;
+      min-height: 42px;
+      border-radius: 8px;
+      padding: 8px 10px;
+      text-align: left;
+    }
+
+    .vault-note-button.active { border-color: rgba(139, 92, 246, 0.72); background: rgba(139, 92, 246, 0.18); }
+    .vault-note-title { display: block; font-size: 13px; font-weight: 850; line-height: 1.25; }
+    .vault-note-path { display: block; margin-top: 3px; color: var(--vault-muted); font-size: 11px; overflow-wrap: anywhere; }
+
+    .vault-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+    .vault-chip, .vault-toggle {
+      min-height: 28px;
+      border-radius: 999px;
+      padding: 0 9px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .vault-chip.active, .vault-toggle.active { border-color: rgba(56, 189, 248, 0.66); background: rgba(56, 189, 248, 0.18); }
+    .vault-chip.warning { border-color: rgba(251, 113, 133, 0.48); background: rgba(251, 113, 133, 0.12); color: #fecdd3; }
+
+    .vault-document {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 30px 34px 70px;
+    }
+
+    .vault-document-header {
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--vault-line);
+      margin-bottom: 24px;
+    }
+
+    .vault-document-header h2 { margin: 0; font-size: 30px; line-height: 1.15; letter-spacing: 0; }
+    .vault-document-path { margin-top: 7px; color: var(--vault-muted); font-size: 12px; overflow-wrap: anywhere; }
+    .vault-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+
+    .vault-markdown { color: #d7dce7; font-size: 15px; line-height: 1.75; }
+    .vault-markdown h1, .vault-markdown h2, .vault-markdown h3 { line-height: 1.24; letter-spacing: 0; }
+    .vault-markdown h1 { font-size: 26px; }
+    .vault-markdown h2 { margin-top: 1.6em; font-size: 22px; }
+    .vault-markdown h3 { margin-top: 1.4em; font-size: 18px; }
+    .vault-markdown code { border-radius: 5px; background: rgba(139, 92, 246, 0.14); color: #ddd6fe; padding: 2px 5px; }
+    .vault-markdown pre { overflow: auto; border: 1px solid var(--vault-line); border-radius: 8px; background: #0b1020; padding: 14px; }
+    .vault-markdown a, .vault-wikilink { color: #93c5fd; text-decoration: none; border-bottom: 1px solid rgba(147, 197, 253, 0.42); cursor: pointer; }
+    .vault-wikilink.unresolved { color: #fda4af; border-bottom-color: rgba(253, 164, 175, 0.54); }
+
+    .vault-card {
+      border: 1px solid var(--vault-line);
+      border-radius: 8px;
+      background: rgba(15, 19, 28, 0.78);
+      box-shadow: var(--vault-shadow);
+      overflow: hidden;
+    }
+
+    .vault-card + .vault-card { margin-top: 12px; }
+    .vault-card-head { padding: 10px 12px; border-bottom: 1px solid var(--vault-line); color: var(--vault-muted); font-size: 11px; font-weight: 850; letter-spacing: 0.08em; text-transform: uppercase; }
+    .vault-card-body { padding: 12px; }
+    .vault-graph-host { height: 260px; min-height: 260px; }
+    .vault-link-list { display: grid; gap: 7px; }
+    .vault-link-item { border: 1px solid rgba(148, 163, 184, 0.14); border-radius: 7px; background: rgba(30, 36, 48, 0.52); padding: 8px; color: var(--vault-ink); font-size: 12px; cursor: pointer; text-align: left; }
+    .vault-empty { color: var(--vault-faint); font-size: 12px; line-height: 1.5; }
+
+    @media (max-width: 1080px) {
+      .vault-shell { grid-template-columns: 260px minmax(0, 1fr); }
+      .vault-analysis { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+      .vault-analysis .vault-card { margin-top: 0; }
+    }
+
+    @media (max-width: 760px) {
+      .vault-topbar { align-items: flex-start; flex-direction: column; }
+      .vault-stats { justify-content: flex-start; }
+      .vault-shell { grid-template-columns: 1fr; }
+      .vault-analysis { display: block; }
+      .vault-analysis .vault-card + .vault-card { margin-top: 12px; }
+      .vault-document { padding: 24px 18px 54px; }
+      .vault-document-header h2 { font-size: 25px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="vault-app">
+    <header class="vault-topbar">
+      <div class="vault-title">
+        <h1>Obsidian Vault Viewer Test</h1>
+        <p>Static sample vault with Markdown, wikilinks, backlinks, tags, unresolved links, orphan notes, and graph analysis.</p>
+      </div>
+      <div id="vaultStats" class="vault-stats" aria-label="Vault statistics"></div>
+    </header>
+    <section id="vaultWorkbench" class="vault-shell" aria-label="Obsidian-style vault workbench"></section>
+  </main>
+
+  <script src="/vendor/markdown-it/markdown-it.min.js"></script>
+  <script type="module">
+    import { mountObsidianVaultViewer } from '/site/obsidian-vault-viewer-test-runtime.js';
+
+    const root = document.getElementById('vaultWorkbench');
+    const stats = document.getElementById('vaultStats');
+    mountObsidianVaultViewer(root, { statsTarget: stats });
+  </script>
+</body>
+</html>
