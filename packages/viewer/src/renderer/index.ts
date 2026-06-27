@@ -11,6 +11,8 @@ import {
 import { normalizeDataVizComponent } from './dataviz/data';
 import { hydrateDataVizComponents } from './dataviz/runtime';
 import { renderDataVizStaticFallback } from './dataviz/static';
+import { hydrateLeafletMaps } from './map/runtime';
+import { renderMapStatic } from './map/static';
 import { hydrateNetworkDiagrams } from './network/runtime';
 import { renderNetworkStatic } from './network/static';
 
@@ -53,11 +55,6 @@ const defaultOptions: Required<RenderOptions> = {
   maxNodes: 10000,
 };
 
-const leafletCssUrl = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';
-const leafletJsUrl = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';
-const openStreetMapTileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-const openStreetMapAttribution = '(C) OpenStreetMap contributors';
-
 interface BannerRuntimeState {
   index: number;
   timer: number | undefined;
@@ -90,7 +87,6 @@ const extCarouselStates = new WeakMap<HTMLElement, ExtCarouselRuntimeState>();
 const shapeImageAnimationStates = new WeakMap<HTMLElement, ShapeImageAnimationRuntimeState>();
 const bannerTransition = 'transform .42s cubic-bezier(.22,1,.36,1)';
 let customSelectDocumentBound = false;
-let leafletRuntimePromise: Promise<unknown> | undefined;
 
 const allowedCssProperties = new Set([
   'align-items',
@@ -1738,20 +1734,38 @@ export const viewerScript = `
       host.classList.add('xa-spangrid-container--hydrated');
     });
   }
+  const leafletHeatJsUrl = 'https://cdn.jsdelivr.net/npm/leaflet.heat@0.2.0/dist/leaflet-heat.js';
+  const leafletMarkerClusterJsUrl = 'https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js';
+  const leafletMarkerClusterCssUrl = 'https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.css';
+  const leafletMarkerClusterDefaultCssUrl = 'https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css';
   let leafletLoadPromise = null;
-  function ensureLeafletStyles(rootNode) {
+  let leafletHeatLoadPromise = null;
+  let leafletMarkerClusterLoadPromise = null;
+  function xconLeafletStylesheetTarget(rootNode) {
     const isShadow = rootNode && rootNode.toString && String(rootNode).includes('ShadowRoot');
-    const target = isShadow ? rootNode : document.head;
-    if (!target || target.querySelector('link[data-xcon-leaflet-css]')) return Promise.resolve();
+    return isShadow ? rootNode : document.head;
+  }
+  function ensureLeafletStylesheet(rootNode, href, attrName) {
+    const target = xconLeafletStylesheetTarget(rootNode);
+    if (!target || target.querySelector('link[' + attrName + ']')) return Promise.resolve();
     return new Promise((resolve) => {
       const link = document.createElement('link');
       link.rel = 'stylesheet';
-      link.href = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';
-      link.setAttribute('data-xcon-leaflet-css', 'true');
+      link.href = href;
+      link.setAttribute(attrName, 'true');
       link.addEventListener('load', () => resolve());
       link.addEventListener('error', () => resolve());
       target.appendChild(link);
     });
+  }
+  function ensureLeafletStyles(rootNode) {
+    return ensureLeafletStylesheet(rootNode, 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css', 'data-xcon-leaflet-css');
+  }
+  function ensureLeafletMarkerClusterStyles(rootNode) {
+    return Promise.all([
+      ensureLeafletStylesheet(rootNode, leafletMarkerClusterCssUrl, 'data-xcon-leaflet-markercluster-css'),
+      ensureLeafletStylesheet(rootNode, leafletMarkerClusterDefaultCssUrl, 'data-xcon-leaflet-markercluster-default-css'),
+    ]);
   }
   function loadLeafletRuntime() {
     if (window.L && typeof window.L.map === 'function') return Promise.resolve(window.L);
@@ -1774,6 +1788,40 @@ export const viewerScript = `
       document.head.appendChild(script);
     });
     return leafletLoadPromise;
+  }
+  function loadOptionalLeafletScript(src, attrName) {
+    const existing = document.querySelector('script[' + attrName + ']');
+    if (existing) {
+      return new Promise((resolve) => {
+        existing.addEventListener('load', () => resolve(window.L));
+        existing.addEventListener('error', () => resolve(undefined));
+      });
+    }
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.async = true;
+      script.defer = true;
+      script.setAttribute(attrName, 'true');
+      script.addEventListener('load', () => resolve(window.L));
+      script.addEventListener('error', () => resolve(undefined));
+      document.head.appendChild(script);
+    });
+  }
+  function loadLeafletHeatPlugin() {
+    if (window.L && typeof window.L.heatLayer === 'function') return Promise.resolve(window.L);
+    if (!leafletHeatLoadPromise) leafletHeatLoadPromise = loadOptionalLeafletScript(leafletHeatJsUrl, 'data-xcon-leaflet-heat-js');
+    return leafletHeatLoadPromise;
+  }
+  function loadLeafletMarkerClusterPlugin(rootNode) {
+    if (window.L && typeof window.L.markerClusterGroup === 'function') return Promise.resolve(window.L);
+    if (!leafletMarkerClusterLoadPromise) {
+      leafletMarkerClusterLoadPromise = Promise.all([
+        ensureLeafletMarkerClusterStyles(rootNode),
+        loadOptionalLeafletScript(leafletMarkerClusterJsUrl, 'data-xcon-leaflet-markercluster-js'),
+      ]).then((result) => result[1]);
+    }
+    return leafletMarkerClusterLoadPromise;
   }
   function parseLeafletMarkers(host) {
     try {
@@ -1824,7 +1872,45 @@ export const viewerScript = `
       fillOpacity: Number(source.fillOpacity || 0.18),
     };
   }
-  function applyLeafletMapLayers(L, map, host) {
+  function xconLeafletHeatPoint(point) {
+    if (Array.isArray(point)) {
+      const lat = Number(point[0]);
+      const lng = Number(point[1]);
+      const intensity = Number(point[2] ?? 1);
+      return Number.isFinite(lat) && Number.isFinite(lng) ? [lat, lng, Number.isFinite(intensity) ? intensity : 1] : undefined;
+    }
+    if (point && typeof point === 'object') {
+      const lat = Number(point.lat ?? point.latitude);
+      const lng = Number(point.lng ?? point.longitude);
+      const intensity = Number(point.value ?? point.intensity ?? point.weight ?? 1);
+      return Number.isFinite(lat) && Number.isFinite(lng) ? [lat, lng, Number.isFinite(intensity) ? intensity : 1] : undefined;
+    }
+    return undefined;
+  }
+  function xconLeafletAddMarkers(L, map, host, markers) {
+    if (!L || typeof L.marker !== 'function') return;
+    const pins = [];
+    markers.forEach((marker, index) => {
+      if (!marker || typeof marker !== 'object') return;
+      const markerLat = Number(marker.lat ?? marker.latitude);
+      const markerLng = Number(marker.lng ?? marker.longitude);
+      if (!Number.isFinite(markerLat) || !Number.isFinite(markerLng)) return;
+      const label = String((marker.label ?? marker.title ?? marker.popup) || index + 1);
+      const icon = xconLeafletMarkerIcon(L, marker, label);
+      const pin = L.marker([markerLat, markerLng], icon ? { icon } : undefined);
+      if (label && pin && typeof pin.bindPopup === 'function') pin.bindPopup(label);
+      if (pin) pins.push(pin);
+    });
+    if (!pins.length) return;
+    if (host.getAttribute('data-xcon-map-clustering') === 'true' && typeof L.markerClusterGroup === 'function') {
+      const cluster = L.markerClusterGroup(parseLeafletJsonAttr(host, 'data-xcon-map-cluster-options', {}));
+      pins.forEach((pin) => { if (cluster.addLayer) cluster.addLayer(pin); });
+      cluster.addTo(map);
+      return;
+    }
+    pins.forEach((pin) => pin.addTo(map));
+  }
+  function applyLeafletMapLayers(L, map, host, markers) {
     parseLeafletJsonAttr(host, 'data-xcon-map-polylines', []).forEach((layer) => {
       const points = xconLeafletLayerPoints(layer);
       if (points.length < 2 || typeof L.polyline !== 'function') return;
@@ -1835,25 +1921,11 @@ export const viewerScript = `
       if (points.length < 3 || typeof L.polygon !== 'function') return;
       L.polygon(points, xconLeafletLayerStyle(layer, '#14b8a6')).addTo(map);
     });
-    const heatmap = parseLeafletJsonAttr(host, 'data-xcon-map-heatmap', []);
-    if (Array.isArray(heatmap) && heatmap.length && typeof L.heatLayer === 'function') {
-      const points = heatmap.map((point) => {
-        if (Array.isArray(point)) {
-          const lat = Number(point[0]);
-          const lng = Number(point[1]);
-          const intensity = Number(point[2] ?? 1);
-          return Number.isFinite(lat) && Number.isFinite(lng) ? [lat, lng, Number.isFinite(intensity) ? intensity : 1] : undefined;
-        }
-        if (point && typeof point === 'object') {
-          const lat = Number(point.lat ?? point.latitude);
-          const lng = Number(point.lng ?? point.longitude);
-          const intensity = Number(point.value ?? point.intensity ?? point.weight ?? 1);
-          return Number.isFinite(lat) && Number.isFinite(lng) ? [lat, lng, Number.isFinite(intensity) ? intensity : 1] : undefined;
-        }
-        return undefined;
-      }).filter(Boolean);
-      if (points.length) L.heatLayer(points, { radius: 24, blur: 18 }).addTo(map);
+    const heatmap = parseLeafletJsonAttr(host, 'data-xcon-map-heatmap', []).map(xconLeafletHeatPoint).filter(Boolean);
+    if (heatmap.length && typeof L.heatLayer === 'function') {
+      L.heatLayer(heatmap, parseLeafletJsonAttr(host, 'data-xcon-map-heatmap-options', { radius: 24, blur: 18 })).addTo(map);
     }
+    xconLeafletAddMarkers(L, map, host, Array.isArray(markers) ? markers : []);
   }
   function xconLeafletSafeHtml(value) {
     return String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
@@ -1880,7 +1952,16 @@ export const viewerScript = `
     (root || document).querySelectorAll('[data-xcon-leaflet-map]').forEach((host) => {
       if (host.dataset.xconLeafletBound === 'true' || host.dataset.xconLeafletBound === 'pending') return;
       host.dataset.xconLeafletBound = 'pending';
+      const rootNode = host.getRootNode ? host.getRootNode() : document;
+      const markers = parseLeafletMarkers(host);
+      const hasHeatmap = parseLeafletJsonAttr(host, 'data-xcon-map-heatmap', []).length > 0;
+      const needsCluster = host.getAttribute('data-xcon-map-clustering') === 'true' && markers.length > 0;
       Promise.all([loadLeafletRuntime(), ensureLeafletStyles(host.getRootNode ? host.getRootNode() : document)]).then(([L]) => {
+        const plugins = [];
+        if (hasHeatmap) plugins.push(loadLeafletHeatPlugin());
+        if (needsCluster) plugins.push(loadLeafletMarkerClusterPlugin(rootNode));
+        return Promise.all(plugins).then(() => L);
+      }).then((L) => {
         if (!L || typeof L.map !== 'function') throw new Error('Leaflet unavailable');
         const lat = Number(host.getAttribute('data-latitude') || 37.5665);
         const lng = Number(host.getAttribute('data-longitude') || 126.978);
@@ -1907,16 +1988,7 @@ export const viewerScript = `
         }).addTo(map);
         host._xconLeafletMap = map;
         host._leaflet_map = map;
-        parseLeafletMarkers(host).forEach((marker, index) => {
-          const markerLat = Number(marker && (marker.lat ?? marker.latitude));
-          const markerLng = Number(marker && (marker.lng ?? marker.longitude));
-          if (!Number.isFinite(markerLat) || !Number.isFinite(markerLng)) return;
-          const label = String((marker && (marker.label ?? marker.title ?? marker.popup)) || index + 1);
-          const icon = xconLeafletMarkerIcon(L, marker, label);
-          const pin = L.marker([markerLat, markerLng], icon ? { icon } : undefined).addTo(map);
-          if (label) pin.bindPopup(label);
-        });
-        applyLeafletMapLayers(L, map, host);
+        applyLeafletMapLayers(L, map, host, markers);
         window.setTimeout(() => map.invalidateSize(), 50);
         host.dataset.xconLeafletBound = 'true';
       }).catch(() => {
@@ -3100,217 +3172,6 @@ function hydrateSpanGrids(root: ParentNode = document): void {
     if (host.dataset.xconSpangridBound === 'true') return;
     host.dataset.xconSpangridBound = 'true';
     host.classList.add('xa-spangrid-container--hydrated');
-  });
-}
-
-function loadLeafletRuntime(): Promise<unknown> {
-  const current = (window as Window & { L?: unknown }).L as { map?: unknown } | undefined;
-  if (current && typeof current.map === 'function') return Promise.resolve(current);
-  if (leafletRuntimePromise) return leafletRuntimePromise;
-  leafletRuntimePromise = new Promise((resolve, reject) => {
-    void ensureLeafletStyles(document);
-    const existing = document.querySelector<HTMLScriptElement>('script[data-xcon-leaflet-js]');
-    if (existing) {
-      existing.addEventListener('load', () => resolve((window as Window & { L?: unknown }).L));
-      existing.addEventListener('error', reject);
-      return;
-    }
-    const script = document.createElement('script');
-    script.src = leafletJsUrl;
-    script.async = true;
-    script.defer = true;
-    script.setAttribute('data-xcon-leaflet-js', 'true');
-    script.addEventListener('load', () => resolve((window as Window & { L?: unknown }).L));
-    script.addEventListener('error', reject);
-    document.head.appendChild(script);
-  });
-  return leafletRuntimePromise;
-}
-
-function ensureLeafletStyles(rootNode: Document | ShadowRoot): Promise<void> {
-  const target: DocumentFragment | HTMLElement = rootNode instanceof ShadowRoot ? rootNode : document.head;
-  if (target.querySelector('link[data-xcon-leaflet-css]')) return Promise.resolve();
-  return new Promise((resolve) => {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = leafletCssUrl;
-    link.setAttribute('data-xcon-leaflet-css', 'true');
-    link.addEventListener('load', () => resolve());
-    link.addEventListener('error', () => resolve());
-    target.appendChild(link);
-  });
-}
-
-function parseLeafletMarkers(host: HTMLElement): Array<Record<string, unknown>> {
-  try {
-    const parsed = JSON.parse(host.getAttribute('data-xcon-map-markers') || '[]') as unknown;
-    return Array.isArray(parsed) ? parsed.filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === 'object' && !Array.isArray(item)) : [];
-  } catch {
-    return [];
-  }
-}
-
-function parseLeafletJsonAttr<T>(host: HTMLElement, name: string, fallback: T): T {
-  try {
-    const raw = host.getAttribute(name);
-    if (!raw) return fallback;
-    const parsed = JSON.parse(raw) as unknown;
-    return parsed === undefined || parsed === null ? fallback : parsed as T;
-  } catch {
-    return fallback;
-  }
-}
-
-function leafletPoint(value: unknown): [number, number] | undefined {
-  const plain = toPlainValue(value);
-  if (Array.isArray(plain)) {
-    const lat = Number(plain[0]);
-    const lng = Number(plain[1]);
-    return Number.isFinite(lat) && Number.isFinite(lng) ? [lat, lng] : undefined;
-  }
-  const record = objectRecord(plain);
-  if (!record) return undefined;
-  const lat = Number(record.lat ?? record.latitude);
-  const lng = Number(record.lng ?? record.longitude);
-  return Number.isFinite(lat) && Number.isFinite(lng) ? [lat, lng] : undefined;
-}
-
-function leafletLayerPoints(value: unknown): Array<[number, number]> {
-  const record = objectRecord(toPlainValue(value));
-  const source = record ? record.points ?? record.path ?? record.coordinates ?? record.latlngs ?? record.latLngs : value;
-  if (!Array.isArray(source)) return [];
-  return source.map(leafletPoint).filter((point): point is [number, number] => Boolean(point));
-}
-
-function leafletLayerStyle(layer: unknown, fallbackColor: string): Record<string, unknown> {
-  const record = objectRecord(toPlainValue(layer)) ?? {};
-  const color = String(record.color ?? record.stroke ?? record.strokeColor ?? fallbackColor);
-  return {
-    color,
-    weight: finiteNumber(record.weight ?? record.strokeWidth, 3),
-    opacity: finiteNumber(record.opacity, 0.85),
-    fillColor: String(record.fillColor ?? record.fill ?? color),
-    fillOpacity: finiteNumber(record.fillOpacity, 0.18),
-  };
-}
-
-function leafletHeatPoint(value: unknown): [number, number, number] | undefined {
-  const plain = toPlainValue(value);
-  if (Array.isArray(plain)) {
-    const lat = Number(plain[0]);
-    const lng = Number(plain[1]);
-    const intensity = finiteNumber(plain[2], 1);
-    return Number.isFinite(lat) && Number.isFinite(lng) ? [lat, lng, intensity] : undefined;
-  }
-  const record = objectRecord(plain);
-  if (!record) return undefined;
-  const lat = Number(record.lat ?? record.latitude);
-  const lng = Number(record.lng ?? record.longitude);
-  const intensity = finiteNumber(record.value ?? record.intensity ?? record.weight, 1);
-  return Number.isFinite(lat) && Number.isFinite(lng) ? [lat, lng, intensity] : undefined;
-}
-
-function applyLeafletMapLayers(leaflet: unknown, map: unknown, host: HTMLElement): void {
-  const L = leaflet as {
-    polyline?: (points: Array<[number, number]>, options: Record<string, unknown>) => { addTo: (target: unknown) => unknown };
-    polygon?: (points: Array<[number, number]>, options: Record<string, unknown>) => { addTo: (target: unknown) => unknown };
-    heatLayer?: (points: Array<[number, number, number]>, options: Record<string, unknown>) => { addTo: (target: unknown) => unknown };
-  };
-  parseLeafletJsonAttr<unknown[]>(host, 'data-xcon-map-polylines', []).forEach((layer) => {
-    const points = leafletLayerPoints(layer);
-    if (points.length < 2 || typeof L.polyline !== 'function') return;
-    L.polyline(points, leafletLayerStyle(layer, '#2563eb')).addTo(map);
-  });
-  parseLeafletJsonAttr<unknown[]>(host, 'data-xcon-map-polygons', []).forEach((layer) => {
-    const points = leafletLayerPoints(layer);
-    if (points.length < 3 || typeof L.polygon !== 'function') return;
-    L.polygon(points, leafletLayerStyle(layer, '#14b8a6')).addTo(map);
-  });
-  const heatmap = parseLeafletJsonAttr<unknown[]>(host, 'data-xcon-map-heatmap', []).map(leafletHeatPoint).filter((point): point is [number, number, number] => Boolean(point));
-  if (heatmap.length && typeof L.heatLayer === 'function') {
-    L.heatLayer(heatmap, { radius: 24, blur: 18 }).addTo(map);
-  }
-}
-
-function leafletMarkerStatus(value: unknown): string {
-  return String(value ?? '').toLowerCase().replace(/[^a-z0-9_-]/g, '');
-}
-
-function leafletMarkerIcon(
-  leaflet: unknown,
-  marker: Record<string, unknown>,
-  label: string,
-): unknown {
-  const L = leaflet as {
-    divIcon?: (options: Record<string, unknown>) => unknown;
-  };
-  if (!L || typeof L.divIcon !== 'function') return undefined;
-  const status = leafletMarkerStatus(marker.status);
-  return L.divIcon({
-    className: `xcon-leaflet-marker${status ? ` xcon-leaflet-marker--${status}` : ''}`,
-    html: escapeHtml(label.slice(0, 2) || '•'),
-    iconSize: [28, 28],
-    iconAnchor: [14, 28],
-    popupAnchor: [0, -24],
-  });
-}
-
-function hydrateLeafletMaps(root: ParentNode = document): void {
-  root.querySelectorAll<HTMLElement>('[data-xcon-leaflet-map]').forEach((host) => {
-    if (host.dataset.xconLeafletBound === 'true' || host.dataset.xconLeafletBound === 'pending') return;
-    host.dataset.xconLeafletBound = 'pending';
-    void Promise.all([loadLeafletRuntime(), ensureLeafletStyles(host.getRootNode() as Document | ShadowRoot)])
-      .then(([leaflet]) => {
-        const L = leaflet as {
-          map?: (element: HTMLElement, options: Record<string, unknown>) => {
-            setView: (center: [number, number], zoom: number) => unknown;
-            invalidateSize: () => void;
-          };
-          tileLayer?: (url: string, options: Record<string, unknown>) => { addTo: (map: unknown) => unknown };
-          marker?: (center: [number, number], options?: Record<string, unknown>) => { addTo: (map: unknown) => { bindPopup?: (label: string) => unknown } };
-        };
-        if (!L || typeof L.map !== 'function' || typeof L.tileLayer !== 'function') throw new Error('Leaflet unavailable');
-        const lat = Number(host.getAttribute('data-latitude') || 37.5665);
-        const lng = Number(host.getAttribute('data-longitude') || 126.978);
-        const zoom = Number(host.getAttribute('data-zoom') || 10);
-        const showControls = host.getAttribute('data-xcon-map-show-controls') !== 'false';
-        const enableZoom = host.getAttribute('data-xcon-map-enable-zoom') !== 'false';
-        const enablePan = host.getAttribute('data-xcon-map-enable-pan') !== 'false';
-        const tileUrl = host.getAttribute('data-xcon-map-tile-url') || openStreetMapTileUrl;
-        const attribution = host.getAttribute('data-xcon-map-attribution') || openStreetMapAttribution;
-        host.innerHTML = '';
-        host.classList.add('xa-map-static--live');
-        const map = L.map(host, {
-          zoomControl: showControls,
-          dragging: enablePan,
-          scrollWheelZoom: enableZoom,
-          doubleClickZoom: enableZoom,
-          boxZoom: enableZoom,
-          keyboard: enableZoom,
-          attributionControl: true,
-        });
-        map.setView([lat, lng], zoom);
-        L.tileLayer(tileUrl, { attribution, maxZoom: 19 }).addTo(map);
-        const hostWithMap = host as HTMLElement & { _xconLeafletMap?: unknown; _leaflet_map?: unknown };
-        hostWithMap._xconLeafletMap = map;
-        hostWithMap._leaflet_map = map;
-        parseLeafletMarkers(host).forEach((marker, index) => {
-          if (typeof L.marker !== 'function') return;
-          const markerLat = Number(marker.lat ?? marker.latitude);
-          const markerLng = Number(marker.lng ?? marker.longitude);
-          if (!Number.isFinite(markerLat) || !Number.isFinite(markerLng)) return;
-          const label = String(marker.label ?? marker.title ?? marker.popup ?? index + 1);
-          const icon = leafletMarkerIcon(leaflet, marker, label);
-          const pin = L.marker([markerLat, markerLng], icon ? { icon } : undefined).addTo(map);
-          if (label && typeof pin.bindPopup === 'function') pin.bindPopup(label);
-        });
-        applyLeafletMapLayers(leaflet, map, host);
-        window.setTimeout(() => map.invalidateSize(), 50);
-        host.dataset.xconLeafletBound = 'true';
-      })
-      .catch(() => {
-        host.dataset.xconLeafletBound = 'failed';
-      });
   });
 }
 
@@ -8017,7 +7878,7 @@ function renderAdvancedMap(component: XconObject, attrs: Record<string, string |
   const mapBody = tag(
     'div',
     { id: `map-${key}`, class: 'xa-map', style: 'width:100%;height:100%;border-radius:8px;' },
-    renderStaticMap(component, context),
+    renderMapStatic(component, context),
   );
   return tag('div', advancedAttrs(attrs, '', key, ''), tag('div', { class: 'xa-map-container', style: 'width:100%;height:100%;' }, mapBody + mapCalendarLoading(`map-loading-${key}`, 'xa-map-loading', '지도 로딩 중...')));
 }
@@ -8887,109 +8748,6 @@ function renderFlipbookMiniatures(component: XconObject, key: string, miniatureI
     return tag('button', { type: 'button', class: 'flipbook-miniature', 'data-xcon-flipbook-page': String(index + 1) }, src ? voidTag('img', { src, alt: `Page ${index + 1}` }) : escapeHtml(String(index + 1)));
   }).join('');
   return tag('div', { id: miniatureId, class: 'flipbook-miniatures', 'data-xcon-flipbook-miniatures-list': key }, items);
-}
-
-function renderStaticMap(component: XconObject, context: RenderContext): string {
-  const lat = Number(component.get('latitude') ?? 37.5665) || 37.5665;
-  const lng = Number(component.get('longitude') ?? 126.978) || 126.978;
-  const zoom = Number(component.get('zoom') ?? 10) || 10;
-  const tileLayer = String(component.get('tileLayer') ?? 'OpenStreetMap');
-  const provider = String(component.get('provider') ?? component.get('mapProvider') ?? '').trim().toLowerCase();
-  const liveLeaflet = provider === 'leaflet' && context.options.allowExternalResources;
-  const markers = parseArrayValue(component.get('markers')).slice(0, 20);
-  const heatmap = parseArrayValue(component.get('heatmap')).slice(0, 200);
-  const polylines = parseArrayValue(component.get('polylines')).slice(0, 50);
-  const polygons = parseArrayValue(component.get('polygons')).slice(0, 50);
-  const markerIcons = toPlainValue(component.get('markerIcons') ?? {});
-  const rawSnapshot = component.get('snapshotUrl') ?? component.get('staticImage') ?? component.get('mapImage') ?? component.get('image') ?? component.get('src');
-  const snapshotUrl = sanitizeUrl(stripCssUrl(String(rawSnapshot ?? '')), context.options);
-  const snapshotAlt = String(component.get('snapshotAlt') ?? component.get('alt') ?? `Map centered at ${lat}, ${lng}`);
-  const snapshotFit = mapSnapshotFit(component.get('snapshotFit') ?? component.get('objectFit'));
-  const snapshotPosition = safeCssValue(component.get('objectPosition') ?? component.get('snapshotPosition')) ?? 'center';
-  const attributionText = component.get('attribution') ?? (liveLeaflet ? openStreetMapAttribution : undefined);
-  const layerHtml = snapshotUrl
-    ? voidTag('img', {
-        class: 'xa-map-snapshot',
-        src: snapshotUrl,
-        alt: snapshotAlt,
-        loading: 'lazy',
-        decoding: 'async',
-        style: `object-fit:${snapshotFit};object-position:${snapshotPosition};`,
-      }) + (attributionText ? tag('span', { class: 'xa-map-attribution' }, escapeHtml(String(attributionText))) : '')
-    : [
-        tag('span', { class: 'xa-map-layer xa-map-water xa-map-water--river', 'aria-hidden': 'true' }, ''),
-        tag('span', { class: 'xa-map-layer xa-map-park xa-map-park--north', 'aria-hidden': 'true' }, ''),
-        tag('span', { class: 'xa-map-layer xa-map-park xa-map-park--south', 'aria-hidden': 'true' }, ''),
-        tag('span', { class: 'xa-map-layer xa-map-road xa-map-road--main', 'aria-hidden': 'true' }, ''),
-        tag('span', { class: 'xa-map-layer xa-map-road xa-map-road--cross', 'aria-hidden': 'true' }, ''),
-        tag('span', { class: 'xa-map-layer xa-map-road xa-map-road--vertical', 'aria-hidden': 'true' }, ''),
-        tag('span', { class: 'xa-map-layer xa-map-road xa-map-road--ring', 'aria-hidden': 'true' }, ''),
-        tag('span', { class: 'xa-map-layer xa-map-label xa-map-label--north' }, 'Park'),
-        tag('span', { class: 'xa-map-layer xa-map-label xa-map-label--center' }, escapeHtml(tileLayer)),
-        tag('span', { class: 'xa-map-layer xa-map-label xa-map-label--south' }, 'District'),
-        tag('span', { class: 'xa-map-attribution' }, 'static map preview'),
-      ].join('');
-  const markerHtml = markers.length
-    ? markers.map((marker, index) => {
-        const plain = toPlainValue(marker);
-        const obj = plain && typeof plain === 'object' && !Array.isArray(plain) ? plain as Record<string, unknown> : {};
-        const label = String(obj.title ?? obj.label ?? obj.popup ?? index + 1);
-        const markerLat = Number(obj.lat ?? obj.latitude);
-        const markerLng = Number(obj.lng ?? obj.longitude);
-        const left = Number.isFinite(markerLng) ? Math.max(8, Math.min(92, 50 + (markerLng - lng) * 900)) : 20 + (index % 5) * 15;
-        const top = Number.isFinite(markerLat) ? Math.max(8, Math.min(92, 50 - (markerLat - lat) * 900)) : 25 + Math.floor(index / 5) * 14;
-        return tag('span', { class: 'xa-map-marker', title: label, style: `left:${left}%;top:${top}%;` }, escapeHtml(label.slice(0, 2)));
-      }).join('')
-    : tag('span', { class: 'xa-map-marker', style: 'left:50%;top:50%;' }, '●');
-  return tag(
-    'div',
-    {
-      class: `xa-map-static${snapshotUrl ? ' xa-map-static--snapshot' : ''}${liveLeaflet ? ' xa-map-static--leaflet' : ''}`,
-      'data-latitude': String(lat),
-      'data-longitude': String(lng),
-      'data-zoom': String(zoom),
-      'data-tile-layer': tileLayer,
-      'data-xcon-leaflet-map': liveLeaflet ? '' : undefined,
-      'data-xcon-map-provider': liveLeaflet ? 'leaflet' : undefined,
-      'data-xcon-map-tile-url': liveLeaflet ? leafletTileUrl(component, context) : undefined,
-      'data-xcon-map-attribution': liveLeaflet ? String(attributionText ?? openStreetMapAttribution) : undefined,
-      'data-xcon-map-markers': liveLeaflet ? jsonAttr(markers.map(mapMarkerData)) : undefined,
-      'data-xcon-map-heatmap': liveLeaflet && heatmap.length ? jsonAttr(heatmap) : undefined,
-      'data-xcon-map-polylines': liveLeaflet && polylines.length ? jsonAttr(polylines) : undefined,
-      'data-xcon-map-polygons': liveLeaflet && polygons.length ? jsonAttr(polygons) : undefined,
-      'data-xcon-map-clustering': liveLeaflet ? String(booleanOption(component.get('clustering'), false)) : undefined,
-      'data-xcon-map-marker-icons': liveLeaflet && hasJsonData(markerIcons) ? jsonAttr(markerIcons) : undefined,
-      'data-xcon-map-show-controls': liveLeaflet ? String(booleanOption(component.get('showControls'), true)) : undefined,
-      'data-xcon-map-enable-zoom': liveLeaflet ? String(booleanOption(component.get('enableZoom'), true)) : undefined,
-      'data-xcon-map-enable-pan': liveLeaflet ? String(booleanOption(component.get('enablePan'), true)) : undefined,
-    },
-    layerHtml + markerHtml,
-  );
-}
-
-function mapSnapshotFit(value: unknown): string {
-  const fit = String(value ?? 'cover').trim().toLowerCase();
-  return ['cover', 'contain', 'fill', 'none', 'scale-down'].includes(fit) ? fit : 'cover';
-}
-
-function leafletTileUrl(component: XconObject, context: RenderContext): string {
-  const explicit = sanitizeUrl(String(component.get('tileUrl') ?? component.get('tileTemplate') ?? ''), context.options);
-  if (explicit) return explicit;
-  const layer = String(component.get('tileLayer') ?? '').trim().toLowerCase();
-  if (layer.includes('carto')) return 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
-  return openStreetMapTileUrl;
-}
-
-function mapMarkerData(marker: unknown, index: number): Record<string, unknown> {
-  const plain = toPlainValue(marker);
-  const obj = plain && typeof plain === 'object' && !Array.isArray(plain) ? plain as Record<string, unknown> : {};
-  const lat = Number(obj.lat ?? obj.latitude);
-  const lng = Number(obj.lng ?? obj.longitude);
-  return {
-    lat: Number.isFinite(lat) ? lat : undefined,
-    lng: Number.isFinite(lng) ? lng : undefined,
-    label: String(obj.label ?? obj.title ?? obj.popup ?? index + 1),
-  };
 }
 
 function renderStaticCalendar(component: XconObject): string {

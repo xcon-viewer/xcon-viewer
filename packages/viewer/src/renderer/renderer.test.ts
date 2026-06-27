@@ -4530,9 +4530,11 @@ describe('viewer security renderer', () => {
         [37.5665, 126.978, 0.8],
         [35.1796, 129.0756, 0.5],
       ],
+      heatmapOptions: { radius: 30, blur: 20 },
       polylines: [{ points: [[37.5665, 126.978], [35.1796, 129.0756]], color: '#2563eb' }],
       polygons: [{ points: [[37.5, 126.9], [37.6, 126.9], [37.6, 127.0]], color: '#14b8a6' }],
       clustering: true,
+      clusterOptions: { disableClusteringAtZoom: 13 },
     };
 
     const safeHtml = renderToHtml(map);
@@ -4546,11 +4548,15 @@ describe('viewer security renderer', () => {
     expect(liveHtml).toContain('Seoul 22.9C');
     expect(liveHtml).toContain('Busan drizzle');
     expect(liveHtml).toContain('data-xcon-map-heatmap=');
+    expect(liveHtml).toContain('data-xcon-map-heatmap-options=');
     expect(liveHtml).toContain('data-xcon-map-polylines=');
     expect(liveHtml).toContain('data-xcon-map-polygons=');
     expect(liveHtml).toContain('data-xcon-map-clustering="true"');
+    expect(liveHtml).toContain('data-xcon-map-cluster-options=');
     expect(viewerScript).toContain('hydrateLeafletMaps');
     expect(viewerScript).toContain('applyLeafletMapLayers');
+    expect(viewerScript).toContain('leaflet.markercluster');
+    expect(viewerScript).toContain('leaflet.heat');
     expect(viewerScript).toContain('_leaflet_map');
     expect(viewerScript).toContain('ensureLeafletStyles(host.getRootNode');
     expect(viewerScript).toContain('divIcon');
