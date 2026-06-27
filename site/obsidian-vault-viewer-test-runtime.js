@@ -442,11 +442,14 @@ function renderWorkbench(root, statsTarget, markdown, index, state, rerender) {
     </aside>
     <div class="vault-splitter vault-splitter-left" role="separator" aria-orientation="vertical" aria-label="Resize file sidebar" tabindex="0" data-vault-splitter="left"></div>
     <article class="vault-reader">
-      ${renderReader(markdown, selected, index)}
+      <section class="vault-document-pane" data-vault-document-pane>
+        ${renderReader(markdown, selected, index)}
+      </section>
+      <div class="vault-splitter vault-splitter-graph" role="separator" aria-orientation="horizontal" aria-label="Resize graph panel" tabindex="0" data-vault-splitter="graph"></div>
+      ${renderGraphCard(index, selected, state)}
     </article>
     <div class="vault-splitter vault-splitter-right" role="separator" aria-orientation="vertical" aria-label="Resize analysis sidebar" tabindex="0" data-vault-splitter="right"></div>
     <aside class="vault-analysis">
-      ${renderGraphCard(index, selected, state)}
       ${renderMetadataCard(selected)}
       ${renderBacklinksCard(index, selected)}
       ${renderOutgoingCard(index, selected)}
@@ -505,7 +508,7 @@ function renderReader(markdown, note, index) {
 }
 
 function renderGraphCard(index, selected, state) {
-  return `<section class="vault-card">
+  return `<section class="vault-card vault-reader-graph" data-vault-reader-graph>
     <div class="vault-card-head">Graph</div>
     <div class="vault-card-body">
       <div class="vault-chip-row" style="margin-bottom:10px">
@@ -600,18 +603,21 @@ function bindVaultSplitters(root) {
 
 function startVaultResize(root, splitter, event) {
   const side = splitter.dataset.vaultSplitter;
-  if (side !== 'left' && side !== 'right') return;
+  if (side !== 'left' && side !== 'right' && side !== 'graph') return;
   event.preventDefault();
   splitter.setPointerCapture(event.pointerId);
-  root.ownerDocument.body.classList.add('vault-resizing');
+  root.ownerDocument.body.classList.add(side === 'graph' ? 'vault-resizing-y' : 'vault-resizing-x');
 
   const resize = (moveEvent) => {
-    const width = widthFromPointer(root, side, moveEvent.clientX);
-    applyVaultPanelWidth(root, side, width);
+    if (side === 'graph') {
+      applyVaultGraphHeight(root, heightFromPointer(root, moveEvent.clientY));
+      return;
+    }
+    applyVaultPanelWidth(root, side, widthFromPointer(root, side, moveEvent.clientX));
   };
   const stop = (stopEvent) => {
     if (splitter.hasPointerCapture(stopEvent.pointerId)) splitter.releasePointerCapture(stopEvent.pointerId);
-    root.ownerDocument.body.classList.remove('vault-resizing');
+    root.ownerDocument.body.classList.remove('vault-resizing', 'vault-resizing-x', 'vault-resizing-y');
     splitter.removeEventListener('pointermove', resize);
     splitter.removeEventListener('pointerup', stop);
     splitter.removeEventListener('pointercancel', stop);
@@ -637,9 +643,26 @@ function widthFromPointer(root, side, clientX) {
   return clamp(rect.right - clientX, 300, max);
 }
 
+function heightFromPointer(root, clientY) {
+  const reader = root.querySelector('.vault-reader');
+  const rect = (reader || root).getBoundingClientRect();
+  const documentMin = 260;
+  const splitterHeight = 8;
+  const max = Math.min(760, rect.height - documentMin - splitterHeight);
+  return clamp(rect.bottom - clientY, 260, max);
+}
+
 function nudgeVaultSplitter(root, side, event) {
-  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+  const keys = side === 'graph' ? ['ArrowUp', 'ArrowDown', 'Home', 'End'] : ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
+  if (!keys.includes(event.key)) return;
   event.preventDefault();
+  if (side === 'graph') {
+    if (event.key === 'Home') return applyVaultGraphHeight(root, defaultVaultGraphHeight());
+    if (event.key === 'End') return applyVaultGraphHeight(root, 760);
+    const delta = event.key === 'ArrowUp' ? 24 : -24;
+    applyVaultGraphHeight(root, readVaultGraphHeight(root) + delta);
+    return;
+  }
   if (event.key === 'Home') return applyVaultPanelWidth(root, side, defaultVaultPanelWidth(side));
   if (event.key === 'End') return applyVaultPanelWidth(root, side, side === 'left' ? 420 : 560);
   const direction = event.key === 'ArrowLeft' ? -1 : 1;
@@ -648,6 +671,10 @@ function nudgeVaultSplitter(root, side, event) {
 }
 
 function resetVaultSplitter(root, side) {
+  if (side === 'graph') {
+    applyVaultGraphHeight(root, defaultVaultGraphHeight());
+    return;
+  }
   applyVaultPanelWidth(root, side, defaultVaultPanelWidth(side));
 }
 
@@ -661,14 +688,26 @@ function applyVaultPanelWidth(root, side, width) {
   }
 }
 
+function applyVaultGraphHeight(root, height) {
+  root.style.setProperty('--vault-graph-height', `${clamp(height, 260, 760)}px`);
+}
+
 function readVaultPanelWidth(root, side) {
   const property = side === 'left' ? '--vault-sidebar-width' : '--vault-analysis-width';
   const fallback = defaultVaultPanelWidth(side);
   return Number.parseFloat(getComputedStyle(root).getPropertyValue(property)) || fallback;
 }
 
+function readVaultGraphHeight(root) {
+  return Number.parseFloat(getComputedStyle(root).getPropertyValue('--vault-graph-height')) || defaultVaultGraphHeight();
+}
+
 function defaultVaultPanelWidth(side) {
   return side === 'left' ? 300 : 390;
+}
+
+function defaultVaultGraphHeight() {
+  return 420;
 }
 
 function clamp(value, min, max) {

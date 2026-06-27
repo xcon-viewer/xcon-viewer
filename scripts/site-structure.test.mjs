@@ -340,9 +340,13 @@ describe('public site structure', () => {
     expect(page).toContain('id="vaultWorkbench"');
     expect(page).toContain('--vault-sidebar-width');
     expect(page).toContain('--vault-analysis-width');
+    expect(page).toContain('--vault-graph-height');
     expect(page).toContain('grid-template-columns: var(--vault-sidebar-width) 8px minmax(420px, 1fr) 8px var(--vault-analysis-width);');
+    expect(page).toContain('grid-template-rows: minmax(260px, 1fr) 8px var(--vault-graph-height);');
     expect(page).toContain('.vault-splitter');
+    expect(page).toContain('.vault-splitter-graph');
     expect(page).toContain('cursor: col-resize');
+    expect(page).toContain('cursor: row-resize');
     expect(page).toContain('.vault-splitter { display: none; }');
     expect(page).toContain('src="/vendor/markdown-it/markdown-it.min.js"');
     expect(page).toContain("from '/site/obsidian-vault-viewer-test-runtime.js'");
@@ -358,12 +362,21 @@ describe('public site structure', () => {
     expect(runtime).toContain('export function mountObsidianVaultViewer');
     expect(runtime).toContain('data-vault-splitter="left"');
     expect(runtime).toContain('data-vault-splitter="right"');
+    expect(runtime).toContain('data-vault-splitter="graph"');
+    expect(runtime).toContain('data-vault-document-pane');
+    expect(runtime).toContain('data-vault-reader-graph');
     expect(runtime).toContain('role="separator"');
+    expect(runtime).toContain('aria-orientation="horizontal"');
     expect(runtime).toContain('function bindVaultSplitters');
     expect(runtime).toContain('setPointerCapture');
     expect(runtime).toContain('--vault-sidebar-width');
     expect(runtime).toContain('--vault-analysis-width');
+    expect(runtime).toContain('--vault-graph-height');
     expect(runtime).toContain('dblclick');
+    const workbenchTemplate = runtime.match(/root\.innerHTML = `([\s\S]*?)`;\n  bindWorkbenchEvents/)?.[1] ?? '';
+    expect(workbenchTemplate.indexOf('${renderGraphCard(index, selected, state)}')).toBeLessThan(
+      workbenchTemplate.indexOf('<aside class="vault-analysis">'),
+    );
     expect(runtime).toContain('[[Network Diagram]]');
     expect(runtime).toContain('[[Missing Plugin Idea]]');
     expect(runtime).toContain('Orphan Note');
