@@ -256,8 +256,10 @@ describe('public site structure', () => {
     expect(runtime).not.toContain("from './network/runtime'");
     expect(runtime).not.toContain("from './dataviz/runtime'");
     expect(runtime).not.toContain("from './map/runtime'");
+    expect(buildScript).toContain("['site/advanced-visualization-test.html', 'advanced-visualization-test.html']");
     expect(buildScript).toContain("['site/advanced-visualization-test.html', 'site/advanced-visualization-test.html']");
     expect(buildScript).toContain("['site/advanced-visualization-test-runtime.js', 'site/advanced-visualization-test-runtime.js']");
+    expect(buildScript).toContain("['site/network-diagram-test.html', 'network-diagram-test.html']");
     expect(buildScript).toContain("['site/network-diagram-test.html', 'site/network-diagram-test.html']");
   });
 
