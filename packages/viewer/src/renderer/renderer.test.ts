@@ -4615,6 +4615,63 @@ describe('viewer security renderer', () => {
     expect(plot).toContain('A');
   });
 
+  test('renders advanced dataViz alias component types as dataViz hosts with static fallbacks', () => {
+    const hierarchy = {
+      name: 'Ops',
+      children: [{ name: 'Queue', value: 38 }],
+    };
+    const graph = {
+      nodes: [
+        { id: 'a', label: 'Alpha' },
+        { id: 'b', label: 'Beta' },
+      ],
+      links: [{ source: 'a', target: 'b', value: 2 }],
+    };
+    const flow = {
+      nodes: [
+        { id: 'source', name: 'Source' },
+        { id: 'target', name: 'Target' },
+      ],
+      links: [{ source: 'source', target: 'target', value: 8 }],
+    };
+    const plotSpec = {
+      data: [{ category: 'A', value: 5 }],
+      marks: [{ type: 'barY', x: 'category', y: 'value' }],
+    };
+
+    const cases = [
+      ['treemap', hierarchy, 'xa-dataviz-preview--treemap'],
+      ['sunburst', hierarchy, 'xa-dataviz-preview--sunburst'],
+      ['forceGraph', graph, 'xa-dataviz-preview--force-graph'],
+      ['sankey', flow, 'xa-dataviz-preview--sankey'],
+      ['chord', graph, 'xa-dataviz-preview--chord'],
+      ['plot', plotSpec, 'xa-dataviz-preview--plot'],
+    ] as const;
+
+    for (const [type, data, fallbackClass] of cases) {
+      const html = renderToHtml({ type, data });
+
+      expect(html).toContain('class="xa-dataviz-container"');
+      expect(html).toContain(`data-xcon-dataviz-type="${type}"`);
+      expect(html).toContain(fallbackClass);
+    }
+  });
+
+  test('dataViz hydration is wired before Leaflet and inline viewerScript keeps static fallbacks', () => {
+    const source = readFileSync(new URL('./index.ts', import.meta.url), 'utf8');
+    const dataVizHydrateIndex = source.indexOf('hydrateDataVizComponents(root)');
+    const leafletHydrateIndex = source.indexOf('hydrateLeafletMaps(root)', dataVizHydrateIndex);
+
+    expect(dataVizHydrateIndex).toBeGreaterThanOrEqual(0);
+    expect(leafletHydrateIndex).toBeGreaterThan(dataVizHydrateIndex);
+    expect(viewerScript).toContain('function hydrateDataVizStaticFallbacks');
+    expect(viewerScript).toContain('[data-xcon-dataviz-type]');
+    expect(viewerScript).toContain("dataset.xconDatavizBound = 'static'");
+    expect(viewerScript).not.toContain("from 'd3");
+    expect(viewerScript).not.toContain('d3-hierarchy');
+    expect(viewerScript).not.toContain('@observablehq/plot');
+  });
+
   test('keeps advanced chart and editor options visible like draft advanced components', () => {
     const chart = renderToHtml({
       type: 'chart',

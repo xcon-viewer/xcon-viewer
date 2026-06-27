@@ -9,6 +9,7 @@ import {
   type XconValue,
 } from '@xcon-viewer/core';
 import { normalizeDataVizComponent } from './dataviz/data';
+import { hydrateDataVizComponents } from './dataviz/runtime';
 import { renderDataVizStaticFallback } from './dataviz/static';
 import { hydrateNetworkDiagrams } from './network/runtime';
 import { renderNetworkStatic } from './network/static';
@@ -1869,6 +1870,12 @@ export const viewerScript = `
       popupAnchor: [0, -24],
     });
   }
+  function hydrateDataVizStaticFallbacks(root) {
+    (root || document).querySelectorAll('[data-xcon-dataviz-type]').forEach((host) => {
+      if (host.dataset.xconDatavizBound) return;
+      host.dataset.xconDatavizBound = 'static';
+    });
+  }
   function hydrateLeafletMaps(root) {
     (root || document).querySelectorAll('[data-xcon-leaflet-map]').forEach((host) => {
       if (host.dataset.xconLeafletBound === 'true' || host.dataset.xconLeafletBound === 'pending') return;
@@ -1945,6 +1952,7 @@ export const viewerScript = `
     hydrateShapeImageAnimations(root || document);
     hydrateFlipbooks(root || document);
     hydrateSpanGrids(root || document);
+    hydrateDataVizStaticFallbacks(root || document);
     hydrateLeafletMaps(root || document);
   }
   window.xconViewerHydrate = hydrate;
@@ -2039,6 +2047,7 @@ export function hydrateXconViewer(root: ParentNode = document): void {
   hydrateShapeImageAnimations(root);
   hydrateFlipbooks(root);
   hydrateSpanGrids(root);
+  hydrateDataVizComponents(root);
   hydrateLeafletMaps(root);
   hydrateNetworkDiagrams(root);
 }
@@ -3815,6 +3824,13 @@ function renderComponent(
       return renderAdvancedCodeEditor(component, attrs);
     case 'richEditor':
       return renderAdvancedRichEditor(component, attrs);
+    case 'treemap':
+    case 'sankey':
+    case 'sunburst':
+    case 'chord':
+    case 'forceGraph':
+    case 'plot':
+      return renderAdvancedDataViz(component, attrs);
     case 'dataViz':
       return renderAdvancedDataViz(component, attrs);
     case 'spanGrid':
