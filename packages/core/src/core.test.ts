@@ -1375,6 +1375,40 @@ describe('converter, validator, and path utilities', () => {
     expect(result.valid).toBe(true);
   });
 
+  test('accepts advanced dataViz aliases and map layer option properties', () => {
+    const doc = fromSketch(`
+      screen "Advanced Visualization Aliases" 800x420
+        usageTree: treemap at 24 24 220 160
+          data {"name":"Workspace","children":[{"name":"Viewer","value":42}]}
+        flowCost: sankey at 260 24 220 160
+          data {"nodes":[{"id":"a"},{"id":"b"}],"links":[{"source":"a","target":"b","value":7}]}
+        radial: sunburst at 496 24 220 160
+          data {"name":"Workspace","children":[{"name":"Core","value":28}]}
+        matrix: chord at 24 220 220 160
+          data {"labels":["A","B"],"matrix":[[0,2],[3,0]]}
+        influence: forceGraph at 260 220 220 160
+          data {"nodes":[{"id":"a"},{"id":"b"}],"links":[{"source":"a","target":"b"}]}
+        trend: plot at 496 220 220 160
+          data {"data":[{"day":"Mon","value":12}],"marks":[{"type":"barY","x":"day","y":"value"}]}
+        geo: map at 24 390 300 160
+          provider "leaflet"
+          heatmapOptions {"radius":30,"blur":18}
+          clusterOptions {"disableClusteringAtZoom":13}
+    `);
+
+    const components = normalize(getByPath(doc, 'components')) as Record<string, Record<string, unknown>>;
+    expect(components.usageTree.type).toBe('treemap');
+    expect(components.flowCost.type).toBe('sankey');
+    expect(components.radial.type).toBe('sunburst');
+    expect(components.matrix.type).toBe('chord');
+    expect(components.influence.type).toBe('forceGraph');
+    expect(components.trend.type).toBe('plot');
+    expect(components.geo.heatmapOptions).toEqual({ radius: 30, blur: 18 });
+    expect(components.geo.clusterOptions).toEqual({ disableClusteringAtZoom: 13 });
+
+    expect(validate(doc).valid).toBe(true);
+  });
+
   test('coerces networkDiagram professional viewer options', () => {
     const doc = fromSketch(`
       screen "Network" 640x420

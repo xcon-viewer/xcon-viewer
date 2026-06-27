@@ -285,6 +285,13 @@ const jsonProperties = new Set([
   'dataTemplate',
 ]);
 
+const dataVizAliasPropertyTypes: Record<string, PropertyType> = {
+  data: 'json',
+  config: 'json',
+  interactive: 'boolean',
+  allowPartial: 'boolean',
+};
+
 const componentPropertyTypes: Record<string, Record<string, PropertyType>> = {
   slider: { value: 'number', min: 'number', max: 'number', step: 'number' },
   progressBar: { value: 'number', max: 'number' },
@@ -326,7 +333,13 @@ const componentPropertyTypes: Record<string, Record<string, PropertyType>> = {
   chart: { chartType: 'string', chartData: 'json', chartOptions: 'json', responsive: 'boolean', animation: 'boolean' },
   codeEditor: { value: 'string', mode: 'string', theme: 'string', lineNumbers: 'boolean', readOnly: 'boolean' },
   richEditor: { theme: 'string', placeholder: 'string', readOnly: 'boolean', modules: 'json' },
-  dataViz: { vizType: 'string', data: 'json', config: 'json', interactive: 'boolean' },
+  dataViz: { vizType: 'string', ...dataVizAliasPropertyTypes },
+  treemap: dataVizAliasPropertyTypes,
+  sankey: dataVizAliasPropertyTypes,
+  sunburst: dataVizAliasPropertyTypes,
+  chord: dataVizAliasPropertyTypes,
+  forceGraph: dataVizAliasPropertyTypes,
+  plot: dataVizAliasPropertyTypes,
   spanGrid: {
     data: 'json',
     dataTemplate: 'json',
@@ -410,9 +423,11 @@ const componentPropertyTypes: Record<string, Record<string, PropertyType>> = {
     attribution: 'string',
     markers: 'json',
     heatmap: 'json',
+    heatmapOptions: 'json',
     polylines: 'json',
     polygons: 'json',
     clustering: 'boolean',
+    clusterOptions: 'json',
     markerIcons: 'json',
     enableZoom: 'boolean',
     enablePan: 'boolean',

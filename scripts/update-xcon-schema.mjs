@@ -20,6 +20,7 @@ const publicComponentTypes = [
   'chart',
   'chatBubble',
   'checkbox',
+  'chord',
   'codeEditor',
   'connector',
   'colorPicker',
@@ -28,6 +29,7 @@ const publicComponentTypes = [
   'divider',
   'flexBox',
   'flipbook',
+  'forceGraph',
   'form',
   'gallery',
   'grid',
@@ -48,11 +50,13 @@ const publicComponentTypes = [
   'notice',
   'panel',
   'passwordField',
+  'plot',
   'progressBar',
   'qrCode',
   'radioButton',
   'rating',
   'richEditor',
+  'sankey',
   'searchBar',
   'select',
   'shape',
@@ -61,6 +65,7 @@ const publicComponentTypes = [
   'spanGrid',
   'spinner',
   'stack',
+  'sunburst',
   'switch',
   'tabs',
   'template',
@@ -70,6 +75,7 @@ const publicComponentTypes = [
   'textView',
   'timePicker',
   'tooltip',
+  'treemap',
   'treeView',
   'videoView',
 ];
@@ -155,6 +161,21 @@ const safePublicNetworkProps = {
 };
 const safePublicNetworkThemeProp = { type: 'string', enum: ['obsidian', 'light', 'auto', 'custom'] };
 
+const safePublicDataVizProps = {
+  allowPartial: { type: 'boolean' },
+};
+
+const safePublicMapProps = {
+  heatmapOptions: {
+    type: 'object',
+    additionalProperties: true,
+  },
+  clusterOptions: {
+    type: 'object',
+    additionalProperties: true,
+  },
+};
+
 const preservedSharedProps = {
   weight: { $ref: '#/definitions/stringOrNumber' },
   objectFit: { type: 'string' },
@@ -188,6 +209,8 @@ if (!props.theme) {
   delete props.theme.enum;
 }
 Object.assign(props, safePublicNetworkProps);
+Object.assign(props, safePublicDataVizProps);
+Object.assign(props, safePublicMapProps);
 upsertNetworkThemeCondition(component);
 
 component.not = {

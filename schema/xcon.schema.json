@@ -485,6 +485,7 @@
         "chart",
         "chatBubble",
         "checkbox",
+        "chord",
         "codeEditor",
         "connector",
         "colorPicker",
@@ -493,6 +494,7 @@
         "divider",
         "flexBox",
         "flipbook",
+        "forceGraph",
         "form",
         "gallery",
         "grid",
@@ -513,11 +515,13 @@
         "notice",
         "panel",
         "passwordField",
+        "plot",
         "progressBar",
         "qrCode",
         "radioButton",
         "rating",
         "richEditor",
+        "sankey",
         "searchBar",
         "select",
         "shape",
@@ -526,6 +530,7 @@
         "spanGrid",
         "spinner",
         "stack",
+        "sunburst",
         "switch",
         "tabs",
         "template",
@@ -535,6 +540,7 @@
         "textView",
         "timePicker",
         "tooltip",
+        "treemap",
         "treeView",
         "videoView"
       ]
@@ -1725,6 +1731,17 @@
           "items": {
             "$ref": "#/definitions/safeObject"
           }
+        },
+        "allowPartial": {
+          "type": "boolean"
+        },
+        "heatmapOptions": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "clusterOptions": {
+          "type": "object",
+          "additionalProperties": true
         }
       },
       "not": {

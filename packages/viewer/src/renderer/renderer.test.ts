@@ -4863,9 +4863,11 @@ describe('viewer security renderer', () => {
       'nodeRadius',
       'markers',
       'heatmap',
+      'heatmapOptions',
       'polylines',
       'polygons',
       'clustering',
+      'clusterOptions',
       'events',
     ].forEach((key) => expect(props).toHaveProperty(key));
   });
