@@ -249,22 +249,106 @@
       import { parseBySyntax, render, viewerCss } from '/site/advanced-visualization-test-runtime.js';
 
       const samples = [
-        { id: 'network-runtime', name: 'Network Diagram Runtime', sketch: `screen "Network Diagram Runtime" 980x620 bg #eef4fb
-  title: label "Network Runtime" at 24 28 420 38
-    color #17202a
-    font
-      size 26
-      weight 800
+        { id: 'runtime-architecture', name: 'Network Runtime Architecture', sketch: `screen "Network Diagram Runtime Test" 980x620 bg #eef4fb
+  header: panel at 24 20 932 58
+    bg #0f172a
+    radius 16
+    title: label "XCON Viewer dependency graph" at 20 14 440 28
+      color white
+      font 22 800
+    hint: label "Search, filter, hover, drag, zoom, and select nodes" at 520 18 380 22
+      color #cbd5e1
+      align right
+      font 13 700
   network: networkDiagram at 24 96 932 492
     theme "obsidian"
+    nodeRadius 22
+    linkDistance 106
+    charge -1150
+    friction 0.72
     showControls true
     showSearch true
     showFilters true
     showLegend true
     showLabels true
     showArrows true
-    nodes [{"id":"viewer","label":"Viewer runtime","group":"runtime"},{"id":"core","label":"Core parser","group":"parser"},{"id":"site","label":"Static site","group":"delivery"},{"id":"samples","label":"Sample pages","group":"delivery"}]
-    links [{"source":"viewer","target":"core","type":"contract"},{"source":"viewer","target":"site","type":"bundle"},{"source":"site","target":"samples","type":"route"}]` },
+    enableDrag true
+    enableZoom true
+    enablePan true
+    enableHover true
+    selectedColor #f8fafc
+    neighborColor #60a5fa
+    mutedOpacity 0.18
+    clusterColors ["#8b5cf6","#38bdf8","#22c55e","#f59e0b","#ef4444"]
+    nodes [{"id":"viewer","label":"Viewer runtime","group":"runtime","color":"#8b5cf6"},{"id":"d3","label":"D3 hydration","group":"runtime","color":"#a78bfa"},{"id":"core","label":"Core parser","group":"parser","color":"#38bdf8"},{"id":"schema","label":"Schema","group":"contract","color":"#22c55e"},{"id":"docs","label":"Docs","group":"content","color":"#f59e0b"},{"id":"site","label":"Public site","group":"content","color":"#ef4444"},{"id":"tests","label":"Runtime tests","group":"quality","color":"#14b8a6"},{"id":"security","label":"Security boundary","group":"quality","color":"#fb7185"}]
+    links [{"source":"viewer","target":"d3","type":"runtime"},{"source":"viewer","target":"core"},{"source":"viewer","target":"schema","type":"contract"},{"source":"schema","target":"docs"},{"source":"docs","target":"site"},{"source":"viewer","target":"tests","type":"ref"},{"source":"tests","target":"security","type":"ref"},{"source":"core","target":"security"},{"source":"d3","target":"tests","type":"folder"},{"source":"site","target":"viewer","type":"runtime"}]` },
+        { id: 'full-version-data', name: 'Network Full Data Compatibility', sketch: `screen "Full Version Data Compatibility" 980x620 bg #edf6f9
+  header: panel at 24 20 932 58
+    bg #102a43
+    radius 16
+    title: label "Advanced full-version data adapter" at 20 14 500 28
+      color white
+      font 22 800
+    hint: label "data.list / names / infos / subfolders" at 520 18 380 22
+      color #bcccdc
+      align right
+      font 13 700
+  network: networkDiagram at 24 96 932 492
+    theme "obsidian"
+    rootNodeId "root"
+    nodeRadius 20
+    linkDistance 118
+    charge -1320
+    friction 0.68
+    showControls true
+    showSearch true
+    showFilters true
+    showLegend true
+    showLabels true
+    showArrows true
+    enableDrag true
+    enableZoom true
+    enablePan true
+    enableHover true
+    selectedColor #ffffff
+    neighborColor #38bdf8
+    mutedOpacity 0.16
+    clusterColors ["#60a5fa","#34d399","#fbbf24","#fb7185","#a78bfa"]
+    data {"names":{"root":"ROOT: XCON Workspace","viewer":"Viewer package","core":"Core parser","site":"Public site","schema":"Schema contract","docs":"Docs surface","security":"Security boundary","A_renderer":"Renderer folder","A_network":"Network folder","runtime":"D3 runtime","static":"Static fallback","theme":"Theme system"},"infos":{"root":{"color":"#ffffff","icon":"hub"},"viewer":{"color":"#8b5cf6","icon":"package"},"core":{"color":"#38bdf8","icon":"parser"},"site":{"color":"#f97316","icon":"globe"},"schema":{"color":"#22c55e","icon":"contract"},"docs":{"color":"#f59e0b","icon":"doc"},"security":{"color":"#fb7185","icon":"shield"},"A_renderer":{"color":"#a78bfa","icon":"folder"},"A_network":{"color":"#60a5fa","icon":"folder"},"runtime":{"color":"#38bdf8","icon":"runtime"},"static":{"color":"#93c5fd","icon":"markup"},"theme":{"color":"#34d399","icon":"palette"}},"list":{"root":["viewer","core","site","schema","docs","security"],"viewer":["A_renderer","schema","security"],"A_renderer":["A_network","static","theme"],"A_network":["runtime","static","theme"],"runtime":["security"],"core":["schema"],"site":["docs","viewer"],"schema":["docs"]},"subfolders":{"A_network":{"objects":{"runtime":"Runtime hydration","static":"Static SVG fallback","controls":"Search and filters","focus":"Selection focus","physics":"Force simulation"},"infos":{"runtime":{"color":"#38bdf8"},"static":{"color":"#93c5fd"},"controls":{"color":"#fbbf24"},"focus":{"color":"#fb7185"},"physics":{"color":"#a78bfa"}},"lists":{"runtime":["controls","focus","physics"],"static":["controls"],"controls":["focus"],"physics":["focus"]}}}}` },
+        { id: 'analysis-map', name: 'Network Analysis Map', sketch: `screen "Network Analysis Map" 980x620 bg #f7f8fb
+  header: panel at 24 20 932 58
+    bg #18212f
+    radius 16
+    title: label "Obsidian-style analysis graph" at 20 14 430 28
+      color white
+      font 22 800
+    hint: label "Dense relationships, typed links, groups, and labels" at 480 18 430 22
+      color #d1d5db
+      align right
+      font 13 700
+  network: networkDiagram at 24 96 932 492
+    theme "obsidian"
+    rootNodeId "hub"
+    nodeRadius 18
+    linkDistance 92
+    charge -980
+    friction 0.74
+    showControls true
+    showSearch true
+    showFilters true
+    showLegend true
+    showLabels true
+    showArrows true
+    enableDrag true
+    enableZoom true
+    enablePan true
+    enableHover true
+    selectedColor #ffffff
+    neighborColor #2dd4bf
+    mutedOpacity 0.12
+    clusterColors ["#2563eb","#16a34a","#d97706","#dc2626","#7c3aed","#0891b2"]
+    nodes [{"id":"hub","label":"Workspace","group":"overview","color":"#ffffff"},{"id":"capture","label":"Capture","group":"pipeline","color":"#60a5fa"},{"id":"parse","label":"Parse","group":"pipeline","color":"#38bdf8"},{"id":"normalize","label":"Normalize","group":"pipeline","color":"#06b6d4"},{"id":"layout","label":"Layout","group":"render","color":"#a78bfa"},{"id":"hydrate","label":"Hydrate","group":"render","color":"#8b5cf6"},{"id":"search","label":"Search","group":"analysis","color":"#22c55e"},{"id":"filters","label":"Filters","group":"analysis","color":"#84cc16"},{"id":"focus","label":"Focus","group":"analysis","color":"#14b8a6"},{"id":"security","label":"Sanitize","group":"guard","color":"#fb7185"},{"id":"schema","label":"Schema","group":"guard","color":"#f97316"},{"id":"docs","label":"Docs","group":"surface","color":"#f59e0b"},{"id":"site","label":"Site","group":"surface","color":"#ef4444"},{"id":"tests","label":"Tests","group":"quality","color":"#2dd4bf"},{"id":"review","label":"Review","group":"quality","color":"#64748b"},{"id":"release","label":"Release","group":"surface","color":"#0ea5e9"}]
+    links [{"source":"hub","target":"capture","type":"flow"},{"source":"capture","target":"parse","type":"flow"},{"source":"parse","target":"normalize","type":"flow"},{"source":"normalize","target":"layout","type":"flow"},{"source":"layout","target":"hydrate","type":"runtime"},{"source":"hydrate","target":"search","type":"runtime"},{"source":"hydrate","target":"filters","type":"runtime"},{"source":"hydrate","target":"focus","type":"runtime"},{"source":"parse","target":"security","type":"guard"},{"source":"normalize","target":"schema","type":"contract"},{"source":"schema","target":"docs","type":"contract"},{"source":"docs","target":"site","type":"surface"},{"source":"site","target":"release","type":"surface"},{"source":"tests","target":"hydrate","type":"quality"},{"source":"tests","target":"layout","type":"quality"},{"source":"review","target":"tests","type":"quality"},{"source":"security","target":"review","type":"guard"},{"source":"focus","target":"docs","type":"ref"},{"source":"filters","target":"tests","type":"ref"},{"source":"search","target":"site","type":"ref"},{"source":"release","target":"hub","type":"loop"},{"source":"schema","target":"security","type":"guard"},{"source":"layout","target":"focus","type":"runtime"},{"source":"normalize","target":"filters","type":"ref"}]` },
         { id: 'dataviz-treemap', name: 'DataViz Treemap', sketch: `screen "Treemap" 760x460
   title: label "Workspace Allocation" at 24 30 520 32
     color #17202a

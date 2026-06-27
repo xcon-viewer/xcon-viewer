@@ -21,6 +21,8 @@ interface NetworkRuntimeOptions {
 
 type PositionedNode = NetworkNode & d3.SimulationNodeDatum & { x: number; y: number };
 type ViewportTransform = { x: number; y: number; k: number };
+type GraphBounds = { minX: number; minY: number; width: number; height: number };
+type FitPadding = { top: number; right: number; bottom: number; left: number };
 
 interface NetworkRuntimeContext {
   layoutCache: Map<string, Map<string, PositionedNode>>;
@@ -31,6 +33,8 @@ interface NetworkRuntimeContext {
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const DEFAULT_WIDTH = 800;
 const DEFAULT_HEIGHT = 600;
+const MIN_VIEWPORT_SCALE = 0.05;
+const MAX_VIEWPORT_SCALE = 4;
 
 export function hydrateNetworkDiagrams(root: ParentNode = document): void {
   const hosts = Array.from(root.querySelectorAll<HTMLElement>('[data-xcon-network="true"]'));
@@ -93,6 +97,7 @@ function buildControls(
     searchInput.type = 'search';
     searchInput.value = getState().search;
     searchInput.placeholder = 'Search';
+    searchInput.ariaLabel = 'Search network';
     searchInput.dataset.xconNetworkSearch = 'true';
     searchInput.addEventListener('input', () => {
       updateState({ ...getState(), search: searchInput.value });
@@ -104,18 +109,17 @@ function buildControls(
   const fit = document.createElement('button');
   fit.type = 'button';
   fit.textContent = 'Fit';
+  fit.title = 'Fit graph to view';
   fit.dataset.xconNetworkFit = 'true';
   fit.addEventListener('click', () => {
-    const { width, height } = svgSize(svg, host);
-    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-    context.transform = defaultTransform();
-    applyViewportTransform(svg, context.transform);
+    fitGraphToView(svg, host, options, context);
   });
   toolbar.append(fit);
 
   const reset = document.createElement('button');
   reset.type = 'button';
   reset.textContent = 'Reset';
+  reset.title = 'Reset graph view and filters';
   reset.dataset.xconNetworkReset = 'true';
   reset.addEventListener('click', () => {
     delete host.dataset.xconNetworkSelected;
@@ -232,6 +236,9 @@ function buildFilterControls(
   minDegree.type = 'number';
   minDegree.min = '0';
   minDegree.step = '1';
+  minDegree.placeholder = 'Degree';
+  minDegree.title = 'Minimum node degree';
+  minDegree.ariaLabel = 'Minimum node degree';
   minDegree.dataset.xconNetworkMinDegree = 'true';
   minDegree.addEventListener('input', () => {
     const value = Math.max(0, Math.floor(Number(minDegree.value) || 0));
@@ -352,7 +359,7 @@ function bindViewportInteractions(svg: SVGSVGElement, options: NetworkRuntimeOpt
       const wheel = event as WheelEvent;
       const factor = wheel.deltaY < 0 ? 1.12 : 0.88;
       const previous = context.transform;
-      const nextScale = clamp(previous.k * factor, 0.2, 4);
+      const nextScale = clamp(previous.k * factor, MIN_VIEWPORT_SCALE, MAX_VIEWPORT_SCALE);
       if (nextScale === previous.k) return;
       const anchorX = finiteCoordinate(wheel.clientX) ?? 0;
       const anchorY = finiteCoordinate(wheel.clientY) ?? 0;
@@ -394,7 +401,8 @@ function bindHover(group: SVGElement, host: HTMLElement, node: NetworkNode): voi
     const tooltip = ensureTooltip(host);
     tooltip.textContent = node.label;
     const mouse = event as MouseEvent;
-    const style = `left:${trim(mouse.clientX + 12)}px;top:${trim(mouse.clientY + 12)}px`;
+    const anchor = tooltipAnchor(group, host, mouse);
+    const style = `left:${trim(anchor.x)}px;top:${trim(anchor.y)}px`;
     tooltip.setAttribute('style', style);
     addClassToken(tooltip, 'show');
   });
@@ -403,6 +411,33 @@ function bindHover(group: SVGElement, host: HTMLElement, node: NetworkNode): voi
     tooltip.textContent = '';
     removeClassToken(tooltip, 'show');
   });
+}
+
+function tooltipAnchor(group: SVGElement, host: HTMLElement, mouse: MouseEvent): { x: number; y: number } {
+  const hostRect = host.getBoundingClientRect();
+  const circle = group.querySelector<SVGElement>('[data-network-node-circle]');
+  if (circle) {
+    const rect = circle.getBoundingClientRect();
+    if (rect.width > 0 || rect.height > 0) {
+      return {
+        x: (finiteCoordinate(rect.left + rect.width / 2 - hostRect.left) ?? 0),
+        y: (finiteCoordinate(rect.top - hostRect.top) ?? 0),
+      };
+    }
+  }
+
+  const groupRect = group.getBoundingClientRect();
+  if (groupRect.width > 0 || groupRect.height > 0) {
+    return {
+      x: (finiteCoordinate(groupRect.left + groupRect.width / 2 - hostRect.left) ?? 0),
+      y: (finiteCoordinate(groupRect.top - hostRect.top) ?? 0),
+    };
+  }
+
+  return {
+    x: (finiteCoordinate(mouse.clientX - hostRect.left + 12) ?? 0),
+    y: (finiteCoordinate(mouse.clientY - hostRect.top + 12) ?? 0),
+  };
 }
 
 function bindDrag(
@@ -479,6 +514,68 @@ function ensureTooltip(host: HTMLElement): HTMLElement {
 
 function applyViewportTransform(svg: SVGSVGElement, transform: ViewportTransform): void {
   svg.querySelector<SVGElement>('[data-xcon-network-viewport]')?.setAttribute('transform', transformAttribute(transform));
+}
+
+function fitGraphToView(svg: SVGSVGElement, host: HTMLElement, options: NetworkRuntimeOptions, context: NetworkRuntimeContext): void {
+  const { width, height } = svgSize(svg, host);
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  const bounds = renderedGraphBounds(svg, context, options);
+  context.transform = bounds ? fitTransform(bounds, width, height, options) : defaultTransform();
+  applyViewportTransform(svg, context.transform);
+}
+
+function renderedGraphBounds(svg: SVGSVGElement, context: NetworkRuntimeContext, options: NetworkRuntimeOptions): GraphBounds | null {
+  const nodeIds = Array.from(svg.querySelectorAll<SVGElement>('[data-network-node-id]'))
+    .map((node) => node.getAttribute('data-network-node-id'))
+    .filter((id): id is string => Boolean(id));
+  if (nodeIds.length === 0) return null;
+
+  const radius = Math.max(1, options.nodeRadius);
+  const labelBottom = options.showLabels ? radius + 28 : radius;
+  let minX = Number.POSITIVE_INFINITY;
+  let minY = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let maxY = Number.NEGATIVE_INFINITY;
+
+  for (const id of nodeIds) {
+    const point = context.layout.get(id);
+    if (!point) continue;
+    minX = Math.min(minX, point.x - radius);
+    minY = Math.min(minY, point.y - radius);
+    maxX = Math.max(maxX, point.x + radius);
+    maxY = Math.max(maxY, point.y + labelBottom);
+  }
+
+  if (!Number.isFinite(minX) || !Number.isFinite(minY) || !Number.isFinite(maxX) || !Number.isFinite(maxY)) return null;
+  return {
+    minX,
+    minY,
+    width: Math.max(1, maxX - minX),
+    height: Math.max(1, maxY - minY),
+  };
+}
+
+function fitTransform(bounds: GraphBounds, width: number, height: number, options: NetworkRuntimeOptions): ViewportTransform {
+  const padding = fitPadding(width, height, options);
+  const usableWidth = Math.max(1, width - padding.left - padding.right);
+  const usableHeight = Math.max(1, height - padding.top - padding.bottom);
+  const scale = clamp(Math.min(usableWidth / bounds.width, usableHeight / bounds.height, 1), MIN_VIEWPORT_SCALE, 1);
+  return {
+    x: padding.left + (usableWidth - bounds.width * scale) / 2 - bounds.minX * scale,
+    y: padding.top + (usableHeight - bounds.height * scale) / 2 - bounds.minY * scale,
+    k: scale,
+  };
+}
+
+function fitPadding(width: number, height: number, options: NetworkRuntimeOptions): FitPadding {
+  const base = clamp(Math.min(width, height) * 0.12, 32, 72);
+  const controlsTop = options.showControls ? Math.min(height * 0.36, base + 70) : base;
+  return {
+    top: controlsTop,
+    right: base,
+    bottom: base,
+    left: base,
+  };
 }
 
 function defaultTransform(): ViewportTransform {

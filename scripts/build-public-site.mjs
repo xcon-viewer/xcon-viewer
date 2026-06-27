@@ -20,6 +20,7 @@ const fileCopies = [
   ['site/advanced-visualization-test-runtime.js', 'site/advanced-visualization-test-runtime.js'],
   ['site/network-diagram-test.html', 'network-diagram-test.html'],
   ['site/network-diagram-test.html', 'site/network-diagram-test.html'],
+  ['site/network-diagram-test-runtime.js', 'site/network-diagram-test-runtime.js'],
   ['site/docs.html', 'docs.html'],
   ['site/spec.html', 'spec.html'],
   ['site/examples.html', 'examples.html'],

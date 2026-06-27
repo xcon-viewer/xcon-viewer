@@ -1,6 +1,6 @@
 {
   "name": "@xcon-viewer/github-action",
-  "version": "0.1.7",
+  "version": "0.2.0",
   "type": "module",
   "description": "GitHub Action for validating and rendering XCON code blocks in Markdown.",
   "keywords": [
@@ -43,8 +43,8 @@
     "prepublishOnly": "npm run test && npm run build"
   },
   "dependencies": {
-    "@xcon-viewer/core": "0.1.7",
-    "@xcon-viewer/viewer": "0.1.7"
+    "@xcon-viewer/core": "0.2.0",
+    "@xcon-viewer/viewer": "0.2.0"
   },
   "devDependencies": {
     "tsup": "^8.0.0",

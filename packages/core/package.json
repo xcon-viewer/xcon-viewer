@@ -1,6 +1,6 @@
 {
   "name": "@xcon-viewer/core",
-  "version": "0.1.7",
+  "version": "0.2.0",
   "type": "module",
   "description": "XCON core parser, validator, and object model. Parse SKETCH, JSON, XML, or TAGLESS syntax into a unified XCON Object Model. Built for the LLM era — safe, structured, and format-agnostic.",
   "keywords": [

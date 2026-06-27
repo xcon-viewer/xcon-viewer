@@ -4823,6 +4823,11 @@ describe('viewer security renderer', () => {
 
   test('keeps advanced map, calendar, and network CSS aligned with draft advanced components', () => {
     expect(viewerCss).toContain('.network-svg:active{cursor:grabbing}');
+    expect(viewerCss).toContain('.xa-network-toolbar{position:absolute;left:12px;top:12px;right:12px;z-index:5;display:flex;align-items:center;gap:8px;flex-wrap:wrap;pointer-events:none}');
+    expect(viewerCss).toContain('.xa-network-toolbar input[type="search"]{width:220px;max-width:100%;height:34px;border:1px solid rgba(148,163,184,.22);border-radius:8px;background:rgba(15,23,42,.72);color:var(--xcon-network-text,#e5e7eb)');
+    expect(viewerCss).toContain('.xa-network-filters{position:absolute;left:12px;top:58px;right:12px;z-index:5;display:flex;align-items:center;gap:6px;flex-wrap:wrap;pointer-events:none}');
+    expect(viewerCss).toContain('.xa-network-filter-toggle{height:28px;border:1px solid rgba(148,163,184,.2);border-radius:999px;background:rgba(15,23,42,.58);color:var(--xcon-network-text,#e5e7eb)');
+    expect(viewerCss).toContain('.xa-network-filters input[data-xcon-network-min-degree]{width:70px;height:28px;border:1px solid rgba(148,163,184,.2);border-radius:999px;background:rgba(15,23,42,.58);color:var(--xcon-network-text,#e5e7eb)');
     expect(viewerCss).toContain('.network-link.ref-link{stroke:var(--xcon-network-ref-link,#a0aec0);stroke-opacity:.5;stroke-width:2px;stroke-dasharray:8,4;animation:dash 2s linear infinite}');
     expect(viewerCss).toContain('.network-tooltip::before{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:8px solid transparent;border-top-color:rgba(102,126,234,.95)}');
     expect(viewerCss).toContain('@keyframes dash{to{stroke-dashoffset:-12}}');

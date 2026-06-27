@@ -202,6 +202,28 @@ usageTree: dataViz at 24 120 360 260
 
 Alias component types (`treemap`, `sankey`, `sunburst`, `chord`, `forceGraph`, `plot`) are accepted by the validator and renderer for compatibility. Generated examples should prefer the canonical `dataViz` component with an explicit `vizType`, for example `vizType "treemap"`, `vizType "sankey"`, `vizType "sunburst"`, `vizType "chord"`, `vizType "forceGraph"`, or `vizType "plot"`.
 
+#### Advanced visualization runtime dependencies
+
+`@xcon-viewer/viewer` publishes the runtime dependencies needed for the advanced visualization surface. Consumers that install the published viewer package do not need to install these packages separately unless they are building directly from this repository's TypeScript source.
+
+Bundled npm dependencies in `@xcon-viewer/viewer`:
+
+- `d3` powers the interactive `networkDiagram` runtime.
+- `d3-hierarchy` powers hydrated `treemap` and `sunburst` views.
+- `d3-sankey` powers hydrated `sankey` views.
+- `d3-force` powers hydrated `forceGraph` views.
+- `d3-chord` powers hydrated `chord` views.
+- `@observablehq/plot` powers hydrated `plot` views.
+
+Type-only development dependencies:
+
+- `@types/d3`
+- `@types/d3-sankey`
+
+Map hydration uses a different dependency model. The `map` component has a static fallback in the package. When `provider "leaflet"` is used and the render call allows external resources, the viewer loads Leaflet from viewer-controlled CDN URLs in the browser. `leaflet.heat` is loaded only for `heatmap` layers, and `leaflet.markercluster` is loaded only when marker clustering is enabled. If Leaflet or either optional plugin fails to load, the public viewer keeps the safe static map fallback instead of failing the whole document.
+
+These libraries are used only inside viewer-owned renderers. Public XCON documents still do not execute user-provided JavaScript, Observable callbacks, formatter functions, or arbitrary plugin code.
+
 ### Feedback and Navigation
 
 | Type | Purpose |

@@ -159,21 +159,26 @@ describe('network runtime hydration', () => {
     expect(host.querySelector('[data-fallback-circle]')).not.toBeNull();
   });
 
-  test('fit control resets viewBox to current measured size', () => {
-    const host = hostForGraph(baseGraph());
+  test('fit control scales and centers the rendered graph bounds', () => {
+    const host = hostForGraph(wideGraph());
     Object.defineProperty(host, 'clientWidth', { value: 320, configurable: true });
     Object.defineProperty(host, 'clientHeight', { value: 180, configurable: true });
     hydrateNetworkDiagrams(document);
 
     const svg = host.querySelector('svg');
     const fit = host.querySelector<HTMLButtonElement>('[data-xcon-network-fit]');
+    const viewport = host.querySelector<SVGGElement>('[data-xcon-network-viewport]');
     expect(svg).not.toBeNull();
     expect(fit).not.toBeNull();
+    expect(viewport).not.toBeNull();
 
-    svg!.setAttribute('viewBox', '0 0 12 34');
     fit!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
 
     expect(svg!.getAttribute('viewBox')).toBe('0 0 320 180');
+    const transform = parseViewportTransform(viewport!.getAttribute('transform') ?? '');
+    expect(transform.k).toBeLessThan(1);
+    expect(screenX(-240, transform)).toBeGreaterThanOrEqual(32);
+    expect(screenX(2760, transform)).toBeLessThanOrEqual(288);
   });
 
   test('filter controls filter groups, link types, and minimum degree locally', () => {
@@ -204,12 +209,37 @@ describe('network runtime hydration', () => {
 
     const alpha = host.querySelector<SVGGElement>('[data-network-node-id="a"]');
     const tooltip = host.querySelector<HTMLElement>('[data-xcon-network-tooltip]');
+    const circle = alpha!.querySelector<SVGCircleElement>('[data-network-node-circle]');
     expect(alpha).not.toBeNull();
     expect(tooltip).not.toBeNull();
+    expect(circle).not.toBeNull();
 
-    alpha!.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true, clientX: 30, clientY: 40 }));
+    host.getBoundingClientRect = () => ({
+      left: 20,
+      top: 30,
+      right: 340,
+      bottom: 210,
+      width: 320,
+      height: 180,
+      x: 20,
+      y: 30,
+      toJSON: () => ({}),
+    });
+    circle!.getBoundingClientRect = () => ({
+      left: 122,
+      top: 150,
+      right: 166,
+      bottom: 194,
+      width: 44,
+      height: 44,
+      x: 122,
+      y: 150,
+      toJSON: () => ({}),
+    });
+    alpha!.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true, clientX: 300, clientY: 400 }));
     expect(tooltip!.textContent).toContain('Alpha');
     expect(tooltip!.getAttribute('class')).toContain('show');
+    expect(tooltip!.getAttribute('style')).toBe('left:124px;top:120px');
 
     alpha!.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
     expect(tooltip!.textContent).toBe('');
@@ -380,6 +410,22 @@ function baseGraph(): NetworkGraphModel {
         links: [link('folder-child', 'folder', 'child', 'folder')],
       },
     },
+  };
+}
+
+function wideGraph(): NetworkGraphModel {
+  return {
+    nodes: [
+      { ...node('left', 'Left', 'core', true), x: -240, y: 20, fixed: true },
+      { ...node('right', 'Right', 'secondary'), x: 2760, y: 130, fixed: true },
+    ],
+    links: [link('left-right', 'left', 'right')],
+    groups: [
+      { id: 'core', label: 'Core', color: '#2563eb', metadata: {} },
+      { id: 'secondary', label: 'Secondary', color: '#16a34a', metadata: {} },
+    ],
+    rootNodeId: 'left',
+    subfolders: {},
   };
 }
 
@@ -565,6 +611,30 @@ class TestElement extends TestNode {
     }
     return matches as unknown as T[];
   }
+
+  getBoundingClientRect(): DOMRect {
+    return {
+      left: 0,
+      top: 0,
+      right: 0,
+      bottom: 0,
+      width: 0,
+      height: 0,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    } as DOMRect;
+  }
+}
+
+function parseViewportTransform(value: string): { x: number; y: number; k: number } {
+  const match = value.match(/^translate\((-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)\) scale\((\d+(?:\.\d+)?)\)$/);
+  if (!match) throw new Error(`Unexpected transform: ${value}`);
+  return { x: Number(match[1]), y: Number(match[2]), k: Number(match[3]) };
+}
+
+function screenX(x: number, transform: { x: number; k: number }): number {
+  return transform.x + x * transform.k;
 }
 
 class TestInputElement extends TestElement {

@@ -221,6 +221,8 @@ Use `dataViz` with `vizType` for advanced visualizations. Supported public value
 
 Prefer canonical `dataViz` plus an explicit `vizType` when generating examples: `vizType "treemap"`, `vizType "sankey"`, `vizType "sunburst"`, `vizType "chord"`, `vizType "forceGraph"`, or `vizType "plot"`. Alias component types (`treemap`, `sankey`, `sunburst`, `chord`, `forceGraph`, `plot`) are accepted by validation and rendering for compatibility, but generated examples should not prefer them.
 
+Advanced visualization dependency model: `@xcon-viewer/viewer` bundles the npm dependencies needed for interactive advanced visualization hydration. `d3` powers `networkDiagram`; `d3-hierarchy` powers `treemap` and `sunburst`; `d3-sankey` powers `sankey`; `d3-force` powers `forceGraph`; `d3-chord` powers `chord`; and `@observablehq/plot` powers `plot`. Consumers of the published viewer package do not need separate installs for these packages unless they build directly from repository TypeScript source. Leaflet map hydration is optional and external-resource-gated: `provider "leaflet"` may load Leaflet from viewer-controlled CDN URLs, `leaflet.heat` only for heatmap layers, and `leaflet.markercluster` only for clustering. If those browser resources fail, keep the static fallback.
+
 ### spanGrid (table / spreadsheet)
 
 ```xcon-sketch

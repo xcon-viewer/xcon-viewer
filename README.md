@@ -79,6 +79,10 @@ npm install @xcon-viewer/vite-plugin
 npm install -g @xcon-viewer/cli
 ```
 
+`@xcon-viewer/viewer` includes the runtime dependencies used by advanced visualization components: `d3`, `d3-hierarchy`, `d3-sankey`, `d3-force`, `d3-chord`, and `@observablehq/plot`. You only need to install them separately when building directly from this repository's TypeScript source or creating a custom bundle.
+
+Leaflet-backed `map` hydration is optional and external-resource-gated. When `provider "leaflet"` is used and external resources are allowed, the viewer loads Leaflet browser assets from viewer-controlled CDN URLs; `leaflet.heat` and `leaflet.markercluster` are loaded only for heatmap and clustering layers.
+
 ---
 
 ## Quick Start
@@ -121,7 +125,7 @@ render(xconDocument, document.getElementById('root'));
 Embed it in HTML:
 
 ```html
-<script type="module" src="https://unpkg.com/@xcon-viewer/viewer@0.1.7/dist/web-component.js"></script>
+<script type="module" src="https://unpkg.com/@xcon-viewer/viewer@0.2.0/dist/web-component.js"></script>
 
 <xcon-viewer src="./home.xcon.json"></xcon-viewer>
 ```
@@ -234,7 +238,7 @@ export default {
 **GitHub Actions:**
 
 ```yaml
-- uses: xcon-viewer/xcon-viewer/packages/github-action@v0.1.7
+- uses: xcon-viewer/xcon-viewer/packages/github-action@v0.2.0
   with:
     files: README.md,docs
     out-dir: xcon-rendered

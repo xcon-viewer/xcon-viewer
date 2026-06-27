@@ -485,7 +485,7 @@ var require_interval_tree = __commonJS({
 });
 
 // packages/core/src/model/index.ts
-var XconObject = class _XconObject2 {
+var XconObject = class _XconObject {
   names = [];
   values = [];
   indexes = /* @__PURE__ */ new Map();
@@ -571,7 +571,7 @@ var XconObject = class _XconObject2 {
     return this.names.map((name, index3) => callback(this.values[index3], name, index3));
   }
   filter(callback) {
-    const next = new _XconObject2();
+    const next = new _XconObject();
     this.forEach((value2, name, index3) => {
       if (callback(value2, name, index3)) next.add(name, cloneXconValue(value2, true));
     });
@@ -591,16 +591,16 @@ var XconObject = class _XconObject2 {
     return this.names.every((name, index3) => callback(this.values[index3], name, index3));
   }
   clone() {
-    return new _XconObject2(this);
+    return new _XconObject(this);
   }
   deepClone() {
-    const next = new _XconObject2();
+    const next = new _XconObject();
     this.forEach((value2, name) => next.add(name, cloneXconValue(value2, true)));
     return next;
   }
   copy(source) {
     this.clear();
-    const next = isXconObject(source) ? source : new _XconObject2(source);
+    const next = isXconObject(source) ? source : new _XconObject(source);
     next.forEach((value2, name) => this.add(name, cloneXconValue(value2, true)));
     return this;
   }
@@ -2115,13 +2115,14 @@ function parseBySyntax(input, syntax) {
   return fromTagless(input);
 }
 
-// packages/core/dist/chunk-D6JOVLMY.js
+// packages/core/dist/model/index.js
 var XconObject3 = class _XconObject {
   names = [];
   values = [];
   indexes = /* @__PURE__ */ new Map();
   constructor(initial) {
-    if (!initial) return;
+    if (!initial)
+      return;
     if (Symbol.iterator in Object(initial) && !isPlainObject2(initial)) {
       for (const [name, value2] of initial) {
         this.add(name, toXconValue2(value2));
@@ -2136,7 +2137,8 @@ var XconObject3 = class _XconObject {
     return this.names.length;
   }
   add(name, value2) {
-    if (this.contains(name)) return this.set(name, value2);
+    if (this.contains(name))
+      return this.set(name, value2);
     this.indexes.set(name, this.names.length);
     this.names.push(name);
     this.values.push(toXconValue2(value2));
@@ -2144,12 +2146,14 @@ var XconObject3 = class _XconObject {
   }
   set(name, value2) {
     const index3 = this.indexOf(name);
-    if (index3 < 0) return this.add(name, value2);
+    if (index3 < 0)
+      return this.add(name, value2);
     this.values[index3] = toXconValue2(value2);
     return this;
   }
   insert(index3, name, value2) {
-    if (this.contains(name)) this.remove(name);
+    if (this.contains(name))
+      this.remove(name);
     const nextIndex = Math.max(0, Math.min(index3, this.names.length));
     this.names.splice(nextIndex, 0, name);
     this.values.splice(nextIndex, 0, toXconValue2(value2));
@@ -2158,7 +2162,8 @@ var XconObject3 = class _XconObject {
   }
   get(name, defaultValue) {
     const index3 = this.indexOf(name);
-    if (index3 < 0) return defaultValue;
+    if (index3 < 0)
+      return defaultValue;
     return this.values[index3];
   }
   getKey(index3) {
@@ -2179,12 +2184,14 @@ var XconObject3 = class _XconObject {
   }
   remove(name) {
     const index3 = this.indexOf(name);
-    if (index3 < 0) return false;
+    if (index3 < 0)
+      return false;
     this.removeAt(index3);
     return true;
   }
   removeAt(index3) {
-    if (index3 < 0 || index3 >= this.names.length) return false;
+    if (index3 < 0 || index3 >= this.names.length)
+      return false;
     this.names.splice(index3, 1);
     this.values.splice(index3, 1);
     this.reindex();
@@ -2204,7 +2211,8 @@ var XconObject3 = class _XconObject {
   filter(callback) {
     const next = new _XconObject();
     this.forEach((value2, name, index3) => {
-      if (callback(value2, name, index3)) next.add(name, cloneXconValue2(value2, true));
+      if (callback(value2, name, index3))
+        next.add(name, cloneXconValue2(value2, true));
     });
     return next;
   }
@@ -2253,30 +2261,40 @@ function isXconObject2(value2) {
   return value2 instanceof XconObject3 || !!value2 && typeof value2 === "object" && typeof value2.get === "function" && typeof value2.set === "function" && typeof value2.contains === "function";
 }
 function isPlainObject2(value2) {
-  if (!value2 || typeof value2 !== "object") return false;
-  if (Array.isArray(value2)) return false;
-  if (isXconObject2(value2)) return false;
+  if (!value2 || typeof value2 !== "object")
+    return false;
+  if (Array.isArray(value2))
+    return false;
+  if (isXconObject2(value2))
+    return false;
   const prototype = Object.getPrototypeOf(value2);
   return prototype === Object.prototype || prototype === null;
 }
 function toXconValue2(value2) {
-  if (value2 === void 0) return null;
+  if (value2 === void 0)
+    return null;
   if (value2 === null || typeof value2 === "string" || typeof value2 === "number" || typeof value2 === "boolean") {
     return value2;
   }
-  if (isXconObject2(value2)) return value2;
-  if (Array.isArray(value2)) return value2.map((item) => toXconValue2(item));
-  if (isPlainObject2(value2)) return new XconObject3(value2);
+  if (isXconObject2(value2))
+    return value2;
+  if (Array.isArray(value2))
+    return value2.map((item) => toXconValue2(item));
+  if (isPlainObject2(value2))
+    return new XconObject3(value2);
   return String(value2);
 }
 function cloneXconValue2(value2, deep = false) {
-  if (!deep) return value2;
-  if (isXconObject2(value2)) return value2.deepClone();
-  if (Array.isArray(value2)) return value2.map((item) => cloneXconValue2(item, true));
+  if (!deep)
+    return value2;
+  if (isXconObject2(value2))
+    return value2.deepClone();
+  if (Array.isArray(value2))
+    return value2.map((item) => cloneXconValue2(item, true));
   return value2;
 }
 
-// packages/core/dist/chunk-UZ7IJW6H.js
+// packages/core/dist/parser/property-types.js
 var stringProperties2 = /* @__PURE__ */ new Set([
   "type",
   "id",
@@ -2553,12 +2571,6 @@ var jsonProperties2 = /* @__PURE__ */ new Set([
   "autoplay",
   "dataTemplate"
 ]);
-var dataVizAliasPropertyTypes2 = {
-  data: "json",
-  config: "json",
-  interactive: "boolean",
-  allowPartial: "boolean"
-};
 var componentPropertyTypes2 = {
   slider: { value: "number", min: "number", max: "number", step: "number" },
   progressBar: { value: "number", max: "number" },
@@ -2600,13 +2612,7 @@ var componentPropertyTypes2 = {
   chart: { chartType: "string", chartData: "json", chartOptions: "json", responsive: "boolean", animation: "boolean" },
   codeEditor: { value: "string", mode: "string", theme: "string", lineNumbers: "boolean", readOnly: "boolean" },
   richEditor: { theme: "string", placeholder: "string", readOnly: "boolean", modules: "json" },
-  dataViz: { vizType: "string", ...dataVizAliasPropertyTypes2 },
-  treemap: dataVizAliasPropertyTypes2,
-  sankey: dataVizAliasPropertyTypes2,
-  sunburst: dataVizAliasPropertyTypes2,
-  chord: dataVizAliasPropertyTypes2,
-  forceGraph: dataVizAliasPropertyTypes2,
-  plot: dataVizAliasPropertyTypes2,
+  dataViz: { vizType: "string", data: "json", config: "json", interactive: "boolean" },
   spanGrid: {
     data: "json",
     dataTemplate: "json",
@@ -2690,11 +2696,9 @@ var componentPropertyTypes2 = {
     attribution: "string",
     markers: "json",
     heatmap: "json",
-    heatmapOptions: "json",
     polylines: "json",
     polygons: "json",
     clustering: "boolean",
-    clusterOptions: "json",
     markerIcons: "json",
     enableZoom: "boolean",
     enablePan: "boolean",
@@ -2732,9 +2736,12 @@ function applyPropertyTypes2(value2) {
 }
 function coerceValue2(value2, key, componentType) {
   const propertyType = getPropertyType2(key, componentType);
-  if (isXconObject2(value2)) return coerceObject2(value2);
-  if (Array.isArray(value2)) return coerceArray2(value2, propertyType);
-  if (typeof value2 === "string") return coercePrimitive2(value2, propertyType);
+  if (isXconObject2(value2))
+    return coerceObject2(value2);
+  if (Array.isArray(value2))
+    return coerceArray2(value2, propertyType);
+  if (typeof value2 === "string")
+    return coercePrimitive2(value2, propertyType);
   return value2;
 }
 function coerceObject2(object) {
@@ -2745,51 +2752,68 @@ function coerceObject2(object) {
   return object;
 }
 function coerceArray2(value2, propertyType) {
-  if (propertyType === "number-array") return value2.map((item) => coerceArrayItem2(item, "number"));
-  if (propertyType === "spacing") return value2.map((item) => coerceArrayItem2(item, "number"));
-  if (propertyType === "string-array") return value2.map((item) => coerceArrayItem2(item, "string"));
+  if (propertyType === "number-array")
+    return value2.map((item) => coerceArrayItem2(item, "number"));
+  if (propertyType === "spacing")
+    return value2.map((item) => coerceArrayItem2(item, "number"));
+  if (propertyType === "string-array")
+    return value2.map((item) => coerceArrayItem2(item, "string"));
   return value2.map((item) => coerceValue2(item, void 0, void 0));
 }
 function coerceArrayItem2(value2, propertyType) {
-  if (typeof value2 === "string") return coercePrimitive2(value2, propertyType);
-  if (isXconObject2(value2)) return coerceObject2(value2);
-  if (Array.isArray(value2)) return value2.map((item) => coerceArrayItem2(item, propertyType));
+  if (typeof value2 === "string")
+    return coercePrimitive2(value2, propertyType);
+  if (isXconObject2(value2))
+    return coerceObject2(value2);
+  if (Array.isArray(value2))
+    return value2.map((item) => coerceArrayItem2(item, propertyType));
   return value2;
 }
 function coercePrimitive2(value2, propertyType) {
-  if (!propertyType) return value2;
-  if (propertyType === "string") return value2;
+  if (!propertyType)
+    return value2;
+  if (propertyType === "string")
+    return value2;
   const trimmed = value2.trim();
-  if (trimmed === "null") return null;
+  if (trimmed === "null")
+    return null;
   if (propertyType === "json" || propertyType === "spacing" || propertyType === "number-array" || propertyType === "string-array") {
     if (trimmed.startsWith("[") && trimmed.endsWith("]") || trimmed.startsWith("{") && trimmed.endsWith("}")) {
       try {
         const parsed = jsonValueToXcon3(JSON.parse(trimmed));
-        if (propertyType === "spacing" && Array.isArray(parsed)) return coerceArray2(parsed, "number-array");
-        if (propertyType === "number-array" && Array.isArray(parsed)) return coerceArray2(parsed, "number-array");
-        if (propertyType === "string-array" && Array.isArray(parsed)) return coerceArray2(parsed, "string-array");
+        if (propertyType === "spacing" && Array.isArray(parsed))
+          return coerceArray2(parsed, "number-array");
+        if (propertyType === "number-array" && Array.isArray(parsed))
+          return coerceArray2(parsed, "number-array");
+        if (propertyType === "string-array" && Array.isArray(parsed))
+          return coerceArray2(parsed, "string-array");
         return applyPropertyTypes2(parsed);
       } catch {
         return value2;
       }
     }
-    if (propertyType === "spacing" && /^-?\d+(?:\.\d+)?$/.test(trimmed)) return Number(trimmed);
+    if (propertyType === "spacing" && /^-?\d+(?:\.\d+)?$/.test(trimmed))
+      return Number(trimmed);
     if (propertyType === "number-array" && isCommaSeparatedNumberList2(trimmed)) {
       return trimmed.split(",").map((item) => Number(item.trim()));
     }
     if (propertyType === "json") {
       const parsedObjectAttribute = parseKeyValueObjectAttribute2(trimmed);
-      if (parsedObjectAttribute) return parsedObjectAttribute;
+      if (parsedObjectAttribute)
+        return parsedObjectAttribute;
     }
     return value2;
   }
   if (propertyType === "boolean") {
-    if (trimmed === "true") return true;
-    if (trimmed === "false") return false;
+    if (trimmed === "true")
+      return true;
+    if (trimmed === "false")
+      return false;
     return value2;
   }
   if (propertyType === "number") {
-    if (/^-?\d+(?:\.\d+)?$/.test(trimmed)) return Number(trimmed);
+    if (/^-?\d+(?:\.\d+)?$/.test(trimmed))
+      return Number(trimmed);
     return value2;
   }
   return value2;
@@ -2798,42 +2822,60 @@ function isCommaSeparatedNumberList2(value2) {
   return /^-?\d+(?:\.\d+)?(?:\s*,\s*-?\d+(?:\.\d+)?)+$/.test(value2);
 }
 function parseKeyValueObjectAttribute2(value2) {
-  if (!value2.includes(":")) return null;
-  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(value2) || /^(data|mailto|tel|urn):/i.test(value2)) return null;
+  if (!value2.includes(":"))
+    return null;
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(value2) || /^(data|mailto|tel|urn):/i.test(value2))
+    return null;
   const parts = value2.split(";").map((part) => part.trim()).filter(Boolean);
-  if (parts.length === 0) return null;
+  if (parts.length === 0)
+    return null;
   const output = new XconObject3();
   for (const part of parts) {
     const separator = part.indexOf(":");
-    if (separator <= 0) return null;
+    if (separator <= 0)
+      return null;
     const key = part.slice(0, separator).trim();
     const rawValue = part.slice(separator + 1).trim();
-    if (!/^[A-Za-z_][\w:-]*$/.test(key)) return null;
+    if (!/^[A-Za-z_][\w:-]*$/.test(key))
+      return null;
     output.add(key, coercePrimitive2(rawValue, getPropertyType2(key, void 0)));
   }
   return output.count > 0 ? output : null;
 }
 function getPropertyType2(key, componentType) {
-  if (!key) return void 0;
+  if (!key)
+    return void 0;
   const componentTypeMap = componentType ? componentPropertyTypes2[componentType] : void 0;
-  if (componentTypeMap?.[key]) return componentTypeMap[key];
-  if (spacingProperties2.has(key)) return "spacing";
-  if (numberArrayProperties2.has(key)) return "number-array";
-  if (stringArrayProperties2.has(key)) return "string-array";
-  if (jsonProperties2.has(key)) return "json";
-  if (stringProperties2.has(key)) return "string";
-  if (numberProperties2.has(key)) return "number";
-  if (booleanProperties2.has(key)) return "boolean";
+  if (componentTypeMap?.[key])
+    return componentTypeMap[key];
+  if (spacingProperties2.has(key))
+    return "spacing";
+  if (numberArrayProperties2.has(key))
+    return "number-array";
+  if (stringArrayProperties2.has(key))
+    return "string-array";
+  if (jsonProperties2.has(key))
+    return "json";
+  if (stringProperties2.has(key))
+    return "string";
+  if (numberProperties2.has(key))
+    return "number";
+  if (booleanProperties2.has(key))
+    return "boolean";
   return void 0;
 }
 function jsonValueToXcon3(value2) {
   if (value2 === void 0 || value2 === null || typeof value2 === "string" || typeof value2 === "number" || typeof value2 === "boolean") {
     return value2 ?? null;
   }
-  if (Array.isArray(value2)) return value2.map((item) => jsonValueToXcon3(item));
-  if (typeof value2 === "object") return new XconObject3(value2);
+  if (Array.isArray(value2))
+    return value2.map((item) => jsonValueToXcon3(item));
+  if (typeof value2 === "object")
+    return new XconObject3(value2);
   return String(value2);
 }
+
+// packages/core/dist/parser/json/index.js
 function fromJSON2(input) {
   const parsed = typeof input === "string" ? JSON.parse(input) : input;
   return fromJSONObject2(parsed);
@@ -2845,6 +2887,8 @@ function fromJSONObject2(input) {
   }
   return applyPropertyTypes2(value2);
 }
+
+// packages/core/dist/parser/xml/index.js
 var semanticTypeAliases2 = {
   XCON: "xcon",
   Form: "form",
@@ -2870,17 +2914,21 @@ var semanticTypeAliases2 = {
 function fromXml2(xmlString) {
   const document2 = parseXml2(xmlString);
   const root2 = firstElement2(document2);
-  if (!root2) throw new Error("XML document is empty.");
+  if (!root2)
+    throw new Error("XML document is empty.");
   if (isMachineWrapper2(root2)) {
     const child = firstElement2(root2);
-    if (!child) throw new Error("XCON XML wrapper does not contain a value.");
+    if (!child)
+      throw new Error("XCON XML wrapper does not contain a value.");
     return requireObject2(parseMachineValue2(child));
   }
-  if (isMachineValueNode2(root2)) return requireObject2(parseMachineValue2(root2));
+  if (isMachineValueNode2(root2))
+    return requireObject2(parseMachineValue2(root2));
   return parseSemanticComponent2(root2);
 }
 function requireObject2(value2) {
-  if (!isXconObject2(value2)) throw new Error("XCON XML root must be an object.");
+  if (!isXconObject2(value2))
+    throw new Error("XCON XML root must be an object.");
   return value2;
 }
 function parseXml2(input) {
@@ -2889,7 +2937,8 @@ function parseXml2(input) {
   const tokenPattern = /<!\[CDATA\[[\s\S]*?\]\]>|<!--[\s\S]*?-->|<\?[\s\S]*?\?>|<\/?[A-Za-z_][\w:.-]*(?:\s+[^<>]*?)?\/?>|[^<]+/g;
   const tokens = input.match(tokenPattern) ?? [];
   for (const token of tokens) {
-    if (!token || token.startsWith("<?") || token.startsWith("<!--")) continue;
+    if (!token || token.startsWith("<?") || token.startsWith("<!--"))
+      continue;
     if (token.startsWith("<![CDATA[")) {
       current2(stack2).children.push(token.slice(9, -3));
       continue;
@@ -2897,7 +2946,8 @@ function parseXml2(input) {
     if (token.startsWith("</")) {
       const name = token.slice(2, -1).trim();
       const node = stack2.pop();
-      if (!node || node.name !== name) throw new Error(`Mismatched XML closing tag: ${name}`);
+      if (!node || node.name !== name)
+        throw new Error(`Mismatched XML closing tag: ${name}`);
       continue;
     }
     if (token.startsWith("<")) {
@@ -2907,12 +2957,15 @@ function parseXml2(input) {
       const attrs = parseAttributes2(body.slice(name.length));
       const node = { name, attrs, children: [] };
       current2(stack2).children.push(node);
-      if (!selfClosing) stack2.push(node);
+      if (!selfClosing)
+        stack2.push(node);
       continue;
     }
-    if (token.trim()) current2(stack2).children.push(decodeXml2(token));
+    if (token.trim())
+      current2(stack2).children.push(decodeXml2(token));
   }
-  if (stack2.length !== 1) throw new Error(`Unclosed XML tag: ${current2(stack2).name}`);
+  if (stack2.length !== 1)
+    throw new Error(`Unclosed XML tag: ${current2(stack2).name}`);
   return root2;
 }
 function parseAttributes2(input) {
@@ -2940,18 +2993,22 @@ function isMachineWrapper2(node) {
   return node.name.toLowerCase() === "xcon" && !!firstElement2(node) && isMachineValueNode2(firstElement2(node));
 }
 function isMachineValueNode2(node) {
-  return ["x", "c", "o", "int", "double", "number", "bool", "datetime", "null"].includes(
-    node.name.toLowerCase()
-  );
+  return ["x", "c", "o", "int", "double", "number", "bool", "datetime", "null"].includes(node.name.toLowerCase());
 }
 function parseMachineValue2(node) {
   const name = node.name.toLowerCase();
-  if (name === "x") return parseMachineObject2(node);
-  if (name === "c") return elementChildren2(node).map((child) => parseMachineValue2(child));
-  if (name === "int") return Number.parseInt(textContent2(node), 10);
-  if (name === "double" || name === "number") return Number(textContent2(node));
-  if (name === "bool") return textContent2(node).toLowerCase() === "true";
-  if (name === "null") return null;
+  if (name === "x")
+    return parseMachineObject2(node);
+  if (name === "c")
+    return elementChildren2(node).map((child) => parseMachineValue2(child));
+  if (name === "int")
+    return Number.parseInt(textContent2(node), 10);
+  if (name === "double" || name === "number")
+    return Number(textContent2(node));
+  if (name === "bool")
+    return textContent2(node).toLowerCase() === "true";
+  if (name === "null")
+    return null;
   return textContent2(node);
 }
 function parseMachineObject2(node) {
@@ -2959,11 +3016,14 @@ function parseMachineObject2(node) {
   const children2 = elementChildren2(node);
   for (let index3 = 0; index3 < children2.length; index3 += 1) {
     const keyNode = children2[index3];
-    if (keyNode.name.toLowerCase() !== "n") continue;
+    if (keyNode.name.toLowerCase() !== "n")
+      continue;
     const key = textContent2(keyNode);
     const valueNode = children2[index3 + 1];
-    if (!key || !valueNode) continue;
-    if (!output.contains(key)) output.add(key, parseMachineValue2(valueNode));
+    if (!key || !valueNode)
+      continue;
+    if (!output.contains(key))
+      output.add(key, parseMachineValue2(valueNode));
     index3 += 1;
   }
   return output;
@@ -2974,7 +3034,8 @@ function parseSemanticComponent2(node, stripStructuralName = false) {
   output.add("type", type2);
   const metadata = new XconObject3();
   for (const [name, rawValue] of Object.entries(node.attrs)) {
-    if (stripStructuralName && name === "name") continue;
+    if (stripStructuralName && name === "name")
+      continue;
     if (name.startsWith("xcon-prop-")) {
       output.add(name.slice(10), parseAttributeByPropertySpec2(name.slice(10), rawValue, type2));
       continue;
@@ -2985,9 +3046,11 @@ function parseSemanticComponent2(node, stripStructuralName = false) {
       output.add(name, parseAttributeByPropertySpec2(name, rawValue, type2));
     }
   }
-  if (metadata.count > 0) output.add("metadata", metadata);
+  if (metadata.count > 0)
+    output.add("metadata", metadata);
   const text2 = textContent2(node);
-  if (text2 && !output.contains("text")) output.add("text", text2);
+  if (text2 && !output.contains("text"))
+    output.add("text", text2);
   const childElements = elementChildren2(node);
   const arrayChildren = childElements.filter(isSemanticArrayWrapper2);
   arrayChildren.forEach((child) => {
@@ -3016,7 +3079,8 @@ function isSemanticArrayWrapper2(node) {
 }
 function toArrayPropertyName2(name) {
   const normalized = name.toLowerCase();
-  if (normalized === "items") return "items";
+  if (normalized === "items")
+    return "items";
   return "slides";
 }
 function parseSemanticArray2(node) {
@@ -3024,7 +3088,7 @@ function parseSemanticArray2(node) {
     if (child.name === "Value") {
       const raw = child.attrs.json ?? textContent2(child);
       try {
-        return jsonValueToXcon22(JSON.parse(raw));
+        return jsonValueToXcon4(JSON.parse(raw));
       } catch {
         return parseAttributeValue2(raw);
       }
@@ -3037,41 +3101,51 @@ function toPublicType2(name) {
 }
 function parseAttributeValue2(value2) {
   const trimmed = value2.trim();
-  if (trimmed === "true") return true;
-  if (trimmed === "false") return false;
-  if (trimmed === "null") return null;
-  if (/^-?\d+(?:\.\d+)?$/.test(trimmed)) return Number(trimmed);
+  if (trimmed === "true")
+    return true;
+  if (trimmed === "false")
+    return false;
+  if (trimmed === "null")
+    return null;
+  if (/^-?\d+(?:\.\d+)?$/.test(trimmed))
+    return Number(trimmed);
   if (trimmed.startsWith("[") && trimmed.endsWith("]") || trimmed.startsWith("{") && trimmed.endsWith("}")) {
     try {
       const parsed = JSON.parse(trimmed);
-      return jsonValueToXcon22(parsed);
+      return jsonValueToXcon4(parsed);
     } catch {
       return value2;
     }
   }
   return value2;
 }
-function jsonValueToXcon22(value2) {
+function jsonValueToXcon4(value2) {
   if (value2 === void 0 || value2 === null || typeof value2 === "string" || typeof value2 === "number" || typeof value2 === "boolean") {
     return value2 ?? null;
   }
-  if (Array.isArray(value2)) return value2.map((item) => jsonValueToXcon22(item));
-  if (typeof value2 === "object") return new XconObject3(value2);
+  if (Array.isArray(value2))
+    return value2.map((item) => jsonValueToXcon4(item));
+  if (typeof value2 === "object")
+    return new XconObject3(value2);
   return String(value2);
 }
 function decodeXml2(value2) {
   return value2.replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&quot;", '"').replaceAll("&apos;", "'").replaceAll("&amp;", "&");
 }
+
+// packages/core/dist/parser/tagless/index.js
 function fromTagless2(text2) {
   const trimmed = text2.trim();
-  if (trimmed.length < 8) throw new Error("TAGLESS input is too short.");
+  if (trimmed.length < 8)
+    throw new Error("TAGLESS input is too short.");
   const prefix = Array.from(trimmed.slice(0, 8)).slice(0, 4).join("");
   const suffix = Array.from(trimmed).slice(-4).join("");
   const markerSet = createMarkerSet2(prefix, suffix);
   const body = trimmed.slice(prefix.length, trimmed.length - suffix.length);
   const cursor = { index: 0 };
   const value2 = readValue2(body, cursor, markerSet);
-  if (!isXconObject2(value2)) throw new Error("TAGLESS root must be a dictionary.");
+  if (!isXconObject2(value2))
+    throw new Error("TAGLESS root must be a dictionary.");
   return applyPropertyTypes2(value2);
 }
 function createMarkerSet2(markers2, endMarkers) {
@@ -3092,9 +3166,12 @@ function readValue2(text2, cursor, markerSet) {
   skipWhitespace2(text2, cursor);
   const { open, close } = markerSet;
   const marker = text2[cursor.index];
-  if (marker === open[0]) return readObject2(text2, cursor, markerSet);
-  if (marker === open[1]) return readArray2(text2, cursor, markerSet);
-  if (marker === open[2]) return readPrimitive2(text2, cursor, markerSet);
+  if (marker === open[0])
+    return readObject2(text2, cursor, markerSet);
+  if (marker === open[1])
+    return readArray2(text2, cursor, markerSet);
+  if (marker === open[2])
+    return readPrimitive2(text2, cursor, markerSet);
   throw new Error(`Unexpected TAGLESS marker at ${cursor.index}: ${marker || "<eof>"}`);
 }
 function readObject2(text2, cursor, markerSet) {
@@ -3103,11 +3180,13 @@ function readObject2(text2, cursor, markerSet) {
   cursor.index += open[0].length;
   while (cursor.index < text2.length && text2[cursor.index] !== close[0]) {
     skipWhitespace2(text2, cursor);
-    if (text2[cursor.index] === close[0]) break;
+    if (text2[cursor.index] === close[0])
+      break;
     expect2(text2, cursor, open[3]);
     const key = readUntil2(text2, cursor, close[3]);
     const value2 = readValue2(text2, cursor, markerSet);
-    if (!output.contains(key)) output.add(key, value2);
+    if (!output.contains(key))
+      output.add(key, value2);
   }
   expect2(text2, cursor, close[0]);
   return output;
@@ -3118,7 +3197,8 @@ function readArray2(text2, cursor, markerSet) {
   cursor.index += open[1].length;
   while (cursor.index < text2.length && text2[cursor.index] !== close[1]) {
     skipWhitespace2(text2, cursor);
-    if (text2[cursor.index] === close[1]) break;
+    if (text2[cursor.index] === close[1])
+      break;
     output.push(readValue2(text2, cursor, markerSet));
   }
   expect2(text2, cursor, close[1]);
@@ -3139,7 +3219,8 @@ function expect2(text2, cursor, marker) {
 }
 function readUntil2(text2, cursor, marker) {
   const end = text2.indexOf(marker, cursor.index);
-  if (end < 0) throw new Error(`Unclosed TAGLESS marker "${marker}".`);
+  if (end < 0)
+    throw new Error(`Unclosed TAGLESS marker "${marker}".`);
   const value2 = text2.slice(cursor.index, end);
   cursor.index = end + marker.length;
   return decodePayload2(value2);
@@ -3148,18 +3229,21 @@ function decodePayload2(value2) {
   return decodeURIComponent(value2);
 }
 function skipWhitespace2(text2, cursor) {
-  while (cursor.index < text2.length && /\s/.test(text2[cursor.index])) cursor.index += 1;
+  while (cursor.index < text2.length && /\s/.test(text2[cursor.index]))
+    cursor.index += 1;
 }
+
+// packages/core/dist/parser/sketch/index.js
 var quotedTokenPrefix2 = "\0quoted:";
 var SketchParseError2 = class extends SyntaxError {
+  line;
+  column;
   constructor(message, line2, column2 = 1) {
     super(`XCON/SKETCH parse error at line ${line2}: ${message}`);
     this.line = line2;
     this.column = column2;
     this.name = "SketchParseError";
   }
-  line;
-  column;
 };
 function fromSketch2(source) {
   const lines = preprocessLines2(source);
@@ -3179,10 +3263,12 @@ function fromSketchLenient(source, options = {}) {
     try {
       return { document: fromSketch2(currentSource), errors };
     } catch (error) {
-      if (!(error instanceof SketchParseError2)) throw error;
+      if (!(error instanceof SketchParseError2))
+        throw error;
       const lineIndex = error.line - 1;
       const activeLine = activeLines[lineIndex];
-      if (!activeLine) throw error;
+      if (!activeLine)
+        throw error;
       errors.push({
         line: activeLine.originalNumber,
         column: error.column,
@@ -3190,13 +3276,15 @@ function fromSketchLenient(source, options = {}) {
         source: activeLine.text.trim()
       });
       activeLines.splice(lineIndex, removableSketchBlockLineCount(activeLines, lineIndex));
-      if (activeLines.length === 0) throw error;
+      if (activeLines.length === 0)
+        throw error;
     }
   }
   throw new SketchParseError2(`Could not recover after ${maxRecoveries} SKETCH parse error(s).`, 1);
 }
 function parseRoot2(lines) {
-  if (lines.length === 0) throw new SketchParseError2("Expected screen declaration.", 1);
+  if (lines.length === 0)
+    throw new SketchParseError2("Expected screen declaration.", 1);
   const root2 = {
     type: "form",
     pos: [0, 0, 360, 220]
@@ -3208,16 +3296,20 @@ function parseRoot2(lines) {
   for (let index3 = 0; index3 < lines.length; index3 += 1) {
     const line2 = lines[index3];
     if (line2.text.startsWith("screen ")) {
-      if (line2.indent !== 0) throw new SketchParseError2("Screen declaration must not be indented.", line2.number);
+      if (line2.indent !== 0)
+        throw new SketchParseError2("Screen declaration must not be indented.", line2.number);
       Object.assign(root2, parseScreen2(line2));
       hasScreen = true;
       continue;
     }
-    if (!hasScreen) throw new SketchParseError2("Expected root screen declaration.", line2.number);
-    while (line2.indent <= stack2[stack2.length - 1].indent) stack2.pop();
+    if (!hasScreen)
+      throw new SketchParseError2("Expected root screen declaration.", line2.number);
+    while (line2.indent <= stack2[stack2.length - 1].indent)
+      stack2.pop();
     const parent = stack2[stack2.length - 1];
     if (line2.text.startsWith("- ")) {
-      if (parent.kind !== "array") throw new SketchParseError2("Array item must be indented under an array property.", line2.number);
+      if (parent.kind !== "array")
+        throw new SketchParseError2("Array item must be indented under an array property.", line2.number);
       parent.items.push(parseScalar2(line2.text.slice(2).trim(), line2));
       continue;
     }
@@ -3239,7 +3331,8 @@ function parseRoot2(lines) {
       applyObjectProperty2(parent.target, line2);
       continue;
     }
-    if (parent.kind === "array") throw new SketchParseError2('Array items must start with "- ".', line2.number);
+    if (parent.kind === "array")
+      throw new SketchParseError2('Array items must start with "- ".', line2.number);
     const target = parent.kind === "component" ? parent.component.props : parent.target;
     const consumedJsonPropertyIndex = consumeJsonProperty2(target, lines, index3);
     if (consumedJsonPropertyIndex !== null) {
@@ -3252,8 +3345,10 @@ function parseRoot2(lines) {
     }
     applyProperty2(target, line2);
   }
-  if (!hasScreen) throw new SketchParseError2("Expected screen declaration.", lines[0]?.number ?? 1);
-  if (components.length > 0) root2.components = emitComponents2(components);
+  if (!hasScreen)
+    throw new SketchParseError2("Expected screen declaration.", lines[0]?.number ?? 1);
+  if (components.length > 0)
+    root2.components = emitComponents2(components);
   return root2;
 }
 function preprocessLines2(source) {
@@ -3272,7 +3367,8 @@ function preprocessLines2(source) {
     const dedented = raw.slice(commonIndent);
     const withoutComment = stripComment2(dedented);
     const text2 = withoutComment.trim();
-    if (!text2) return null;
+    if (!text2)
+      return null;
     return {
       number: index3 + 1,
       indent: withoutComment.length - withoutComment.trimStart().length,
@@ -3299,7 +3395,8 @@ function rewriteErrorLine(message, currentLine, originalLine) {
 }
 function removableSketchBlockLineCount(lines, startIndex) {
   const start2 = lines[startIndex];
-  if (!start2) return 1;
+  if (!start2)
+    return 1;
   const baseIndent = leadingSpaceCount(start2.text);
   let count3 = 1;
   for (let index3 = startIndex + 1; index3 < lines.length; index3 += 1) {
@@ -3308,7 +3405,8 @@ function removableSketchBlockLineCount(lines, startIndex) {
       count3 += 1;
       continue;
     }
-    if (leadingSpaceCount(text2) <= baseIndent) break;
+    if (leadingSpaceCount(text2) <= baseIndent)
+      break;
     count3 += 1;
   }
   return count3;
@@ -3318,16 +3416,20 @@ function leadingSpaceCount(text2) {
 }
 function parseScreen2(line2) {
   const tokens = tokenize2(line2.text);
-  if (tokens.shift() !== "screen") throw new SketchParseError2("Expected screen declaration.", line2.number);
+  if (tokens.shift() !== "screen")
+    throw new SketchParseError2("Expected screen declaration.", line2.number);
   const root2 = { type: "form" };
-  if (tokens.length === 0) throw new SketchParseError2("Expected screen size like 390x844.", line2.number);
+  if (tokens.length === 0)
+    throw new SketchParseError2("Expected screen size like 390x844.", line2.number);
   if (tokens[0] && !isSizeToken2(tokens[0])) {
     root2.name = parseStringToken2(tokens.shift(), line2);
   }
   const size = tokens.shift();
-  if (!size) throw new SketchParseError2("Expected screen size like 390x844.", line2.number);
+  if (!size)
+    throw new SketchParseError2("Expected screen size like 390x844.", line2.number);
   const dimensions = parseDimensions2(size);
-  if (!dimensions) throw new SketchParseError2("Expected screen size like 390x844.", line2.number);
+  if (!dimensions)
+    throw new SketchParseError2("Expected screen size like 390x844.", line2.number);
   root2.pos = [0, 0, dimensions[0], dimensions[1]];
   applyInlineProps2(root2, tokens, line2);
   return root2;
@@ -3338,14 +3440,16 @@ function isComponentDeclaration2(text2) {
 function parseComponent2(line2, counts) {
   const tokens = tokenize2(line2.text);
   const first2 = tokens.shift();
-  if (!first2) throw new SketchParseError2("Expected component declaration.", line2.number);
+  if (!first2)
+    throw new SketchParseError2("Expected component declaration.", line2.number);
   let name;
   let type2;
   if (tokens[0] === ":") {
     name = first2;
     tokens.shift();
     const explicitType = tokens.shift();
-    if (!explicitType) throw new SketchParseError2("Expected component type after name.", line2.number);
+    if (!explicitType)
+      throw new SketchParseError2("Expected component type after name.", line2.number);
     type2 = explicitType;
   } else {
     type2 = first2;
@@ -3364,15 +3468,18 @@ function parseComponent2(line2, counts) {
   }
   const text2 = tokens[0] && tokens[0] !== "at" ? parseStringToken2(tokens.shift(), line2) : void 0;
   Object.assign(props, primaryText2(type2, text2));
-  if (tokens.shift() !== "at") throw new SketchParseError2("Expected component layout: at x y width height.", line2.number);
+  if (tokens.shift() !== "at")
+    throw new SketchParseError2("Expected component layout: at x y width height.", line2.number);
   props.pos = parsePosition2(tokens, line2);
   applyInlineProps2(props, tokens, line2);
   return { name, props, children: [] };
 }
 function parseConnectorLayout2(tokens, line2, declaredType) {
-  if (tokens.shift() !== "from") throw new SketchParseError2("Expected connector layout: from source.anchor to target.anchor.", line2.number);
+  if (tokens.shift() !== "from")
+    throw new SketchParseError2("Expected connector layout: from source.anchor to target.anchor.", line2.number);
   const from = parseConnectorEndpoint2(tokens, line2, "Expected connector source after from.");
-  if (tokens.shift() !== "to") throw new SketchParseError2("Expected connector layout: from source.anchor to target.anchor.", line2.number);
+  if (tokens.shift() !== "to")
+    throw new SketchParseError2("Expected connector layout: from source.anchor to target.anchor.", line2.number);
   const to = parseConnectorEndpoint2(tokens, line2, "Expected connector target after to.");
   return {
     type: "connector",
@@ -3383,23 +3490,28 @@ function parseConnectorLayout2(tokens, line2, declaredType) {
 }
 function parseConnectorEndpoint2(tokens, line2, message) {
   const ref = tokens.shift();
-  if (!ref || ref === "to") throw new SketchParseError2(message, line2.number);
+  if (!ref || ref === "to")
+    throw new SketchParseError2(message, line2.number);
   const parsed = parseStringToken2(ref, line2);
-  if (!parsed) throw new SketchParseError2(message, line2.number);
+  if (!parsed)
+    throw new SketchParseError2(message, line2.number);
   if (parsed.includes(".")) {
     const parts = parsed.split(".");
     const anchor2 = parts.pop() || "center";
     const target = parts.join(".");
-    if (!target) throw new SketchParseError2(message, line2.number);
+    if (!target)
+      throw new SketchParseError2(message, line2.number);
     return { target, anchor: anchor2 };
   }
   const anchor = tokens[0] && tokens[0] !== "to" ? parseStringToken2(tokens.shift(), line2) : "center";
   return { target: parsed, anchor: anchor || "center" };
 }
 function parseLineFromLayout2(tokens, line2) {
-  if (tokens.shift() !== "from") throw new SketchParseError2("Expected line layout: from x y to x y.", line2.number);
+  if (tokens.shift() !== "from")
+    throw new SketchParseError2("Expected line layout: from x y to x y.", line2.number);
   const start2 = parsePoint2(tokens, line2, "Expected line start point after from.");
-  if (tokens.shift() !== "to") throw new SketchParseError2("Expected line layout: from x y to x y.", line2.number);
+  if (tokens.shift() !== "to")
+    throw new SketchParseError2("Expected line layout: from x y to x y.", line2.number);
   const end = parsePoint2(tokens, line2, "Expected line end point after to.");
   const left3 = Math.min(start2[0], end[0]);
   const top2 = Math.min(start2[1], end[1]);
@@ -3413,17 +3525,20 @@ function parseLineFromLayout2(tokens, line2) {
 }
 function parsePoint2(tokens, line2, message) {
   const first2 = tokens.shift();
-  if (!first2) throw new SketchParseError2(message, line2.number);
+  if (!first2)
+    throw new SketchParseError2(message, line2.number);
   const point6 = parseNumberListToken2(first2, line2);
   while (point6.length < 2 && tokens[0] && isNumberToken2(tokens[0])) {
     point6.push(parseNumber2(tokens.shift(), line2));
   }
-  if (point6.length < 2) throw new SketchParseError2(message, line2.number);
+  if (point6.length < 2)
+    throw new SketchParseError2(message, line2.number);
   return [point6[0], point6[1]];
 }
 function parsePosition2(tokens, line2) {
   const first2 = tokens.shift();
-  if (!first2) throw new SketchParseError2("Expected position after at.", line2.number);
+  if (!first2)
+    throw new SketchParseError2("Expected position after at.", line2.number);
   const pos = parseNumberListToken2(first2, line2);
   while (pos.length < 4 && tokens[0] && isNumberToken2(tokens[0])) {
     pos.push(parseNumber2(tokens.shift(), line2));
@@ -3435,7 +3550,8 @@ function applyInlineProps2(target, tokens, line2) {
   while (index3 < tokens.length) {
     const key = normalizePropName2(tokens[index3]);
     const value2 = tokens[index3 + 1];
-    if (!key || value2 === void 0) throw new SketchParseError2("Expected inline property name and value.", line2.number);
+    if (!key || value2 === void 0)
+      throw new SketchParseError2("Expected inline property name and value.", line2.number);
     if (key === "size") {
       target.size = parseSizeValue2(value2, line2);
     } else {
@@ -3448,33 +3564,50 @@ function applyProperty2(props, line2) {
   const tokens = tokenize2(line2.text);
   const key = tokens[0];
   const values2 = tokens.slice(1);
-  if (!key || values2.length === 0) throw new SketchParseError2("Property requires a name and value.", line2.number);
-  if (key === "bg") props.backgroundColor = required2(values2, line2, "bg requires a color.");
-  else if (key === "color") props.color = required2(values2, line2, "color requires a value.");
-  else if (key === "font") props.font = parseFont2(values2, line2);
-  else if (key === "align") props.textAlign = required2(values2, line2, "align requires a value.");
-  else if (key === "valign") props.textVerticalAlign = required2(values2, line2, "valign requires a value.");
-  else if (key === "radius") mergeObject2(props, "border", { radius: parseNumber2(required2(values2, line2, "radius requires a number."), line2) });
-  else if (key === "border") mergeObject2(props, "border", parseBorder2(values2, line2));
-  else if (key === "shadow") props.shadow = parseShadow2(values2, line2);
-  else if (key === "gap") mergeObject2(props, "al", { gap: parseScalar2(required2(values2, line2, "gap requires a value."), line2) });
-  else if (key === "padding") mergeObject2(props, "al", { padding: parseSpacing2(values2, line2) });
+  if (!key || values2.length === 0)
+    throw new SketchParseError2("Property requires a name and value.", line2.number);
+  if (key === "bg")
+    props.backgroundColor = required2(values2, line2, "bg requires a color.");
+  else if (key === "color")
+    props.color = required2(values2, line2, "color requires a value.");
+  else if (key === "font")
+    props.font = parseFont2(values2, line2);
+  else if (key === "align")
+    props.textAlign = required2(values2, line2, "align requires a value.");
+  else if (key === "valign")
+    props.textVerticalAlign = required2(values2, line2, "valign requires a value.");
+  else if (key === "radius")
+    mergeObject2(props, "border", { radius: parseNumber2(required2(values2, line2, "radius requires a number."), line2) });
+  else if (key === "border")
+    mergeObject2(props, "border", parseBorder2(values2, line2));
+  else if (key === "shadow")
+    props.shadow = parseShadow2(values2, line2);
+  else if (key === "gap")
+    mergeObject2(props, "al", { gap: parseScalar2(required2(values2, line2, "gap requires a value."), line2) });
+  else if (key === "padding")
+    mergeObject2(props, "al", { padding: parseSpacing2(values2, line2) });
   else if (key === "layout") {
     const layout = required2(values2, line2, "layout requires a value.");
-    if (props.type === "button") props.layout = layout;
-    else mergeObject2(props, "al", { direction: layout });
-  } else if (key === "scroll") props.scroll = required2(values2, line2, "scroll requires a mode.");
-  else props[normalizePropName2(key)] = values2.length === 1 ? parseScalar2(values2[0], line2) : values2.map((value2) => parseScalar2(value2, line2));
+    if (props.type === "button")
+      props.layout = layout;
+    else
+      mergeObject2(props, "al", { direction: layout });
+  } else if (key === "scroll")
+    props.scroll = required2(values2, line2, "scroll requires a mode.");
+  else
+    props[normalizePropName2(key)] = values2.length === 1 ? parseScalar2(values2[0], line2) : values2.map((value2) => parseScalar2(value2, line2));
 }
 function applyObjectProperty2(target, line2) {
   const tokens = tokenize2(line2.text);
   const key = tokens[0];
-  if (!key || tokens.length < 2) throw new SketchParseError2("Object property requires a name and value.", line2.number);
+  if (!key || tokens.length < 2)
+    throw new SketchParseError2("Object property requires a name and value.", line2.number);
   target[normalizePropName2(key)] = tokens.length === 2 ? parseScalar2(tokens[1], line2) : tokens.slice(1).map((value2) => parseScalar2(value2, line2)).join(" ");
 }
 function consumeJsonProperty2(target, lines, index3) {
   const start2 = parseJsonPropertyStart2(lines[index3]);
-  if (!start2) return null;
+  if (!start2)
+    return null;
   const fragments = [start2.value];
   let endIndex = index3;
   while (!isCompleteJsonValue2(fragments.join("\n"))) {
@@ -3495,9 +3628,11 @@ function consumeJsonProperty2(target, lines, index3) {
 }
 function parseJsonPropertyStart2(line2) {
   const match = line2.text.match(/^([A-Za-z_][\w-]*)\s+([\s\S]+)$/);
-  if (!match) return null;
+  if (!match)
+    return null;
   const value2 = match[2].trim();
-  if (!value2.startsWith("{") && !value2.startsWith("[")) return null;
+  if (!value2.startsWith("{") && !value2.startsWith("["))
+    return null;
   return { key: match[1], value: value2 };
 }
 function isCompleteJsonValue2(value2) {
@@ -3530,7 +3665,8 @@ function isBlockProperty2(line2, next) {
 }
 function createBlockProperty2(props, line2, next) {
   const key = normalizePropName2(line2.text);
-  if (!next) throw new SketchParseError2("Block property requires indented content.", line2.number);
+  if (!next)
+    throw new SketchParseError2("Block property requires indented content.", line2.number);
   if (next.text.startsWith("- ")) {
     const items = [];
     props[key] = items;
@@ -3541,13 +3677,17 @@ function createBlockProperty2(props, line2, next) {
   return { kind: "object", indent: line2.indent, target };
 }
 function required2(values2, line2, message) {
-  if (!values2[0]) throw new SketchParseError2(message, line2.number);
+  if (!values2[0])
+    throw new SketchParseError2(message, line2.number);
   return parseStringToken2(values2[0], line2);
 }
 function parseFont2(values2, line2) {
-  if (values2.length < 1) throw new SketchParseError2("font requires at least a size.", line2.number);
-  if (values2.length === 1) return { size: parseScalar2(values2[0], line2) };
-  if (isNumberToken2(values2[0])) return { size: parseNumber2(values2[0], line2), weight: parseScalar2(values2[1], line2) };
+  if (values2.length < 1)
+    throw new SketchParseError2("font requires at least a size.", line2.number);
+  if (values2.length === 1)
+    return { size: parseScalar2(values2[0], line2) };
+  if (isNumberToken2(values2[0]))
+    return { size: parseNumber2(values2[0], line2), weight: parseScalar2(values2[1], line2) };
   return {
     family: parseStringToken2(values2[0], line2),
     size: parseScalar2(values2[1], line2),
@@ -3555,7 +3695,8 @@ function parseFont2(values2, line2) {
   };
 }
 function parseBorder2(values2, line2) {
-  if (values2.length < 1) throw new SketchParseError2("border requires width.", line2.number);
+  if (values2.length < 1)
+    throw new SketchParseError2("border requires width.", line2.number);
   return {
     width: parseNumber2(values2[0], line2),
     ...values2[1] ? { color: parseStringToken2(values2[1], line2) } : {},
@@ -3563,7 +3704,8 @@ function parseBorder2(values2, line2) {
   };
 }
 function parseShadow2(values2, line2) {
-  if (values2.length < 4) throw new SketchParseError2("shadow requires x y blur opacity.", line2.number);
+  if (values2.length < 4)
+    throw new SketchParseError2("shadow requires x y blur opacity.", line2.number);
   return {
     x: parseNumber2(values2[0], line2),
     y: parseNumber2(values2[1], line2),
@@ -3572,18 +3714,27 @@ function parseShadow2(values2, line2) {
   };
 }
 function parseSpacing2(values2, line2) {
-  if (values2.length === 0) throw new SketchParseError2("spacing requires at least one value.", line2.number);
-  if (values2.length === 1) return parseScalar2(values2[0], line2);
+  if (values2.length === 0)
+    throw new SketchParseError2("spacing requires at least one value.", line2.number);
+  if (values2.length === 1)
+    return parseScalar2(values2[0], line2);
   return values2.map((value2) => parseNumber2(value2, line2));
 }
 function parseScalar2(value2, line2) {
-  if (value2.startsWith(quotedTokenPrefix2)) return value2.slice(quotedTokenPrefix2.length);
-  if (value2 === "true") return true;
-  if (value2 === "false") return false;
-  if (value2 === "null") return null;
-  if (isNumberToken2(value2)) return Number(value2);
-  if (isNumberListToken2(value2)) return value2.split(",").map(Number);
-  if (isSizeToken2(value2)) return parseDimensions2(value2);
+  if (value2.startsWith(quotedTokenPrefix2))
+    return value2.slice(quotedTokenPrefix2.length);
+  if (value2 === "true")
+    return true;
+  if (value2 === "false")
+    return false;
+  if (value2 === "null")
+    return null;
+  if (isNumberToken2(value2))
+    return Number(value2);
+  if (isNumberListToken2(value2))
+    return value2.split(",").map(Number);
+  if (isSizeToken2(value2))
+    return parseDimensions2(value2);
   if (value2.startsWith("[") && value2.endsWith("]") || value2.startsWith("{") && value2.endsWith("}")) {
     try {
       return JSON.parse(value2);
@@ -3598,17 +3749,21 @@ function parseStringToken2(value2, line2) {
   return parsed === null ? "null" : String(parsed);
 }
 function parseSizeValue2(value2, line2) {
-  if (isSizeToken2(value2)) return parseDimensions2(value2);
+  if (isSizeToken2(value2))
+    return parseDimensions2(value2);
   return parseScalar2(value2, line2);
 }
 function parseNumberListToken2(value2, line2) {
-  if (isNumberListToken2(value2)) return value2.split(",").map(Number);
-  if (isNumberToken2(value2)) return [Number(value2)];
+  if (isNumberListToken2(value2))
+    return value2.split(",").map(Number);
+  if (isNumberToken2(value2))
+    return [Number(value2)];
   throw new SketchParseError2("Expected numeric position.", line2.number);
 }
 function parseNumber2(value2, line2) {
   const number7 = Number(value2);
-  if (!Number.isFinite(number7)) throw new SketchParseError2(`Expected number but received "${value2}".`, line2.number);
+  if (!Number.isFinite(number7))
+    throw new SketchParseError2(`Expected number but received "${value2}".`, line2.number);
   return number7;
 }
 function isNumberToken2(value2) {
@@ -3622,11 +3777,13 @@ function isSizeToken2(value2) {
 }
 function parseDimensions2(value2) {
   const match = value2.match(/^(-?(?:\d+|\d*\.\d+))x(-?(?:\d+|\d*\.\d+))$/i);
-  if (!match) return null;
+  if (!match)
+    return null;
   return [Number(match[1]), Number(match[2])];
 }
 function normalizePropName2(key) {
-  if (key === "bg") return "backgroundColor";
+  if (key === "bg")
+    return "backgroundColor";
   return key;
 }
 function nextComponentName2(type2, counts) {
@@ -3635,10 +3792,14 @@ function nextComponentName2(type2, counts) {
   return `${type2}${count3}`;
 }
 function primaryText2(type2, text2) {
-  if (text2 === void 0) return {};
-  if (type2 === "button") return { label: text2 };
-  if (type2 === "textField" || type2 === "searchBar") return { placeholder: text2 };
-  if (type2 === "label" || type2 === "textView" || type2 === "shape") return { text: text2 };
+  if (text2 === void 0)
+    return {};
+  if (type2 === "button")
+    return { label: text2 };
+  if (type2 === "textField" || type2 === "searchBar")
+    return { placeholder: text2 };
+  if (type2 === "label" || type2 === "textView" || type2 === "shape")
+    return { text: text2 };
   return { text: text2 };
 }
 function emitComponents2(components) {
@@ -3646,29 +3807,33 @@ function emitComponents2(components) {
     componentsOrder: components.map((component) => component.name).join(",")
   };
   for (const component of components) {
-    if (component.children.length > 0) component.props.components = emitComponents2(component.children);
+    if (component.children.length > 0)
+      component.props.components = emitComponents2(component.children);
     output[component.name] = component.props;
   }
   return output;
 }
 function mergeObject2(target, key, patch) {
-  const current22 = target[key];
-  target[key] = { ...isRecord2(current22) ? current22 : {}, ...patch };
+  const current3 = target[key];
+  target[key] = { ...isRecord2(current3) ? current3 : {}, ...patch };
 }
 function normalizeSketchAliases2(value2) {
   if (Array.isArray(value2)) {
     value2.forEach(normalizeSketchAliases2);
     return;
   }
-  if (!isRecord2(value2)) return;
+  if (!isRecord2(value2))
+    return;
   const font = value2.font;
   if (isRecord2(font)) {
     if (value2.textAlign === void 0 && font.align !== void 0) {
       value2.textAlign = font.align;
     }
     if (value2.textVerticalAlign === void 0) {
-      if (font.valign !== void 0) value2.textVerticalAlign = font.valign;
-      else if (font.verticalAlign !== void 0) value2.textVerticalAlign = font.verticalAlign;
+      if (font.valign !== void 0)
+        value2.textVerticalAlign = font.valign;
+      else if (font.verticalAlign !== void 0)
+        value2.textVerticalAlign = font.verticalAlign;
     }
     delete font.align;
     delete font.valign;
@@ -3681,26 +3846,31 @@ function isRecord2(value2) {
 }
 function tokenize2(input) {
   const tokens = [];
-  let current22 = "";
+  let current3 = "";
   let quoted = false;
   let escaped = false;
   const push = () => {
-    if (current22.length === 0) return;
-    tokens.push(current22);
-    current22 = "";
+    if (current3.length === 0)
+      return;
+    tokens.push(current3);
+    current3 = "";
   };
   const pushQuoted = () => {
-    tokens.push(`${quotedTokenPrefix2}${current22}`);
-    current22 = "";
+    tokens.push(`${quotedTokenPrefix2}${current3}`);
+    current3 = "";
   };
   for (let index3 = 0; index3 < input.length; index3 += 1) {
     const char = input[index3];
     if (quoted) {
       if (escaped) {
-        if (char === "n") current22 += "\n";
-        else if (char === "r") current22 += "\r";
-        else if (char === "t") current22 += "	";
-        else current22 += char;
+        if (char === "n")
+          current3 += "\n";
+        else if (char === "r")
+          current3 += "\r";
+        else if (char === "t")
+          current3 += "	";
+        else
+          current3 += char;
         escaped = false;
         continue;
       }
@@ -3713,7 +3883,7 @@ function tokenize2(input) {
         pushQuoted();
         continue;
       }
-      current22 += char;
+      current3 += char;
       continue;
     }
     if (char === '"') {
@@ -3734,19 +3904,20 @@ function tokenize2(input) {
       push();
       continue;
     }
-    if (char === ":" && /^[A-Za-z_][\w-]*$/.test(current22) && input[index3 + 1] !== "/") {
+    if (char === ":" && /^[A-Za-z_][\w-]*$/.test(current3) && input[index3 + 1] !== "/") {
       push();
       tokens.push(":");
       continue;
     }
-    current22 += char;
+    current3 += char;
   }
   push();
   return tokens;
 }
 function readJsonToken2(input, start2) {
   const opener = input[start2];
-  if (opener !== "{" && opener !== "[") return null;
+  if (opener !== "{" && opener !== "[")
+    return null;
   let depth = 0;
   let quoted = false;
   let escaped = false;
@@ -3761,7 +3932,8 @@ function readJsonToken2(input, start2) {
         escaped = true;
         continue;
       }
-      if (char === '"') quoted = false;
+      if (char === '"')
+        quoted = false;
       continue;
     }
     if (char === '"') {
@@ -3774,26 +3946,33 @@ function readJsonToken2(input, start2) {
     }
     if (char === "}" || char === "]") {
       depth -= 1;
-      if (depth === 0) return { token: input.slice(start2, index3 + 1), end: index3 };
+      if (depth === 0)
+        return { token: input.slice(start2, index3 + 1), end: index3 };
     }
   }
   return null;
 }
 
-// packages/core/dist/chunk-5YPT3U5D.js
+// packages/core/dist/converter/index.js
 function detectXconSyntax(input) {
   const trimmed = input.trim();
-  if (trimmed.startsWith("<")) return "xml";
-  if (trimmed.startsWith("{")) return "json";
-  if (looksLikeSketch(trimmed)) return "sketch";
+  if (trimmed.startsWith("<"))
+    return "xml";
+  if (trimmed.startsWith("{"))
+    return "json";
+  if (looksLikeSketch(trimmed))
+    return "sketch";
   return "tagless";
 }
 function deserialize(input) {
   const trimmed = input.trim();
   const syntax = detectXconSyntax(trimmed);
-  if (syntax === "xml") return fromXml2(trimmed);
-  if (syntax === "json") return fromJSON2(trimmed);
-  if (syntax === "sketch") return fromSketch2(trimmed);
+  if (syntax === "xml")
+    return fromXml2(trimmed);
+  if (syntax === "json")
+    return fromJSON2(trimmed);
+  if (syntax === "sketch")
+    return fromSketch2(trimmed);
   try {
     return fromTagless2(trimmed);
   } catch (taglessError) {
@@ -30131,6 +30310,8 @@ function linkType(link4) {
 var SVG_NS2 = "http://www.w3.org/2000/svg";
 var DEFAULT_WIDTH2 = 800;
 var DEFAULT_HEIGHT2 = 600;
+var MIN_VIEWPORT_SCALE = 0.05;
+var MAX_VIEWPORT_SCALE = 4;
 function hydrateNetworkDiagrams(root2 = document) {
   const hosts = Array.from(root2.querySelectorAll('[data-xcon-network="true"]'));
   for (const host of hosts) {
@@ -30176,6 +30357,7 @@ function buildControls(host, svg, graph, options, context, getState, updateState
     searchInput.type = "search";
     searchInput.value = getState().search;
     searchInput.placeholder = "Search";
+    searchInput.ariaLabel = "Search network";
     searchInput.dataset.xconNetworkSearch = "true";
     searchInput.addEventListener("input", () => {
       updateState({ ...getState(), search: searchInput.value });
@@ -30186,17 +30368,16 @@ function buildControls(host, svg, graph, options, context, getState, updateState
   const fit2 = document.createElement("button");
   fit2.type = "button";
   fit2.textContent = "Fit";
+  fit2.title = "Fit graph to view";
   fit2.dataset.xconNetworkFit = "true";
   fit2.addEventListener("click", () => {
-    const { width, height } = svgSize(svg, host);
-    svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-    context.transform = defaultTransform();
-    applyViewportTransform(svg, context.transform);
+    fitGraphToView(svg, host, options, context);
   });
   toolbar.append(fit2);
   const reset = document.createElement("button");
   reset.type = "button";
   reset.textContent = "Reset";
+  reset.title = "Reset graph view and filters";
   reset.dataset.xconNetworkReset = "true";
   reset.addEventListener("click", () => {
     delete host.dataset.xconNetworkSelected;
@@ -30294,6 +30475,9 @@ function buildFilterControls(host, toolbar, graph, getState, updateState) {
   minDegree.type = "number";
   minDegree.min = "0";
   minDegree.step = "1";
+  minDegree.placeholder = "Degree";
+  minDegree.title = "Minimum node degree";
+  minDegree.ariaLabel = "Minimum node degree";
   minDegree.dataset.xconNetworkMinDegree = "true";
   minDegree.addEventListener("input", () => {
     const value2 = Math.max(0, Math.floor(Number(minDegree.value) || 0));
@@ -30397,7 +30581,7 @@ function bindViewportInteractions(svg, options, context) {
       const wheel = event;
       const factor = wheel.deltaY < 0 ? 1.12 : 0.88;
       const previous = context.transform;
-      const nextScale = clamp(previous.k * factor, 0.2, 4);
+      const nextScale = clamp(previous.k * factor, MIN_VIEWPORT_SCALE, MAX_VIEWPORT_SCALE);
       if (nextScale === previous.k) return;
       const anchorX3 = finiteCoordinate(wheel.clientX) ?? 0;
       const anchorY3 = finiteCoordinate(wheel.clientY) ?? 0;
@@ -30437,7 +30621,8 @@ function bindHover(group3, host, node) {
     const tooltip = ensureTooltip(host);
     tooltip.textContent = node.label;
     const mouse = event;
-    const style = `left:${trim2(mouse.clientX + 12)}px;top:${trim2(mouse.clientY + 12)}px`;
+    const anchor = tooltipAnchor(group3, host, mouse);
+    const style = `left:${trim2(anchor.x)}px;top:${trim2(anchor.y)}px`;
     tooltip.setAttribute("style", style);
     addClassToken(tooltip, "show");
   });
@@ -30446,6 +30631,30 @@ function bindHover(group3, host, node) {
     tooltip.textContent = "";
     removeClassToken(tooltip, "show");
   });
+}
+function tooltipAnchor(group3, host, mouse) {
+  const hostRect = host.getBoundingClientRect();
+  const circle2 = group3.querySelector("[data-network-node-circle]");
+  if (circle2) {
+    const rect2 = circle2.getBoundingClientRect();
+    if (rect2.width > 0 || rect2.height > 0) {
+      return {
+        x: finiteCoordinate(rect2.left + rect2.width / 2 - hostRect.left) ?? 0,
+        y: finiteCoordinate(rect2.top - hostRect.top) ?? 0
+      };
+    }
+  }
+  const groupRect = group3.getBoundingClientRect();
+  if (groupRect.width > 0 || groupRect.height > 0) {
+    return {
+      x: finiteCoordinate(groupRect.left + groupRect.width / 2 - hostRect.left) ?? 0,
+      y: finiteCoordinate(groupRect.top - hostRect.top) ?? 0
+    };
+  }
+  return {
+    x: finiteCoordinate(mouse.clientX - hostRect.left + 12) ?? 0,
+    y: finiteCoordinate(mouse.clientY - hostRect.top + 12) ?? 0
+  };
 }
 function bindDrag(group3, svg, nodeId, layout, context) {
   group3.addEventListener("mousedown", (event) => {
@@ -30509,6 +30718,59 @@ function ensureTooltip(host) {
 }
 function applyViewportTransform(svg, transform2) {
   svg.querySelector("[data-xcon-network-viewport]")?.setAttribute("transform", transformAttribute(transform2));
+}
+function fitGraphToView(svg, host, options, context) {
+  const { width, height } = svgSize(svg, host);
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  const bounds = renderedGraphBounds(svg, context, options);
+  context.transform = bounds ? fitTransform(bounds, width, height, options) : defaultTransform();
+  applyViewportTransform(svg, context.transform);
+}
+function renderedGraphBounds(svg, context, options) {
+  const nodeIds = Array.from(svg.querySelectorAll("[data-network-node-id]")).map((node) => node.getAttribute("data-network-node-id")).filter((id2) => Boolean(id2));
+  if (nodeIds.length === 0) return null;
+  const radius2 = Math.max(1, options.nodeRadius);
+  const labelBottom = options.showLabels ? radius2 + 28 : radius2;
+  let minX = Number.POSITIVE_INFINITY;
+  let minY = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let maxY2 = Number.NEGATIVE_INFINITY;
+  for (const id2 of nodeIds) {
+    const point6 = context.layout.get(id2);
+    if (!point6) continue;
+    minX = Math.min(minX, point6.x - radius2);
+    minY = Math.min(minY, point6.y - radius2);
+    maxX = Math.max(maxX, point6.x + radius2);
+    maxY2 = Math.max(maxY2, point6.y + labelBottom);
+  }
+  if (!Number.isFinite(minX) || !Number.isFinite(minY) || !Number.isFinite(maxX) || !Number.isFinite(maxY2)) return null;
+  return {
+    minX,
+    minY,
+    width: Math.max(1, maxX - minX),
+    height: Math.max(1, maxY2 - minY)
+  };
+}
+function fitTransform(bounds, width, height, options) {
+  const padding = fitPadding(width, height, options);
+  const usableWidth = Math.max(1, width - padding.left - padding.right);
+  const usableHeight = Math.max(1, height - padding.top - padding.bottom);
+  const scale3 = clamp(Math.min(usableWidth / bounds.width, usableHeight / bounds.height, 1), MIN_VIEWPORT_SCALE, 1);
+  return {
+    x: padding.left + (usableWidth - bounds.width * scale3) / 2 - bounds.minX * scale3,
+    y: padding.top + (usableHeight - bounds.height * scale3) / 2 - bounds.minY * scale3,
+    k: scale3
+  };
+}
+function fitPadding(width, height, options) {
+  const base = clamp(Math.min(width, height) * 0.12, 32, 72);
+  const controlsTop = options.showControls ? Math.min(height * 0.36, base + 70) : base;
+  return {
+    top: controlsTop,
+    right: base,
+    bottom: base,
+    left: base
+  };
 }
 function defaultTransform() {
   return { x: 0, y: 0, k: 1 };
@@ -31747,6 +32009,7 @@ select.f-select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(var(-
 .xa-dataviz-empty{height:100%;display:flex;align-items:center;justify-content:center;color:#888;font-size:13px}
 .xa-flipbook-container .catalog-app{width:100%;height:100%;position:relative;display:flex;align-items:center;justify-content:center}.xa-flipbook-container .flipbook-viewer{position:relative;display:flex;align-items:center;justify-content:center;min-width:600px;min-height:400px}.xa-flipbook-container .ui-flipbook{position:relative;margin:0 auto;box-shadow:0 4px 20px rgba(0,0,0,.3);border-radius:8px;overflow:visible}.xa-flipbook-container .ui-flipbook .page{background:white;border:1px solid #ddd;box-sizing:border-box;display:flex;align-items:center;justify-content:center;overflow:hidden;width:220px;height:320px}.xa-flipbook-container .ui-flipbook .page img{max-width:100%;max-height:100%;object-fit:contain}.page-content{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;box-sizing:border-box}.flipbook-page-placeholder{padding:20px;text-align:center;color:#666}.flipbook-controls{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);padding:10px;border-radius:5px;display:flex;gap:10px;z-index:1000}.flipbook-control-btn{background:#333;color:white;border:none;padding:8px 12px;border-radius:3px;cursor:pointer;font-size:14px}.flipbook-control-btn:hover{background:#555}.flipbook-page-info{color:white;display:flex;align-items:center;font-size:14px;margin:0 10px}.flipbook-miniatures{position:absolute;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);padding:10px;border-radius:5px;display:none;max-width:80%;overflow-x:auto}.flipbook-miniature{display:inline-block;width:60px;height:80px;margin:0 5px;cursor:pointer;border:2px solid transparent;border-radius:3px;overflow:hidden;background:transparent;padding:0}.flipbook-miniature:hover{border-color:#fff}.flipbook-miniature.active{border-color:#007bff}.flipbook-miniature img{width:100%;height:100%;object-fit:cover}.ui-arrow-control{position:absolute;top:50%;transform:translateY(-50%);width:50px;height:50px;background:rgba(0,0,0,.6);color:white;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:1001;border-radius:25px;font-size:24px;font-weight:bold;transition:all .3s ease;border:2px solid rgba(255,255,255,.3)}.ui-arrow-control:hover{background:rgba(0,0,0,.8);border-color:rgba(255,255,255,.6);transform:translateY(-50%) scale(1.1)}.ui-arrow-next-page{right:10px}.ui-arrow-previous-page{left:10px}.ui-arrow-next-page::before{content:"\u203A"}.ui-arrow-previous-page::before{content:"\u2039"}
 .xa-network-diagram-container{position:relative;background:linear-gradient(135deg,#f7fafc 0%,#e2e8f0 100%);border:none;border-radius:16px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.1),0 8px 16px rgba(0,0,0,.06);backdrop-filter:blur(10px)}.network-svg{cursor:grab;transition:all .3s ease}.network-svg:active{cursor:grabbing}.network-node{cursor:pointer;stroke:#fff;stroke-width:3px;filter:drop-shadow(0 6px 12px rgba(0,0,0,.15));transition:stroke .2s ease,stroke-width .2s ease,filter .2s ease}.network-node:hover{stroke:var(--xcon-network-accent,#f093fb);stroke-width:4px;filter:drop-shadow(0 12px 24px rgba(0,0,0,.2))}.network-node.root-node{stroke:#fff;stroke-width:5px;filter:drop-shadow(0 8px 16px rgba(102,126,234,.4))}.network-node-group.selected .network-node{stroke:var(--xcon-network-selected,#f8fafc);stroke-width:5px}.network-node-group.highlighted .network-node{stroke:var(--xcon-network-neighbor,#60a5fa);stroke-width:4px}.network-node-group.selected.highlighted .network-node{stroke:var(--xcon-network-selected,#f8fafc);stroke-width:5px}.network-node-group.muted .network-node{opacity:var(--xcon-network-muted-opacity,.22)}.network-node.expanded{stroke:var(--xcon-network-accent,#f093fb);stroke-width:4px;filter:drop-shadow(0 6px 12px rgba(240,147,251,.3))}.network-link{fill:none;stroke:var(--xcon-network-link,#cbd5e0);stroke-width:3px;stroke-opacity:.7;transition:all .3s ease}.network-link:hover{stroke:var(--xcon-network-primary,#667eea);stroke-width:4px;stroke-opacity:.9}.network-link.highlighted{stroke:var(--xcon-network-selected,#f8fafc);stroke-opacity:1;stroke-width:4px}.network-link.muted{stroke-opacity:var(--xcon-network-muted-opacity,.22)}.network-link.folder-link{stroke-dasharray:8,4}.network-link.ref-link{stroke:var(--xcon-network-ref-link,#a0aec0);stroke-opacity:.5;stroke-width:2px;stroke-dasharray:8,4;animation:dash 2s linear infinite}@keyframes dash{to{stroke-dashoffset:-12}}.network-link.marker-only{stroke:var(--xcon-network-accent,#f093fb);stroke-opacity:.7;stroke-width:3px}.network-label{fill:var(--xcon-network-text,#2d3748);font:12px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;font-weight:600;text-anchor:middle;pointer-events:none;user-select:none;text-shadow:0 2px 4px rgba(255,255,255,.8);transition:all .3s ease}.network-label:hover{fill:var(--xcon-network-primary,#667eea);font-weight:700}.network-label.root-label{font-weight:800;font-size:14px;fill:var(--xcon-network-primary,#667eea);text-shadow:0 3px 6px rgba(0,0,0,.15)}.network-tooltip{position:absolute;background:linear-gradient(135deg,rgba(102,126,234,.95) 0%,rgba(118,75,162,.95) 100%);color:white;padding:16px 20px;border-radius:12px;font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-weight:500;pointer-events:none;opacity:0;transition:all .4s cubic-bezier(.4,0,.2,1);z-index:1000;box-shadow:0 12px 24px rgba(0,0,0,.2);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.3);text-align:center}.network-tooltip.show{opacity:1;transform:translateY(-4px)}.network-tooltip::before{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:8px solid transparent;border-top-color:rgba(102,126,234,.95)}.network-arrow{fill:var(--xcon-network-link,#cbd5e0);transition:all .3s ease}.network-arrow.ref-arrow{fill:var(--xcon-network-ref-link,#a0aec0)}.network-group{cursor:pointer;transition:all .3s ease}.network-border{fill:none;stroke:var(--xcon-network-ref-link,#a0aec0);stroke-width:2px;stroke-opacity:.4;stroke-dasharray:5,5;transition:all .3s ease}.network-border:hover{stroke:var(--xcon-network-primary,#667eea);stroke-opacity:.8;stroke-width:3px}.network-image{pointer-events:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.1))}.loading-spinner{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:18px;color:var(--xcon-network-text,#2d3748);font-weight:500;animation:pulse 2s ease-in-out infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.xa-network-toolbar{position:absolute;left:12px;top:12px;right:12px;z-index:5;display:flex;align-items:center;gap:8px;flex-wrap:wrap;pointer-events:none}.xa-network-toolbar>*{pointer-events:auto}.xa-network-toolbar input[type="search"]{width:220px;max-width:100%;height:34px;border:1px solid rgba(148,163,184,.22);border-radius:8px;background:rgba(15,23,42,.72);color:var(--xcon-network-text,#e5e7eb);outline:none;padding:0 12px;font:600 12px/1.2 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;box-shadow:inset 0 0 0 1px rgba(255,255,255,.03),0 8px 20px rgba(0,0,0,.18);backdrop-filter:blur(14px)}.xa-network-toolbar input[type="search"]::placeholder{color:rgba(226,232,240,.56)}.xa-network-toolbar input[type="search"]:focus{border-color:var(--xcon-network-accent,#8b5cf6);box-shadow:0 0 0 3px rgba(139,92,246,.18),0 8px 20px rgba(0,0,0,.22)}.xa-network-toolbar button{height:34px;border:1px solid rgba(148,163,184,.22);border-radius:8px;background:rgba(15,23,42,.7);color:var(--xcon-network-text,#e5e7eb);padding:0 12px;font:800 12px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;box-shadow:0 8px 20px rgba(0,0,0,.18);backdrop-filter:blur(14px);cursor:pointer;transition:background .16s,border-color .16s,transform .16s}.xa-network-toolbar button:hover{background:rgba(30,41,59,.88);border-color:rgba(226,232,240,.34);transform:translateY(-1px)}.xa-network-toolbar [data-xcon-network-legend]{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:34px;padding:3px 6px;border:1px solid rgba(148,163,184,.18);border-radius:999px;background:rgba(15,23,42,.48);box-shadow:0 8px 20px rgba(0,0,0,.16);backdrop-filter:blur(14px)}.xa-network-toolbar [data-xcon-network-legend-item]{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 8px;border-radius:999px;color:var(--xcon-network-text,#e5e7eb);font:700 11px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}.xa-network-toolbar [data-xcon-network-legend-item]::before{content:"";width:7px;height:7px;border-radius:999px;background:var(--xcon-network-group-color,currentColor);box-shadow:0 0 0 2px rgba(255,255,255,.1)}.xa-network-filters{position:absolute;left:12px;top:58px;right:12px;z-index:5;display:flex;align-items:center;gap:6px;flex-wrap:wrap;pointer-events:none}.xa-network-filters>*{pointer-events:auto}.xa-network-filter-toggle{height:28px;border:1px solid rgba(148,163,184,.2);border-radius:999px;background:rgba(15,23,42,.58);color:var(--xcon-network-text,#e5e7eb);padding:0 9px;font:800 11px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.14);backdrop-filter:blur(12px);transition:background .16s,border-color .16s,opacity .16s}.xa-network-filter-toggle.enabled{background:rgba(59,130,246,.22);border-color:rgba(125,211,252,.46);color:#f8fafc}.xa-network-filter-toggle.disabled{opacity:.48}.xa-network-filter-toggle:hover{border-color:rgba(226,232,240,.36)}.xa-network-filters input[data-xcon-network-min-degree]{width:70px;height:28px;border:1px solid rgba(148,163,184,.2);border-radius:999px;background:rgba(15,23,42,.58);color:var(--xcon-network-text,#e5e7eb);padding:0 10px;font:800 11px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;outline:none;box-shadow:0 6px 16px rgba(0,0,0,.14);backdrop-filter:blur(12px)}.xa-network-filters input[data-xcon-network-min-degree]:focus{border-color:var(--xcon-network-accent,#8b5cf6);box-shadow:0 0 0 3px rgba(139,92,246,.18),0 6px 16px rgba(0,0,0,.18)}.network-tooltip{max-width:240px;padding:10px 12px;border-radius:8px;font:800 12px/1.2 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;letter-spacing:0;background:linear-gradient(135deg,rgba(102,126,234,.95) 0%,rgba(118,75,162,.95) 100%);box-shadow:0 14px 34px rgba(0,0,0,.32);border:1px solid rgba(255,255,255,.28);transform:translate(-50%,calc(-100% - 8px));transition:opacity .16s,transform .16s}.network-tooltip.show{opacity:1;transform:translate(-50%,calc(-100% - 12px))}.network-tooltip::before{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:8px solid transparent;border-top-color:rgba(102,126,234,.95)}
 .xa-map-container{position:relative;background:#eef3ed;border:1px solid #d5dee7;border-radius:10px;overflow:hidden}.xa-map-static{position:relative;width:100%;height:100%;min-height:180px;overflow:hidden;background:#e8efe5}.xa-map-static::before{content:"";position:absolute;inset:0;background-image:linear-gradient(0deg,rgba(132,153,166,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(132,153,166,.18) 1px,transparent 1px),linear-gradient(45deg,rgba(255,255,255,.42) 16%,transparent 16.5%,transparent 83%,rgba(255,255,255,.42) 83.5%);background-size:64px 64px,64px 64px,96px 96px;opacity:.9}.xa-map-static::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 24% 28%,rgba(255,255,255,.46),transparent 28%),radial-gradient(circle at 74% 72%,rgba(255,255,255,.36),transparent 24%);pointer-events:none}.xa-map-static--snapshot::before,.xa-map-static--snapshot::after,.xa-map-static--leaflet::before,.xa-map-static--leaflet::after{display:none}.xa-map-snapshot{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;z-index:1;background:#dfe7dc}.xa-map-layer{position:absolute;display:block;pointer-events:none}.xa-map-water{left:-10%;top:58%;width:120%;height:70px;border-radius:999px;background:linear-gradient(90deg,rgba(126,190,217,.62),rgba(167,213,231,.8),rgba(126,190,217,.58));transform:rotate(-7deg);box-shadow:inset 0 0 0 1px rgba(255,255,255,.45);opacity:.9}.xa-map-park{background:rgba(129,190,112,.34);border:1px solid rgba(86,145,91,.16);border-radius:18px}.xa-map-park--north{left:5%;top:9%;width:28%;height:30%;transform:rotate(-12deg)}.xa-map-park--south{right:8%;bottom:8%;width:30%;height:28%;transform:rotate(8deg)}.xa-map-road{background:rgba(255,255,255,.95);border-radius:999px;box-shadow:0 0 0 1px rgba(151,163,176,.26),0 2px 7px rgba(79,92,111,.1)}.xa-map-road--main{left:-8%;top:47%;width:116%;height:18px;transform:rotate(-13deg)}.xa-map-road--cross{left:20%;top:-8%;width:16px;height:116%;transform:rotate(19deg)}.xa-map-road--vertical{left:63%;top:-10%;width:14px;height:120%;transform:rotate(-4deg)}.xa-map-road--ring{left:55%;top:18%;width:126px;height:88px;border:10px solid rgba(255,255,255,.92);border-radius:999px;background:transparent;box-shadow:0 0 0 1px rgba(151,163,176,.26),0 3px 8px rgba(79,92,111,.1)}.xa-map-label{z-index:5;color:#5f6f5d;background:rgba(255,255,255,.72);border:1px solid rgba(137,154,135,.25);border-radius:999px;padding:3px 7px;font-size:10px;font-weight:700;letter-spacing:.01em;box-shadow:0 2px 6px rgba(74,87,71,.12)}.xa-map-label--north{left:8%;top:12%}.xa-map-label--center{left:42%;top:35%}.xa-map-label--south{right:9%;bottom:14%}.xa-map-attribution{position:absolute;right:8px;bottom:6px;z-index:10;padding:2px 6px;border-radius:999px;background:rgba(255,255,255,.76);color:#6b7280;font-size:9px;box-shadow:0 1px 4px rgba(0,0,0,.1)}.xa-map-marker{position:absolute;z-index:9;transform:translate(-50%,-100%);min-width:24px;height:24px;border-radius:999px;background:#667eea;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;box-shadow:0 3px 8px rgba(0,0,0,.24);border:2px solid rgba(255,255,255,.8)}.xcon-leaflet-marker{width:28px!important;height:28px!important;margin-left:-14px!important;margin-top:-28px!important;background:#2563eb;border:2px solid #fff;border-radius:999px;box-shadow:0 8px 18px rgba(15,23,42,.34);color:#fff;display:flex!important;align-items:center;justify-content:center;font:800 11px/1 system-ui,sans-serif}.xcon-leaflet-marker::after{content:"";position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);border:7px solid transparent;border-top-color:#2563eb}.xcon-leaflet-marker--rain,.xcon-leaflet-marker--wind{background:#0ea5e9}.xcon-leaflet-marker--rain::after,.xcon-leaflet-marker--wind::after{border-top-color:#0ea5e9}.xcon-leaflet-marker--cloud,.xcon-leaflet-marker--cool{background:#64748b}.xcon-leaflet-marker--cloud::after,.xcon-leaflet-marker--cool::after{border-top-color:#64748b}.xcon-leaflet-marker--sun{background:#f97316}.xcon-leaflet-marker--sun::after{border-top-color:#f97316}.xa-map .leaflet-control-container{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif}.xa-map .leaflet-popup-content-wrapper{border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15)}.xa-map .leaflet-popup-content{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;line-height:1.4}
 .xa-calendar-container{position:relative;background:#fff;border:1px solid #dee2e6;border-radius:8px;overflow:hidden;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif}.xa-calendar-static{height:100%;display:flex;flex-direction:column;padding:12px;box-sizing:border-box}.fc-header-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}.fc-button-primary{background:#667eea;border:1px solid #667eea;color:#fff;border-radius:4px;padding:5px 10px}.xa-calendar .fc-button-primary:hover{background:#5a67d8;border-color:#5a67d8}.fc-scrollgrid{width:100%;border-collapse:collapse;table-layout:fixed;flex:1}.fc-scrollgrid th{background:#f8f9fa;color:#495057;font-size:12px;border:1px solid #dee2e6;padding:6px}.fc-scrollgrid td{height:34px;border:1px solid #dee2e6;vertical-align:top;padding:2px}.fc-daygrid-day-number{background:none;border:0;color:#495057;font-size:12px;padding:2px 4px}.fc-today{background:rgba(102,126,234,.1)!important}.xa-calendar .fc-theme-standard .fc-scrollgrid{border:1px solid #dee2e6}.xa-calendar .fc-theme-standard .fc-col-header-cell{background:#f8f9fa;border-color:#dee2e6}.xa-calendar .fc-theme-standard .fc-daygrid-day{border-color:#dee2e6}.xa-calendar .fc-button-primary{background:#667eea;border-color:#667eea}.xa-calendar .fc-event{border-radius:4px;border:none;padding:2px 4px}.xa-calendar .fc-event-title{font-weight:500}.xa-calendar .fc-today{background:rgba(102,126,234,.1)!important}
 .xa-map-loading,.xa-calendar-loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,.9);padding:20px;border-radius:8px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.1);display:none}.xa-map-loading .spinner,.xa-calendar-loading .spinner{width:40px;height:40px;border:4px solid #f3f3f3;border-top:4px solid #667eea;border-radius:50%;animation:xa-advanced-spin 1s linear infinite;margin:0 auto 10px}@keyframes xa-advanced-spin{to{transform:rotate(360deg)}}

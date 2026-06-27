@@ -1,6 +1,6 @@
 {
   "name": "@xcon-viewer/vue",
-  "version": "0.1.7",
+  "version": "0.2.0",
   "type": "module",
   "description": "Vue wrapper for rendering public XCON Viewer documents.",
   "keywords": [
@@ -42,8 +42,8 @@
     "prepublishOnly": "npm run test && npm run build"
   },
   "dependencies": {
-    "@xcon-viewer/core": "0.1.7",
-    "@xcon-viewer/viewer": "0.1.7"
+    "@xcon-viewer/core": "0.2.0",
+    "@xcon-viewer/viewer": "0.2.0"
   },
   "peerDependencies": {
     "vue": ">=3"

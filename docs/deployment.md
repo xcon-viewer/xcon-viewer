@@ -134,6 +134,32 @@ Packages must be published in dependency order:
 
 Before publishing, update every package version and internal dependency version consistently.
 
+### Advanced visualization dependency audit
+
+`@xcon-viewer/viewer` now owns the browser runtime dependencies for the public advanced visualization surface:
+
+- `d3` for `networkDiagram`
+- `d3-hierarchy` for `treemap` and `sunburst`
+- `d3-sankey` for `sankey`
+- `d3-force` for `forceGraph`
+- `d3-chord` for `chord`
+- `@observablehq/plot` for `plot`
+
+Confirm they are installed and publishable from the viewer workspace:
+
+```bash
+npm ls d3 d3-hierarchy d3-sankey d3-force d3-chord @observablehq/plot --workspace @xcon-viewer/viewer
+```
+
+Leaflet map hydration is intentionally not bundled as an npm dependency. It is loaded from viewer-controlled CDN URLs only when `provider "leaflet"` is used and external resources are allowed. Optional `leaflet.heat` and `leaflet.markercluster` plugins load only for heatmap and clustering layers; static map fallback remains available if those resources fail.
+
+After dependency or viewer runtime changes, regenerate the browser test bundles before site packaging:
+
+```bash
+npx esbuild site/advanced-visualization-test-entry.mjs --bundle --format=esm --platform=browser --outfile=site/advanced-visualization-test-runtime.js
+npx esbuild site/network-diagram-test-entry.mjs --bundle --format=esm --platform=browser --outfile=site/network-diagram-test-runtime.js
+```
+
 ### Preflight for npm access
 
 - Confirm npm user + registry:
@@ -211,13 +237,13 @@ npm run site:build
 node -e "console.log(require('./package.json').version)"
 ```
 
-3) Verify all workspace versions are aligned (expected: `0.1.7`)
+3) Verify all workspace versions are aligned (expected: `0.2.0`)
 
 ```bash
 node -e "const fs=require('fs');const path=require('path');const root=JSON.parse(fs.readFileSync('package.json','utf8')).version;const dirs=fs.readdirSync('packages',{withFileTypes:true}).filter(d=>d.isDirectory());const versions=dirs.map(d=>({name:d.name,version:JSON.parse(fs.readFileSync(path.join('packages',d.name,'package.json'),'utf8')).version}));console.log('root',root);console.log('packages',versions);if(!versions.every(v=>v.version===root)){process.exitCode=1;}"
 ```
 
-For strict review, confirm each `packages/*/package.json` and internal dependency uses `0.1.7`.
+For strict review, confirm each `packages/*/package.json` and internal dependency uses `0.2.0`.
 
 4) npm publish flow
 
@@ -239,19 +265,19 @@ npm publish --workspace @xcon-viewer/github-action --access public
 
 ```bash
 git add package.json package-lock.json packages/*/package.json README.md docs/deployment.md docs/integrations.md site/api.html CHANGELOG.md
-git commit -m "chore: bump to 0.1.7 and refresh release docs"
-git tag v0.1.7
+git commit -m "chore: bump to 0.2.0 and refresh release docs"
+git tag v0.2.0
 git push origin main --follow-tags
 ```
 
-If this release jumps patch versions (for example `0.1.2 -> 0.1.7`), keep the jump explicit in `CHANGELOG.md` and do not create intermediate release tags.
+If this release jumps patch versions (for example `0.1.2 -> 0.2.0`), keep the jump explicit in `CHANGELOG.md` and do not create intermediate release tags.
 
 6) Post-release validation (npm + deployment)
 
 ```bash
-npm view @xcon-viewer/core@0.1.7 version
-npm view @xcon-viewer/viewer@0.1.7 version
-npm view @xcon-viewer/github-action@0.1.7 version
+npm view @xcon-viewer/core@0.2.0 version
+npm view @xcon-viewer/viewer@0.2.0 version
+npm view @xcon-viewer/github-action@0.2.0 version
 curl -I https://xconviewer.dev/
 curl -I https://xconviewer.dev/play
 curl -I https://xconviewer.dev/play/markdown
@@ -263,24 +289,24 @@ curl -I https://xconviewer.dev/xcon.schema.json
 After npm publish succeeds, create a GitHub release/tag for humans:
 
 ```bash
-git tag v0.1.7
-git push origin v0.1.7
+git tag v0.2.0
+git push origin v0.2.0
 
-gh release create v0.1.7 \
+gh release create v0.2.0 \
   --repo xcon-viewer/xcon-viewer \
-  --title "xcon-viewer v0.1.7" \
-  --notes "Release note summary is in CHANGELOG.md (0.1.7)."
+  --title "xcon-viewer v0.2.0" \
+  --notes "Release note summary is in CHANGELOG.md (0.2.0)."
 ```
 
-For Marketplace users, keep the action example in `packages/github-action/README.md` aligned to the release tag (`v0.1.7`).
+For Marketplace users, keep the action example in `packages/github-action/README.md` aligned to the release tag (`v0.2.0`).
 
 ## GitHub Action Release Notes
 
 `@xcon-viewer/github-action` includes `action.yml` in its npm package. For GitHub Marketplace-style usage, also tag the repository release, for example:
 
 ```bash
-git tag v0.1.7
-git push origin v0.1.7
+git tag v0.2.0
+git push origin v0.2.0
 ```
 
 If the action is referenced by path inside this repository, keep the README examples aligned with the tag or branch name.

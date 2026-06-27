@@ -128,6 +128,14 @@ describe('public site structure', () => {
       expect(text).toContain('vizType "chord"');
       expect(text).toContain('vizType "forceGraph"');
       expect(text).toContain('vizType "plot"');
+      expect(text).toContain('d3-hierarchy');
+      expect(text).toContain('d3-sankey');
+      expect(text).toContain('d3-force');
+      expect(text).toContain('d3-chord');
+      expect(text).toContain('@observablehq/plot');
+      expect(text).toContain('Leaflet');
+      expect(text).toContain('leaflet.heat');
+      expect(text).toContain('leaflet.markercluster');
     }
   });
 
@@ -254,7 +262,9 @@ describe('public site structure', () => {
     expect(page).not.toContain('@xcon-viewer/viewer');
     expect(page).toContain('const samples = [');
     expect(sampleIds).toEqual([
-      'network-runtime',
+      'runtime-architecture',
+      'full-version-data',
+      'analysis-map',
       'dataviz-treemap',
       'dataviz-sankey',
       'dataviz-sunburst',
@@ -266,29 +276,51 @@ describe('public site structure', () => {
     expect(page).toContain('id="source"');
     expect(page).toContain('id="preview"');
     expect(page).toContain('id="sampleSelect"');
+    expect(page).toContain('Obsidian-style analysis graph');
+    expect(page).not.toContain('Sample pages');
     expect(page).toMatch(/#status\s*\{[^}]*min-width:\s*0;[^}]*overflow-wrap:\s*anywhere;/s);
     expect(runtime).not.toMatch(/^import\s/m);
     expect(runtime).not.toContain("from './network/runtime'");
     expect(runtime).not.toContain("from './dataviz/runtime'");
     expect(runtime).not.toContain("from './map/runtime'");
+    expect(runtime).toContain('.xa-network-toolbar button');
+    expect(runtime).toContain('.xa-network-filter-toggle.enabled');
     expect(buildScript).toContain("['site/advanced-visualization-test.html', 'advanced-visualization-test.html']");
     expect(buildScript).toContain("['site/advanced-visualization-test.html', 'site/advanced-visualization-test.html']");
     expect(buildScript).toContain("['site/advanced-visualization-test-runtime.js', 'site/advanced-visualization-test-runtime.js']");
     expect(buildScript).toContain("['site/network-diagram-test.html', 'network-diagram-test.html']");
     expect(buildScript).toContain("['site/network-diagram-test.html', 'site/network-diagram-test.html']");
+    expect(buildScript).toContain("['site/network-diagram-test-runtime.js', 'site/network-diagram-test-runtime.js']");
   });
 
-  test('serves the network diagram test page without external CSS or mjs runtime references', () => {
+  test('serves the standalone network diagram test page with the previous three samples', () => {
     const pagePath = join(rootDir, 'site', 'network-diagram-test.html');
+    const runtimePath = join(rootDir, 'site', 'network-diagram-test-runtime.js');
 
     expect(resolvePublicPath('/network-diagram-test.html')).toBe(pagePath);
     expect(existsSync(pagePath)).toBe(true);
+    expect(existsSync(runtimePath)).toBe(true);
 
     const page = readFileSync(pagePath, 'utf8');
+    const runtime = readFileSync(runtimePath, 'utf8');
 
     expect(page).not.toContain('href="/styles.css"');
-    expect(page).not.toContain('.mjs');
-    expect(page).toContain('/site/advanced-visualization-test.html');
+    expect(page).toContain("from '/site/network-diagram-test-runtime.js'");
+    expect(page).not.toContain('network-diagram-test-runtime.mjs');
+    expect(page).not.toContain('@xcon-viewer/viewer');
+    expect(page).toContain('const samples = [');
+    expect([...page.matchAll(/id:\s*'[^']+'/g)]).toHaveLength(3);
+    expect(page).toContain("id: 'runtime-architecture'");
+    expect(page).toContain("id: 'full-version-data'");
+    expect(page).toContain("id: 'analysis-map'");
+    expect(page).toContain('id="autoRenderToggle"');
+    expect(page).toContain("source.addEventListener('input', handleSourceInput)");
+    expect(page).toContain("source.addEventListener('keydown', handleSourceKeydown)");
+    expect(page).toContain("event.key === 'Enter' && (event.ctrlKey || event.metaKey)");
+    expect(page).toContain('window.setTimeout(renderSource, 650)');
+    expect(runtime).not.toMatch(/^import\s/m);
+    expect(runtime).not.toContain("from './network/runtime'");
+    expect(runtime).not.toContain("from './network/static'");
   });
 
   test('serves the template document studio with Monaco, examples, and separated output tabs', () => {

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0
+
+### Added
+- Added D3/Observable Plot-backed advanced visualization hydration for public `dataViz` documents with `vizType` values `treemap`, `sankey`, `sunburst`, `chord`, `forceGraph`, and `plot`.
+- Added the required `@xcon-viewer/viewer` runtime dependency set: `d3`, `d3-hierarchy`, `d3-sankey`, `d3-force`, `d3-chord`, and `@observablehq/plot`, with type-only development support from `@types/d3` and `@types/d3-sankey`.
+- Added public documentation for the advanced visualization dependency model, including the split between bundled npm dependencies and optional Leaflet browser CDN resources.
+
+### Fixed
+- Restored the standalone `network-diagram-test.html` page with the three richer network samples and refreshed the advanced visualization browser runtime bundle so network controls use the intended D3 graph styling.
+
 ## 0.1.7
 
 ### Added
