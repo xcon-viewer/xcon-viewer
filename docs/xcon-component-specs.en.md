@@ -183,6 +183,25 @@ Connector-specific props:
 | `barcode` | Barcode display. |
 | `flipbook` | Flipbook-style document preview. |
 
+### Advanced dataViz
+
+Use `dataViz` with `vizType` for advanced visualization examples. The public viewer accepts these `vizType` values:
+
+- `treemap`
+- `sankey`
+- `sunburst`
+- `chord`
+- `forceGraph`
+- `plot`
+
+```xcon-sketch
+usageTree: dataViz at 24 120 360 260
+  vizType "treemap"
+  data {"name":"Workspace","children":[{"name":"Viewer","value":42},{"name":"Core","value":28}]}
+```
+
+Alias component types (`treemap`, `sankey`, `sunburst`, `chord`, `forceGraph`, `plot`) are accepted by the validator and renderer for compatibility. Generated examples should prefer the canonical `dataViz` component with an explicit `vizType`, for example `vizType "treemap"`, `vizType "sankey"`, `vizType "sunburst"`, `vizType "chord"`, `vizType "forceGraph"`, or `vizType "plot"`.
+
 ### Feedback and Navigation
 
 | Type | Purpose |

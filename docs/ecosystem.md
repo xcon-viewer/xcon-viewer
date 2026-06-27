@@ -120,6 +120,8 @@ npm install -g @xcon-viewer/cli
 
 **Live playground:** https://xconviewer.dev/play
 
+**Advanced visualization test page:** `/advanced-visualization-test.html` is a local and public smoke-test page for network diagrams, `dataViz` samples, and map layers. The same file can also be reached as `/site/advanced-visualization-test.html` during local static-site checks.
+
 ---
 
 ## Layer 3 — XV Desk

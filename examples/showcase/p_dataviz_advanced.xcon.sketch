@@ -1,0 +1,65 @@
+screen "Advanced DataViz Showcase" 960x720 bg #f6f7f9
+  title: label "Advanced DataViz Showcase" at 28 24 460 34
+    color #17202a
+    font
+      size 26
+      weight 800
+  subtitle: label "Canonical dataViz panels using explicit vizType values." at 28 60 560 22
+    color #596579
+    font
+      size 13
+      weight 600
+
+  treemapLabel: label "Treemap" at 28 104 260 24
+    color #17202a
+    font
+      size 16
+      weight 800
+  usageTree: dataViz at 28 134 280 180
+    vizType "treemap"
+    data {"name":"Workspace","children":[{"name":"Viewer","value":42},{"name":"Core","value":28},{"name":"Site","value":16},{"name":"Docs","value":14}]}
+
+  sankeyLabel: label "Sankey" at 340 104 260 24
+    color #17202a
+    font
+      size 16
+      weight 800
+  documentFlow: dataViz at 340 134 280 180
+    vizType "sankey"
+    data {"nodes":[{"id":"draft","label":"Draft"},{"id":"parse","label":"Parse"},{"id":"render","label":"Render"},{"id":"publish","label":"Publish"}],"links":[{"source":"draft","target":"parse","value":18},{"source":"parse","target":"render","value":14},{"source":"render","target":"publish","value":10}]}
+
+  sunburstLabel: label "Sunburst" at 652 104 260 24
+    color #17202a
+    font
+      size 16
+      weight 800
+  radialBreakdown: dataViz at 652 134 280 180
+    vizType "sunburst"
+    data {"name":"Product","children":[{"name":"Runtime","children":[{"name":"Viewer","value":26},{"name":"Hydration","value":14}]},{"name":"Content","children":[{"name":"Docs","value":18},{"name":"Examples","value":12}]}]}
+
+  chordLabel: label "Chord" at 28 360 260 24
+    color #17202a
+    font
+      size 16
+      weight 800
+  relationshipMatrix: dataViz at 28 390 280 180
+    vizType "chord"
+    data {"labels":["Viewer","Core","Site","Docs"],"matrix":[[0,12,8,6],[10,0,7,4],[5,4,0,9],[3,6,8,0]]}
+
+  forceLabel: label "ForceGraph" at 340 360 260 24
+    color #17202a
+    font
+      size 16
+      weight 800
+  relationGraph: dataViz at 340 390 280 180
+    vizType "forceGraph"
+    data {"nodes":[{"id":"viewer","label":"Viewer"},{"id":"core","label":"Core"},{"id":"site","label":"Site"},{"id":"docs","label":"Docs"},{"id":"examples","label":"Examples"}],"links":[{"source":"viewer","target":"core"},{"source":"viewer","target":"site"},{"source":"site","target":"docs"},{"source":"docs","target":"examples"}]}
+
+  plotLabel: label "Plot" at 652 360 260 24
+    color #17202a
+    font
+      size 16
+      weight 800
+  weeklyVolume: dataViz at 652 390 280 180
+    vizType "plot"
+    data {"data":[{"day":"Mon","value":12},{"day":"Tue","value":18},{"day":"Wed","value":15},{"day":"Thu","value":22},{"day":"Fri","value":26}],"marks":[{"type":"barY","x":"day","y":"value"}],"options":{"grid":true}}

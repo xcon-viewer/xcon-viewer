@@ -116,6 +116,21 @@ describe('public site structure', () => {
     expect(sitemap).toContain('<loc>https://xconviewer.dev/xcon.schema.json</loc>');
   });
 
+  test('documents advanced visualization Sprint 3 public syntax', () => {
+    const componentSpecs = readFileSync(join(rootDir, 'docs', 'xcon-component-specs.en.md'), 'utf8');
+    const llmsFull = readFileSync(join(rootDir, 'site', 'llms-full.txt'), 'utf8');
+
+    for (const text of [componentSpecs, llmsFull]) {
+      expect(text).toContain('dataViz');
+      expect(text).toContain('vizType "treemap"');
+      expect(text).toContain('vizType "sankey"');
+      expect(text).toContain('vizType "sunburst"');
+      expect(text).toContain('vizType "chord"');
+      expect(text).toContain('vizType "forceGraph"');
+      expect(text).toContain('vizType "plot"');
+    }
+  });
+
   test('embeds a live XCON/SKETCH homepage demo using public viewer packages', () => {
     const homePage = readFileSync(join(rootDir, 'site', 'index.html'), 'utf8');
     const styles = readFileSync(join(rootDir, 'site', 'styles.css'), 'utf8');
@@ -748,6 +763,7 @@ describe('public site structure', () => {
     expect(showcaseReadme).toContain('/play?src=%2Fexamples%2Fshowcase%2Fp_map.xcon.json');
     expect(showcaseReadme).toContain('/play?src=%2Fexamples%2Fshowcase%2Fp_map.xcon.xml');
     expect(showcaseReadme).toContain('/play?src=%2Fexamples%2Fshowcase%2Fp_map.xcon');
+    expect(showcaseReadme).toContain('/play?src=%2Fexamples%2Fshowcase%2Fp_dataviz_advanced.xcon.sketch');
     expect(existsSync(join(rootDir, 'examples', 'showcase', 'p_button.xcon.json'))).toBe(true);
     expect(existsSync(join(rootDir, 'examples', 'showcase', 'p_network_diagram.xcon.json'))).toBe(true);
     expect(existsSync(join(rootDir, 'examples', 'showcase', 'p_network_diagram.xcon.sketch'))).toBe(true);
@@ -757,6 +773,7 @@ describe('public site structure', () => {
     expect(existsSync(join(rootDir, 'examples', 'showcase', 'p_map.xcon.sketch'))).toBe(true);
     expect(existsSync(join(rootDir, 'examples', 'showcase', 'p_map.xcon.xml'))).toBe(true);
     expect(existsSync(join(rootDir, 'examples', 'showcase', 'p_map.xcon'))).toBe(true);
+    expect(existsSync(join(rootDir, 'examples', 'showcase', 'p_dataviz_advanced.xcon.sketch'))).toBe(true);
     expect(existsSync(join(rootDir, 'examples', 'showcase', `p_${'custom'}01.xcon.json`))).toBe(false);
     expect(existsSync(join(rootDir, 'examples', 'showcase', `p_${'xa' + 'mong'}plugin.xcon.json`))).toBe(false);
   });

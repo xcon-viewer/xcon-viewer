@@ -209,6 +209,18 @@ screen "Label Demo" 400x160 bg @surface
 
 Supported chart types: `"line"`, `"bar"`, `"pie"`, `"doughnut"`, `"radar"`, `"scatter"`, `"bubble"`.
 
+### dataViz
+
+Use `dataViz` with `vizType` for advanced visualizations. Supported public values are `treemap`, `sankey`, `sunburst`, `chord`, `forceGraph`, and `plot`.
+
+```xcon-sketch
+  usageTree: dataViz at 24 120 360 260
+    vizType "treemap"
+    data {"name":"Workspace","children":[{"name":"Viewer","value":42},{"name":"Core","value":28}]}
+```
+
+Prefer canonical `dataViz` plus an explicit `vizType` when generating examples: `vizType "treemap"`, `vizType "sankey"`, `vizType "sunburst"`, `vizType "chord"`, `vizType "forceGraph"`, or `vizType "plot"`. Alias component types (`treemap`, `sankey`, `sunburst`, `chord`, `forceGraph`, `plot`) are accepted by validation and rendering for compatibility, but generated examples should not prefer them.
+
 ### spanGrid (table / spreadsheet)
 
 ```xcon-sketch
@@ -735,7 +747,7 @@ Use https://xconviewer.dev/examples as the public entry point. The repository al
 
 Use the component reference at https://xconviewer.dev/docs for the detailed public property list. Keep property names LLM-friendly and CSS-adjacent where appropriate, such as backgroundColor, color, font, border, shadow, padding, margin, direction, alignment, items, components, and content.
 
-Supported public component types: `panel`, `label`, `button`, `textField`, `image`, `shape`, `banner`, `list`, `spanGrid`, `chart`, `networkDiagram`, `map`, `avatar`, `badge`, `alert`, `progressBar`, `spinner`, `tabs`, `accordion`, `select`, `switch`, `slider`, `rating`, `qrCode`.
+Supported public component types: `panel`, `label`, `button`, `textField`, `image`, `shape`, `banner`, `list`, `spanGrid`, `chart`, `dataViz`, `networkDiagram`, `map`, `avatar`, `badge`, `alert`, `progressBar`, `spinner`, `tabs`, `accordion`, `select`, `switch`, `slider`, `rating`, `qrCode`.
 
 Do not generate removed or unsafe components: `webView`, `frame`, `import`, `fileUpload`, `filePicker`, `imagePicker`, `signaturePad`, or custom components.
 
