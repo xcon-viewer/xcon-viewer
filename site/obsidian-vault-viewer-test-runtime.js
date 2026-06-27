@@ -433,6 +433,7 @@ function renderWorkbench(root, statsTarget, markdown, index, state, rerender) {
   const selected = index.notes.get(state.selectedNoteId) || index.notes.values().next().value;
   state.selectedNoteId = selected.id;
   if (statsTarget) statsTarget.innerHTML = renderStats(index);
+  disconnectVaultGraphObserver(root);
   root.innerHTML = `
     <aside class="vault-sidebar">
       <input class="vault-search" type="search" placeholder="Search notes" value="${escapeAttr(state.query)}" data-vault-search>
@@ -728,10 +729,19 @@ function filterNotes(index, state = {}) {
 
 function renderGraphInto(host, index, state, rerender) {
   if (!host) return;
+  renderGraphWithHostSize(host, index, state, rerender, true);
+  bindGraphResizeObserver(host, index, state, rerender);
+}
+
+function renderGraphWithHostSize(host, index, state, rerender, force = false) {
+  const { width, height } = graphHostSize(host);
+  const sizeKey = `${width}x${height}`;
+  if (!force && host.dataset.vaultGraphSizeKey === sizeKey) return;
+  host.dataset.vaultGraphSizeKey = sizeKey;
   try {
     const graph = state.graphScope === 'global' ? graphFromVaultIndex(index, state) : localGraphForNote(index, state.selectedNoteId);
-    const sketch = `screen "Vault Graph" 720x300 bg #0f1117
-  graph: networkDiagram at 0 0 720 300
+    const sketch = `screen "Vault Graph" ${width}x${height} bg #0f1117
+  graph: networkDiagram at 0 0 ${width} ${height}
     theme "obsidian"
     nodeRadius 16
     linkDistance 78
@@ -764,6 +774,37 @@ function renderGraphInto(host, index, state, rerender) {
   } catch (error) {
     host.innerHTML = `<div class="vault-empty">Graph fallback: ${escapeHtml(error instanceof Error ? error.message : String(error))}</div>`;
   }
+}
+
+function graphHostSize(host) {
+  const rect = host.getBoundingClientRect();
+  const width = Math.round(rect.width || host.clientWidth || 720);
+  const height = Math.round(rect.height || host.clientHeight || 420);
+  return {
+    width: clamp(width, 320, 2400),
+    height: clamp(height, 220, 1600),
+  };
+}
+
+function bindGraphResizeObserver(host, index, state, rerender) {
+  const root = host.closest('.vault-shell');
+  if (!root || typeof ResizeObserver !== 'function') return;
+  let frame = 0;
+  const observer = new ResizeObserver(() => {
+    if (frame) cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(() => {
+      frame = 0;
+      if (!host.isConnected) return;
+      renderGraphWithHostSize(host, index, state, rerender);
+    });
+  });
+  observer.observe(host);
+  root.__vaultGraphResizeObserver = observer;
+}
+
+function disconnectVaultGraphObserver(root) {
+  root.__vaultGraphResizeObserver?.disconnect();
+  root.__vaultGraphResizeObserver = undefined;
 }
 
 function ensureViewerStyle() {

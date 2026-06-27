@@ -367,6 +367,14 @@ describe('public site structure', () => {
     expect(runtime).toContain('data-vault-reader-graph');
     expect(runtime).toContain('role="separator"');
     expect(runtime).toContain('aria-orientation="horizontal"');
+    expect(runtime).toContain('ResizeObserver');
+    expect(runtime).toContain('function renderGraphWithHostSize');
+    expect(runtime).toContain('function graphHostSize');
+    expect(runtime).toContain('requestAnimationFrame');
+    expect(runtime).toContain('screen "Vault Graph" ${width}x${height}');
+    expect(runtime).toContain('graph: networkDiagram at 0 0 ${width} ${height}');
+    expect(runtime).not.toContain('screen "Vault Graph" 720x300');
+    expect(runtime).not.toContain('graph: networkDiagram at 0 0 720 300');
     expect(runtime).toContain('function bindVaultSplitters');
     expect(runtime).toContain('setPointerCapture');
     expect(runtime).toContain('--vault-sidebar-width');
