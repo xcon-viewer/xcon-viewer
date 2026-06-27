@@ -4837,14 +4837,16 @@ describe('viewer security renderer', () => {
     expect(viewerCss).toContain('--blue:#2B5FA0');
   });
 
-  test('public JSON schema component enum stays aligned with renderer component switch', () => {
+  test('public JSON schema component enum stays aligned with renderer component switch and documented aliases', () => {
     const schema = JSON.parse(readFileSync(new URL('../../../../schema/xcon.schema.json', import.meta.url), 'utf8'));
     const rendererSource = readFileSync(new URL('./index.ts', import.meta.url), 'utf8');
     const switchBlock = rendererSource.match(/switch \(type\) \{([\s\S]*?)default:/)?.[1] ?? '';
     const rendererTypes = [...switchBlock.matchAll(/case '([^']+)'/g)].map((match) => match[1]).sort();
     const schemaTypes = [...schema.definitions.componentType.enum].sort();
+    const dataVizAliasTypes = ['chord', 'forceGraph', 'plot', 'sankey', 'sunburst', 'treemap'];
+    const expectedSchemaTypes = [...new Set([...rendererTypes, ...dataVizAliasTypes])].sort();
 
-    expect(schemaTypes).toEqual(rendererTypes);
+    expect(schemaTypes).toEqual(expectedSchemaTypes);
   });
 
   test('public JSON schema describes advanced viewer component properties', () => {
