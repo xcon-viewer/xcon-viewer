@@ -14,6 +14,7 @@ let leafletMarkerClusterPromise: Promise<unknown> | undefined;
 type LeafletLayer = { addTo: (target: unknown) => unknown };
 type LeafletMarker = LeafletLayer & { bindPopup?: (label: string) => unknown };
 type LeafletClusterGroup = LeafletLayer & { addLayer?: (layer: unknown) => unknown };
+const activeCssPattern = /expression\s*\(|javascript:|vbscript:|url\s*\(|behavior\s*:/i;
 
 interface LeafletLike {
   map?: (element: HTMLElement, options: Record<string, unknown>) => {
@@ -123,9 +124,16 @@ function loadLeafletMarkerClusterPlugin(rootNode: Document | ShadowRoot): Promis
 }
 
 function parseLeafletMarkers(host: HTMLElement): Array<Record<string, unknown>> {
+  return parseLeafletArrayAttr(host, 'data-xcon-map-markers')
+    .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === 'object' && !Array.isArray(item));
+}
+
+function parseLeafletArrayAttr(host: HTMLElement, name: string): unknown[] {
   try {
-    const parsed = JSON.parse(host.getAttribute('data-xcon-map-markers') || '[]') as unknown;
-    return Array.isArray(parsed) ? parsed.filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === 'object' && !Array.isArray(item)) : [];
+    const raw = host.getAttribute(name);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
   }
@@ -151,6 +159,17 @@ function finiteNumber(value: unknown, fallback: number): number {
   return Number.isFinite(number) ? number : fallback;
 }
 
+function clampedNumber(value: unknown, fallback: number, min: number, max: number): number {
+  const number = finiteNumber(value, fallback);
+  return Math.max(min, Math.min(max, number));
+}
+
+function safeLayerColor(value: unknown, fallback: string): string {
+  if (value === undefined || value === null || value === '') return fallback;
+  const text = String(value).trim();
+  return text && !activeCssPattern.test(text) ? text : fallback;
+}
+
 function leafletPoint(value: unknown): [number, number] | undefined {
   if (Array.isArray(value)) {
     const lat = Number(value[0]);
@@ -173,13 +192,13 @@ function leafletLayerPoints(value: unknown): Array<[number, number]> {
 
 function leafletLayerStyle(layer: unknown, fallbackColor: string): Record<string, unknown> {
   const record = objectRecord(layer) ?? {};
-  const color = String(record.color ?? record.stroke ?? record.strokeColor ?? fallbackColor);
+  const color = safeLayerColor(record.color ?? record.stroke ?? record.strokeColor, fallbackColor);
   return {
     color,
-    weight: finiteNumber(record.weight ?? record.strokeWidth, 3),
-    opacity: finiteNumber(record.opacity, 0.85),
-    fillColor: String(record.fillColor ?? record.fill ?? color),
-    fillOpacity: finiteNumber(record.fillOpacity, 0.18),
+    weight: clampedNumber(record.weight ?? record.strokeWidth, 3, 0, 64),
+    opacity: clampedNumber(record.opacity, 0.85, 0, 1),
+    fillColor: safeLayerColor(record.fillColor ?? record.fill, color),
+    fillOpacity: clampedNumber(record.fillOpacity, 0.18, 0, 1),
   };
 }
 
@@ -211,6 +230,10 @@ function escapeHtml(value: string): string {
     .replaceAll("'", '&#39;');
 }
 
+function leafletPopupContent(label: string): string {
+  return escapeHtml(label);
+}
+
 function leafletMarkerIcon(leaflet: unknown, marker: Record<string, unknown>, label: string): unknown {
   const L = leaflet as LeafletLike;
   if (!L || typeof L.divIcon !== 'function') return undefined;
@@ -236,7 +259,7 @@ function applyLeafletMarkers(leaflet: unknown, map: unknown, host: HTMLElement, 
     const icon = leafletMarkerIcon(leaflet, marker, label);
     const pin = L.marker?.([markerLat, markerLng], icon ? { icon } : undefined);
     if (!pin) return;
-    if (label && typeof pin.bindPopup === 'function') pin.bindPopup(label);
+    if (label && typeof pin.bindPopup === 'function') pin.bindPopup(leafletPopupContent(label));
     pins.push(pin);
   });
   if (!pins.length) return;
@@ -252,17 +275,17 @@ function applyLeafletMarkers(leaflet: unknown, map: unknown, host: HTMLElement, 
 
 export function applyLeafletMapLayers(leaflet: unknown, map: unknown, host: HTMLElement, markers: Array<Record<string, unknown>> = []): void {
   const L = leaflet as LeafletLike;
-  parseLeafletJsonAttr<unknown[]>(host, 'data-xcon-map-polylines', []).forEach((layer) => {
+  parseLeafletArrayAttr(host, 'data-xcon-map-polylines').forEach((layer) => {
     const points = leafletLayerPoints(layer);
     if (points.length < 2 || typeof L.polyline !== 'function') return;
     L.polyline(points, leafletLayerStyle(layer, '#2563eb')).addTo(map);
   });
-  parseLeafletJsonAttr<unknown[]>(host, 'data-xcon-map-polygons', []).forEach((layer) => {
+  parseLeafletArrayAttr(host, 'data-xcon-map-polygons').forEach((layer) => {
     const points = leafletLayerPoints(layer);
     if (points.length < 3 || typeof L.polygon !== 'function') return;
     L.polygon(points, leafletLayerStyle(layer, '#14b8a6')).addTo(map);
   });
-  const heatmap = parseLeafletJsonAttr<unknown[]>(host, 'data-xcon-map-heatmap', []).map(leafletHeatPoint).filter((point): point is [number, number, number] => Boolean(point));
+  const heatmap = parseLeafletArrayAttr(host, 'data-xcon-map-heatmap').map(leafletHeatPoint).filter((point): point is [number, number, number] => Boolean(point));
   if (heatmap.length && typeof L.heatLayer === 'function') {
     L.heatLayer(heatmap, parseLeafletJsonAttr<Record<string, unknown>>(host, 'data-xcon-map-heatmap-options', { radius: 24, blur: 18 })).addTo(map);
   }
@@ -270,12 +293,17 @@ export function applyLeafletMapLayers(leaflet: unknown, map: unknown, host: HTML
 }
 
 export function hydrateLeafletMaps(root: ParentNode = document): void {
-  root.querySelectorAll<HTMLElement>('[data-xcon-leaflet-map]').forEach((host) => {
+  const rootElement = root as ParentNode & { matches?: (selector: string) => boolean };
+  const hosts = Array.from(root.querySelectorAll<HTMLElement>('[data-xcon-leaflet-map]'));
+  if (typeof rootElement.matches === 'function' && rootElement.matches('[data-xcon-leaflet-map]')) {
+    hosts.unshift(root as HTMLElement);
+  }
+  hosts.forEach((host) => {
     if (host.dataset.xconLeafletBound === 'true' || host.dataset.xconLeafletBound === 'pending') return;
     host.dataset.xconLeafletBound = 'pending';
     const rootNode = host.getRootNode() as Document | ShadowRoot;
     const markers = parseLeafletMarkers(host);
-    const hasHeatmap = parseLeafletJsonAttr<unknown[]>(host, 'data-xcon-map-heatmap', []).length > 0;
+    const hasHeatmap = parseLeafletArrayAttr(host, 'data-xcon-map-heatmap').length > 0;
     const needsCluster = host.getAttribute('data-xcon-map-clustering') === 'true' && markers.length > 0;
     void Promise.all([loadLeafletRuntime(), ensureLeafletStyles(rootNode)])
       .then(([leaflet]) => {

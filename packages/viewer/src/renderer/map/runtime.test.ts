@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from 'vitest';
 
-import { applyLeafletMapLayers } from './runtime.js';
+import { applyLeafletMapLayers, hydrateLeafletMaps } from './runtime.js';
 
 function mapHost(attrs: Record<string, unknown>): HTMLElement {
   const attrValues = new Map<string, string>();
@@ -66,6 +66,23 @@ describe('Leaflet map runtime helpers', () => {
     expect(marker.addTo).toHaveBeenCalledWith(map);
   });
 
+  test('binds marker popup text as escaped content instead of raw HTML', () => {
+    const map = {};
+    const marker = { addTo: vi.fn(), bindPopup: vi.fn() };
+    const leaflet = {
+      marker: vi.fn(() => marker),
+      divIcon: vi.fn(() => ({})),
+    };
+    const host = mapHost({});
+
+    applyLeafletMapLayers(leaflet, map, host, [
+      { lat: 37.5665, lng: 126.978, popup: '<img src=x onerror=alert(1)><script>alert(2)</script>' },
+    ]);
+
+    expect(marker.bindPopup).toHaveBeenCalledWith('&lt;img src=x onerror=alert(1)&gt;&lt;script&gt;alert(2)&lt;/script&gt;');
+    expect(marker.addTo).toHaveBeenCalledWith(map);
+  });
+
   test('ignores absent heatmap plugin without throwing', () => {
     const host = mapHost({ 'data-xcon-map-heatmap': [[37.5, 126.9, 0.4]] });
 
@@ -93,5 +110,107 @@ describe('Leaflet map runtime helpers', () => {
     expect(leaflet.heatLayer).not.toHaveBeenCalled();
     expect(leaflet.marker).not.toHaveBeenCalled();
     expect(leaflet.markerClusterGroup).not.toHaveBeenCalled();
+  });
+
+  test('ignores non-array JSON layer attributes safely', () => {
+    const leaflet = {
+      polyline: vi.fn(),
+      polygon: vi.fn(),
+      heatLayer: vi.fn(),
+    };
+    const host = mapHost({
+      'data-xcon-map-polylines': '{}',
+      'data-xcon-map-polygons': '{}',
+      'data-xcon-map-heatmap': '{}',
+    });
+
+    expect(() => applyLeafletMapLayers(leaflet, {}, host)).not.toThrow();
+    expect(leaflet.polyline).not.toHaveBeenCalled();
+    expect(leaflet.polygon).not.toHaveBeenCalled();
+    expect(leaflet.heatLayer).not.toHaveBeenCalled();
+  });
+
+  test('replaces unsafe layer style values and finite-defaults invalid numeric style values', () => {
+    const polylineLayer = { addTo: vi.fn() };
+    const polygonLayer = { addTo: vi.fn() };
+    const leaflet = {
+      polyline: vi.fn(() => polylineLayer),
+      polygon: vi.fn(() => polygonLayer),
+    };
+    const host = mapHost({
+      'data-xcon-map-polylines': [
+        {
+          points: [[37.5, 126.9], [37.6, 127]],
+          color: 'url(javascript:alert(1))',
+          fillColor: 'expression(alert(1))',
+          weight: 'NaN',
+          opacity: 'Infinity',
+          fillOpacity: 'nope',
+        },
+      ],
+      'data-xcon-map-polygons': [
+        {
+          points: [[37.5, 126.9], [37.6, 126.9], [37.6, 127]],
+          stroke: 'vbscript:alert(1)',
+          fill: 'javascript:alert(1)',
+          strokeWidth: 'Infinity',
+        },
+      ],
+    });
+
+    applyLeafletMapLayers(leaflet, {}, host);
+
+    expect(leaflet.polyline).toHaveBeenCalledWith(
+      [[37.5, 126.9], [37.6, 127]],
+      expect.objectContaining({ color: '#2563eb', weight: 3, opacity: 0.85, fillColor: '#2563eb', fillOpacity: 0.18 }),
+    );
+    expect(leaflet.polygon).toHaveBeenCalledWith(
+      [[37.5, 126.9], [37.6, 126.9], [37.6, 127]],
+      expect.objectContaining({ color: '#14b8a6', weight: 3, fillColor: '#14b8a6' }),
+    );
+  });
+
+  test('hydrates the root element when it is the Leaflet map host', async () => {
+    const map = { setView: vi.fn(), invalidateSize: vi.fn() };
+    const leaflet = {
+      map: vi.fn(() => map),
+      tileLayer: vi.fn(() => ({ addTo: vi.fn() })),
+    };
+    const previousWindow = globalThis.window;
+    const previousDocument = globalThis.document;
+    vi.stubGlobal('window', { L: leaflet, setTimeout: vi.fn((callback: () => void) => { callback(); return 1; }) });
+    vi.stubGlobal('document', {
+      head: { querySelector: vi.fn(() => ({})), appendChild: vi.fn() },
+    });
+    const host = {
+      dataset: {},
+      innerHTML: 'fallback',
+      classList: { add: vi.fn() },
+      getAttribute: vi.fn((name: string) => {
+        const attrs: Record<string, string> = {
+          'data-latitude': '37.5665',
+          'data-longitude': '126.978',
+          'data-zoom': '11',
+          'data-xcon-map-markers': '{}',
+        };
+        return attrs[name] ?? null;
+      }),
+      getRootNode: vi.fn(() => globalThis.document),
+      matches: vi.fn((selector: string) => selector === '[data-xcon-leaflet-map]'),
+      querySelectorAll: vi.fn(() => []),
+    } as unknown as HTMLElement;
+
+    hydrateLeafletMaps(host);
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+    await Promise.resolve();
+    await new Promise((resolve) => globalThis.setTimeout(resolve, 0));
+
+    expect(leaflet.map).toHaveBeenCalledWith(host, expect.objectContaining({ attributionControl: true }));
+    expect(map.setView).toHaveBeenCalledWith([37.5665, 126.978], 11);
+
+    vi.stubGlobal('window', previousWindow);
+    vi.stubGlobal('document', previousDocument);
   });
 });

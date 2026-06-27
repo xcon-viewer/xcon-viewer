@@ -1741,6 +1741,7 @@ export const viewerScript = `
   let leafletLoadPromise = null;
   let leafletHeatLoadPromise = null;
   let leafletMarkerClusterLoadPromise = null;
+  const xconLeafletActiveCssPattern = /expression\s*\(|javascript:|vbscript:|url\s*\(|behavior\s*:/i;
   function xconLeafletStylesheetTarget(rootNode) {
     const isShadow = rootNode && rootNode.toString && String(rootNode).includes('ShadowRoot');
     return isShadow ? rootNode : document.head;
@@ -1824,8 +1825,13 @@ export const viewerScript = `
     return leafletMarkerClusterLoadPromise;
   }
   function parseLeafletMarkers(host) {
+    return parseLeafletArrayAttr(host, 'data-xcon-map-markers').filter((item) => item && typeof item === 'object' && !Array.isArray(item));
+  }
+  function parseLeafletArrayAttr(host, name) {
     try {
-      const parsed = JSON.parse(host.getAttribute('data-xcon-map-markers') || '[]');
+      const raw = host.getAttribute(name);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
       return Array.isArray(parsed) ? parsed : [];
     } catch {
       return [];
@@ -1840,6 +1846,19 @@ export const viewerScript = `
     } catch {
       return fallback;
     }
+  }
+  function xconLeafletFiniteNumber(value, fallback) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : fallback;
+  }
+  function xconLeafletClampedNumber(value, fallback, min, max) {
+    const number = xconLeafletFiniteNumber(value, fallback);
+    return Math.max(min, Math.min(max, number));
+  }
+  function xconLeafletSafeLayerColor(value, fallback) {
+    if (value === undefined || value === null || value === '') return fallback;
+    const text = String(value).trim();
+    return text && !xconLeafletActiveCssPattern.test(text) ? text : fallback;
   }
   function xconLeafletPoint(value) {
     if (Array.isArray(value)) {
@@ -1863,13 +1882,13 @@ export const viewerScript = `
   }
   function xconLeafletLayerStyle(layer, fallbackColor) {
     const source = layer && typeof layer === 'object' ? layer : {};
-    const color = String(source.color || source.stroke || source.strokeColor || fallbackColor);
+    const color = xconLeafletSafeLayerColor(source.color || source.stroke || source.strokeColor, fallbackColor);
     return {
       color,
-      weight: Number(source.weight || source.strokeWidth || 3),
-      opacity: Number(source.opacity || 0.85),
-      fillColor: String(source.fillColor || source.fill || color),
-      fillOpacity: Number(source.fillOpacity || 0.18),
+      weight: xconLeafletClampedNumber(source.weight || source.strokeWidth, 3, 0, 64),
+      opacity: xconLeafletClampedNumber(source.opacity, 0.85, 0, 1),
+      fillColor: xconLeafletSafeLayerColor(source.fillColor || source.fill, color),
+      fillOpacity: xconLeafletClampedNumber(source.fillOpacity, 0.18, 0, 1),
     };
   }
   function xconLeafletHeatPoint(point) {
@@ -1898,7 +1917,7 @@ export const viewerScript = `
       const label = String((marker.label ?? marker.title ?? marker.popup) || index + 1);
       const icon = xconLeafletMarkerIcon(L, marker, label);
       const pin = L.marker([markerLat, markerLng], icon ? { icon } : undefined);
-      if (label && pin && typeof pin.bindPopup === 'function') pin.bindPopup(label);
+      if (label && pin && typeof pin.bindPopup === 'function') pin.bindPopup(xconLeafletSafeHtml(label));
       if (pin) pins.push(pin);
     });
     if (!pins.length) return;
@@ -1911,17 +1930,17 @@ export const viewerScript = `
     pins.forEach((pin) => pin.addTo(map));
   }
   function applyLeafletMapLayers(L, map, host, markers) {
-    parseLeafletJsonAttr(host, 'data-xcon-map-polylines', []).forEach((layer) => {
+    parseLeafletArrayAttr(host, 'data-xcon-map-polylines').forEach((layer) => {
       const points = xconLeafletLayerPoints(layer);
       if (points.length < 2 || typeof L.polyline !== 'function') return;
       L.polyline(points, xconLeafletLayerStyle(layer, '#2563eb')).addTo(map);
     });
-    parseLeafletJsonAttr(host, 'data-xcon-map-polygons', []).forEach((layer) => {
+    parseLeafletArrayAttr(host, 'data-xcon-map-polygons').forEach((layer) => {
       const points = xconLeafletLayerPoints(layer);
       if (points.length < 3 || typeof L.polygon !== 'function') return;
       L.polygon(points, xconLeafletLayerStyle(layer, '#14b8a6')).addTo(map);
     });
-    const heatmap = parseLeafletJsonAttr(host, 'data-xcon-map-heatmap', []).map(xconLeafletHeatPoint).filter(Boolean);
+    const heatmap = parseLeafletArrayAttr(host, 'data-xcon-map-heatmap').map(xconLeafletHeatPoint).filter(Boolean);
     if (heatmap.length && typeof L.heatLayer === 'function') {
       L.heatLayer(heatmap, parseLeafletJsonAttr(host, 'data-xcon-map-heatmap-options', { radius: 24, blur: 18 })).addTo(map);
     }
@@ -1949,12 +1968,15 @@ export const viewerScript = `
     });
   }
   function hydrateLeafletMaps(root) {
-    (root || document).querySelectorAll('[data-xcon-leaflet-map]').forEach((host) => {
+    const scope = root || document;
+    const hosts = Array.from(scope.querySelectorAll('[data-xcon-leaflet-map]'));
+    if (scope.matches && scope.matches('[data-xcon-leaflet-map]')) hosts.unshift(scope);
+    hosts.forEach((host) => {
       if (host.dataset.xconLeafletBound === 'true' || host.dataset.xconLeafletBound === 'pending') return;
       host.dataset.xconLeafletBound = 'pending';
       const rootNode = host.getRootNode ? host.getRootNode() : document;
       const markers = parseLeafletMarkers(host);
-      const hasHeatmap = parseLeafletJsonAttr(host, 'data-xcon-map-heatmap', []).length > 0;
+      const hasHeatmap = parseLeafletArrayAttr(host, 'data-xcon-map-heatmap').length > 0;
       const needsCluster = host.getAttribute('data-xcon-map-clustering') === 'true' && markers.length > 0;
       Promise.all([loadLeafletRuntime(), ensureLeafletStyles(host.getRootNode ? host.getRootNode() : document)]).then(([L]) => {
         const plugins = [];
