@@ -221,9 +221,12 @@ describe('public site structure', () => {
   test('serves the advanced visualization test page with a bundled browser runtime', () => {
     const pagePath = join(rootDir, 'site', 'advanced-visualization-test.html');
     const runtimePath = join(rootDir, 'site', 'advanced-visualization-test-runtime.js');
+    const buildScript = readFileSync(join(rootDir, 'scripts', 'build-public-site.mjs'), 'utf8');
 
+    expect(resolvePublicPath('/advanced-visualization-test.html')).toBe(pagePath);
     expect(existsSync(pagePath)).toBe(true);
     expect(existsSync(runtimePath)).toBe(true);
+    expect(contentTypeForPath(runtimePath)).toBe('text/javascript; charset=utf-8');
 
     const page = readFileSync(pagePath, 'utf8');
     const runtime = readFileSync(runtimePath, 'utf8');
@@ -248,15 +251,20 @@ describe('public site structure', () => {
     expect(page).toContain('id="source"');
     expect(page).toContain('id="preview"');
     expect(page).toContain('id="sampleSelect"');
+    expect(page).toMatch(/#status\s*\{[^}]*min-width:\s*0;[^}]*overflow-wrap:\s*anywhere;/s);
     expect(runtime).not.toMatch(/^import\s/m);
     expect(runtime).not.toContain("from './network/runtime'");
     expect(runtime).not.toContain("from './dataviz/runtime'");
     expect(runtime).not.toContain("from './map/runtime'");
+    expect(buildScript).toContain("['site/advanced-visualization-test.html', 'site/advanced-visualization-test.html']");
+    expect(buildScript).toContain("['site/advanced-visualization-test-runtime.js', 'site/advanced-visualization-test-runtime.js']");
+    expect(buildScript).toContain("['site/network-diagram-test.html', 'site/network-diagram-test.html']");
   });
 
   test('serves the network diagram test page without external CSS or mjs runtime references', () => {
     const pagePath = join(rootDir, 'site', 'network-diagram-test.html');
 
+    expect(resolvePublicPath('/network-diagram-test.html')).toBe(pagePath);
     expect(existsSync(pagePath)).toBe(true);
 
     const page = readFileSync(pagePath, 'utf8');

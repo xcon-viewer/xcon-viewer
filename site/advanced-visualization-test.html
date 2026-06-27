@@ -142,10 +142,12 @@
       }
 
       #status {
+        min-width: 0;
         min-height: 20px;
         color: var(--muted);
         font-size: 12px;
         line-height: 1.4;
+        overflow-wrap: anywhere;
         text-align: right;
       }
 
@@ -242,6 +244,7 @@
       </section>
     </main>
 
+    <!-- Regenerate runtime with: npx esbuild site/advanced-visualization-test-entry.mjs --bundle --format=esm --platform=browser --outfile=site/advanced-visualization-test-runtime.js -->
     <script type="module">
       import { parseBySyntax, render, viewerCss } from '/site/advanced-visualization-test-runtime.js';
 

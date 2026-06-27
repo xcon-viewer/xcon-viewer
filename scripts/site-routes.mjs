@@ -39,6 +39,8 @@ const extraRoutes = [
   { path: '/xcon-viewer-viral-demo-no-site-header.html', file: 'site/xcon-viewer-viral-demo-no-site-header.html' },
   { path: '/chatgpt-viral-demo-v2.html', file: 'site/chatgpt-viral-demo-v2.html' },
   { path: '/claude-markdown-sketch-demo.html', file: 'site/claude-markdown-sketch-demo.html' },
+  { path: '/advanced-visualization-test.html', file: 'site/advanced-visualization-test.html' },
+  { path: '/network-diagram-test.html', file: 'site/network-diagram-test.html' },
 ];
 
 const routeByPath = new Map([...publicRoutes, ...extraRoutes].map((route) => [route.path, route]));
