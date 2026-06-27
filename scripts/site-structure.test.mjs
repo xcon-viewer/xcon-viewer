@@ -218,6 +218,54 @@ describe('public site structure', () => {
     expect(renderer).toContain('mountStreamingSketchPreview');
   });
 
+  test('serves the advanced visualization test page with a bundled browser runtime', () => {
+    const pagePath = join(rootDir, 'site', 'advanced-visualization-test.html');
+    const runtimePath = join(rootDir, 'site', 'advanced-visualization-test-runtime.js');
+
+    expect(existsSync(pagePath)).toBe(true);
+    expect(existsSync(runtimePath)).toBe(true);
+
+    const page = readFileSync(pagePath, 'utf8');
+    const runtime = readFileSync(runtimePath, 'utf8');
+    const samplesBlock = page.match(/const samples = \[([\s\S]*?)\];/)?.[1] ?? '';
+    const sampleIds = Array.from(samplesBlock.matchAll(/id:\s*'([^']+)'/g), (match) => match[1]);
+
+    expect(page).not.toContain('href="/styles.css"');
+    expect(page).toContain("from '/site/advanced-visualization-test-runtime.js'");
+    expect(page).not.toContain('advanced-visualization-test-runtime.mjs');
+    expect(page).not.toContain('@xcon-viewer/viewer');
+    expect(page).toContain('const samples = [');
+    expect(sampleIds).toEqual([
+      'network-runtime',
+      'dataviz-treemap',
+      'dataviz-sankey',
+      'dataviz-sunburst',
+      'dataviz-chord',
+      'dataviz-forcegraph',
+      'dataviz-plot',
+      'map-layers',
+    ]);
+    expect(page).toContain('id="source"');
+    expect(page).toContain('id="preview"');
+    expect(page).toContain('id="sampleSelect"');
+    expect(runtime).not.toMatch(/^import\s/m);
+    expect(runtime).not.toContain("from './network/runtime'");
+    expect(runtime).not.toContain("from './dataviz/runtime'");
+    expect(runtime).not.toContain("from './map/runtime'");
+  });
+
+  test('serves the network diagram test page without external CSS or mjs runtime references', () => {
+    const pagePath = join(rootDir, 'site', 'network-diagram-test.html');
+
+    expect(existsSync(pagePath)).toBe(true);
+
+    const page = readFileSync(pagePath, 'utf8');
+
+    expect(page).not.toContain('href="/styles.css"');
+    expect(page).not.toContain('.mjs');
+    expect(page).toContain('/site/advanced-visualization-test.html');
+  });
+
   test('serves the template document studio with Monaco, examples, and separated output tabs', () => {
     const labPath = resolvePublicPath('/template-lab');
     const lab = readFileSync(labPath, 'utf8');
