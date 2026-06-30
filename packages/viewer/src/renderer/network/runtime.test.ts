@@ -300,6 +300,34 @@ describe('network runtime hydration', () => {
     expect(viewport!.getAttribute('transform')).not.toBe('translate(0 0) scale(1)');
   });
 
+  test('wheel zoom anchors to the mouse position inside an offset svg', () => {
+    const host = hostForGraph(baseGraph(), { enableZoom: true });
+    hydrateNetworkDiagrams(document);
+
+    const viewport = host.querySelector<SVGGElement>('[data-xcon-network-viewport]');
+    const svg = host.querySelector<SVGSVGElement>('svg');
+    expect(viewport).not.toBeNull();
+    expect(svg).not.toBeNull();
+    svg!.getBoundingClientRect = () => ({
+      left: 100,
+      top: 50,
+      right: 420,
+      bottom: 230,
+      width: 320,
+      height: 180,
+      x: 100,
+      y: 50,
+      toJSON: () => ({}),
+    });
+
+    svg!.dispatchEvent(new WheelEvent('wheel', { bubbles: true, deltaY: -100, clientX: 300, clientY: 200 }));
+
+    const transform = parseViewportTransform(viewport!.getAttribute('transform') ?? '');
+    expect(transform.k).toBe(1.12);
+    expect(transform.x).toBe(-24);
+    expect(transform.y).toBe(-18);
+  });
+
   test('applies hydrated visual semantics after node selection', () => {
     const host = hostForGraph(baseGraph());
     hydrateNetworkDiagrams(document);

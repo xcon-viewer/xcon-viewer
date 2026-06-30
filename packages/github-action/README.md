@@ -3,7 +3,7 @@
 GitHub Action for validating and rendering XCON Markdown code blocks.
 
 ```yaml
-- uses: xcon-viewer/xcon-viewer/packages/github-action@v0.2.0
+- uses: xcon-viewer/xcon-viewer/packages/github-action@v0.2.1
   with:
     files: README.md,docs
     out-dir: xcon-rendered

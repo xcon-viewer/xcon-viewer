@@ -6,7 +6,7 @@ This guide is the canonical process for publishing the XCON Viewer monorepo.
 
 ## 0) Pre-release version plan
 
-1. Determine target version (example: `0.2.0`).
+1. Determine target version (example: `0.2.1`).
 2. Confirm all workspace packages use the same version number.
 3. Confirm `package-lock.json` root and workspace metadata are consistent with that version.
 4. Decide what changed vs previous release and prepare `CHANGELOG.md` entry.
@@ -25,9 +25,9 @@ node -e "const fs = require('fs'); const root = JSON.parse(fs.readFileSync('pack
 
 Validation checklist:
 
-- Root package version is `0.2.0`.
-- All workspace package versions under `packages/*/package.json` are `0.2.0`.
-- Internal package dependencies (for inter-package imports) reference `0.2.0`.
+- Root package version is `0.2.1`.
+- All workspace package versions under `packages/*/package.json` are `0.2.1`.
+- Internal package dependencies (for inter-package imports) reference `0.2.1`.
 - If any patch versions were skipped before this release, ensure the changelog entry describes the skip and that the first published version is the same across all packages.
 
 ## 2) Build + test + site build
@@ -108,8 +108,8 @@ git add \
 Commit and tag:
 
 ```bash
-git commit -m "chore: release v0.2.0"
-git tag v0.2.0
+git commit -m "chore: release v0.2.1"
+git tag v0.2.1
 ```
 
 ## 4) npm publish order
@@ -153,9 +153,9 @@ npm pack --workspace @xcon-viewer/viewer --dry-run
 Post-publish verification:
 
 ```bash
-npm view @xcon-viewer/core@0.2.0 version
-npm view @xcon-viewer/viewer@0.2.0 version
-npm view @xcon-viewer/github-action@0.2.0 version
+npm view @xcon-viewer/core@0.2.1 version
+npm view @xcon-viewer/viewer@0.2.1 version
+npm view @xcon-viewer/github-action@0.2.1 version
 ```
 
 ## 5) GitHub release publishing
@@ -164,10 +164,10 @@ After successful npm publish:
 
 ```bash
 git push origin main --follow-tags
-gh release create v0.2.0 --title "xcon-viewer v0.2.0" --notes "Release note summary is in CHANGELOG.md (0.2.0)."
+gh release create v0.2.1 --title "xcon-viewer v0.2.1" --notes "Release note summary is in CHANGELOG.md (0.2.1)."
 ```
 
-If `gh` is not configured, use GitHub UI to create a Release attached to tag `v0.2.0`.
+If `gh` is not configured, use GitHub UI to create a Release attached to tag `v0.2.1`.
 
 ## 6) Public static site deployment
 

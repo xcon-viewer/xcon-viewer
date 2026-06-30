@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.1
+
+### Added
+- Added dedicated `networkDiagram` feature documentation covering data compatibility, interaction behavior, security boundaries, runtime dependencies, and test pages.
+
+### Fixed
+- Fixed `networkDiagram` wheel zoom anchoring so zoom now uses the mouse position inside the SVG viewport instead of the browser viewport coordinate.
+- Refreshed the standalone network diagram and advanced visualization browser runtime bundles after the zoom fix.
+
 ## 0.2.0
 
 ### Added

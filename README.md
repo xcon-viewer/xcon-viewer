@@ -125,7 +125,7 @@ render(xconDocument, document.getElementById('root'));
 Embed it in HTML:
 
 ```html
-<script type="module" src="https://unpkg.com/@xcon-viewer/viewer@0.2.0/dist/web-component.js"></script>
+<script type="module" src="https://unpkg.com/@xcon-viewer/viewer@0.2.1/dist/web-component.js"></script>
 
 <xcon-viewer src="./home.xcon.json"></xcon-viewer>
 ```
@@ -238,7 +238,7 @@ export default {
 **GitHub Actions:**
 
 ```yaml
-- uses: xcon-viewer/xcon-viewer/packages/github-action@v0.2.0
+- uses: xcon-viewer/xcon-viewer/packages/github-action@v0.2.1
   with:
     files: README.md,docs
     out-dir: xcon-rendered

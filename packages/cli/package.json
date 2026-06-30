@@ -1,6 +1,6 @@
 {
   "name": "@xcon-viewer/cli",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "description": "CLI for validating, converting, rendering, and formatting XCON UI documents.",
   "keywords": [
@@ -47,8 +47,8 @@
     "prepublishOnly": "npm run test && npm run build"
   },
   "dependencies": {
-    "@xcon-viewer/core": "0.2.0",
-    "@xcon-viewer/viewer": "0.2.0"
+    "@xcon-viewer/core": "0.2.1",
+    "@xcon-viewer/viewer": "0.2.1"
   },
   "devDependencies": {
     "tsup": "^8.0.0",

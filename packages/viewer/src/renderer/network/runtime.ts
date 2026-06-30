@@ -361,11 +361,10 @@ function bindViewportInteractions(svg: SVGSVGElement, options: NetworkRuntimeOpt
       const previous = context.transform;
       const nextScale = clamp(previous.k * factor, MIN_VIEWPORT_SCALE, MAX_VIEWPORT_SCALE);
       if (nextScale === previous.k) return;
-      const anchorX = finiteCoordinate(wheel.clientX) ?? 0;
-      const anchorY = finiteCoordinate(wheel.clientY) ?? 0;
+      const anchor = svgLocalPoint(svg, wheel);
       context.transform = {
-        x: anchorX - (anchorX - previous.x) * (nextScale / previous.k),
-        y: anchorY - (anchorY - previous.y) * (nextScale / previous.k),
+        x: anchor.x - (anchor.x - previous.x) * (nextScale / previous.k),
+        y: anchor.y - (anchor.y - previous.y) * (nextScale / previous.k),
         k: nextScale,
       };
       applyViewportTransform(svg, context.transform);
@@ -411,6 +410,14 @@ function bindHover(group: SVGElement, host: HTMLElement, node: NetworkNode): voi
     tooltip.textContent = '';
     removeClassToken(tooltip, 'show');
   });
+}
+
+function svgLocalPoint(svg: SVGSVGElement, mouse: MouseEvent): { x: number; y: number } {
+  const rect = svg.getBoundingClientRect();
+  return {
+    x: finiteCoordinate(mouse.clientX - rect.left) ?? 0,
+    y: finiteCoordinate(mouse.clientY - rect.top) ?? 0,
+  };
 }
 
 function tooltipAnchor(group: SVGElement, host: HTMLElement, mouse: MouseEvent): { x: number; y: number } {

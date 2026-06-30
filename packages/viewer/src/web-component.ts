@@ -3,7 +3,7 @@
 // custom element in the browser.
 //
 // Usage (HTML):
-//   <script type="module" src="https://unpkg.com/@xcon-viewer/viewer@0.2.0/dist/web-component.js"></script>
+//   <script type="module" src="https://unpkg.com/@xcon-viewer/viewer@0.2.1/dist/web-component.js"></script>
 //   <xcon-viewer src="./home.xcon.json"></xcon-viewer>
 //
 // Usage (JS/TS):

@@ -237,13 +237,13 @@ npm run site:build
 node -e "console.log(require('./package.json').version)"
 ```
 
-3) Verify all workspace versions are aligned (expected: `0.2.0`)
+3) Verify all workspace versions are aligned (expected: `0.2.1`)
 
 ```bash
 node -e "const fs=require('fs');const path=require('path');const root=JSON.parse(fs.readFileSync('package.json','utf8')).version;const dirs=fs.readdirSync('packages',{withFileTypes:true}).filter(d=>d.isDirectory());const versions=dirs.map(d=>({name:d.name,version:JSON.parse(fs.readFileSync(path.join('packages',d.name,'package.json'),'utf8')).version}));console.log('root',root);console.log('packages',versions);if(!versions.every(v=>v.version===root)){process.exitCode=1;}"
 ```
 
-For strict review, confirm each `packages/*/package.json` and internal dependency uses `0.2.0`.
+For strict review, confirm each `packages/*/package.json` and internal dependency uses `0.2.1`.
 
 4) npm publish flow
 
@@ -265,8 +265,8 @@ npm publish --workspace @xcon-viewer/github-action --access public
 
 ```bash
 git add package.json package-lock.json packages/*/package.json README.md docs/deployment.md docs/integrations.md site/api.html CHANGELOG.md
-git commit -m "chore: bump to 0.2.0 and refresh release docs"
-git tag v0.2.0
+git commit -m "chore: bump to 0.2.1 and refresh release docs"
+git tag v0.2.1
 git push origin main --follow-tags
 ```
 
@@ -275,9 +275,9 @@ If this release jumps patch versions (for example `0.1.2 -> 0.2.0`), keep the ju
 6) Post-release validation (npm + deployment)
 
 ```bash
-npm view @xcon-viewer/core@0.2.0 version
-npm view @xcon-viewer/viewer@0.2.0 version
-npm view @xcon-viewer/github-action@0.2.0 version
+npm view @xcon-viewer/core@0.2.1 version
+npm view @xcon-viewer/viewer@0.2.1 version
+npm view @xcon-viewer/github-action@0.2.1 version
 curl -I https://xconviewer.dev/
 curl -I https://xconviewer.dev/play
 curl -I https://xconviewer.dev/play/markdown
@@ -289,24 +289,24 @@ curl -I https://xconviewer.dev/xcon.schema.json
 After npm publish succeeds, create a GitHub release/tag for humans:
 
 ```bash
-git tag v0.2.0
-git push origin v0.2.0
+git tag v0.2.1
+git push origin v0.2.1
 
-gh release create v0.2.0 \
+gh release create v0.2.1 \
   --repo xcon-viewer/xcon-viewer \
-  --title "xcon-viewer v0.2.0" \
-  --notes "Release note summary is in CHANGELOG.md (0.2.0)."
+  --title "xcon-viewer v0.2.1" \
+  --notes "Release note summary is in CHANGELOG.md (0.2.1)."
 ```
 
-For Marketplace users, keep the action example in `packages/github-action/README.md` aligned to the release tag (`v0.2.0`).
+For Marketplace users, keep the action example in `packages/github-action/README.md` aligned to the release tag (`v0.2.1`).
 
 ## GitHub Action Release Notes
 
 `@xcon-viewer/github-action` includes `action.yml` in its npm package. For GitHub Marketplace-style usage, also tag the repository release, for example:
 
 ```bash
-git tag v0.2.0
-git push origin v0.2.0
+git tag v0.2.1
+git push origin v0.2.1
 ```
 
 If the action is referenced by path inside this repository, keep the README examples aligned with the tag or branch name.

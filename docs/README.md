@@ -7,6 +7,7 @@ XCON/SKETCH is a compact authoring syntax for Markdown and LLM-generated example
 ## Documents
 
 - [XCON component specs and examples](./xcon-component-specs.en.md)
+- [networkDiagram feature list](./network-diagram.md)
 - [Framework, Markdown, Vite, and GitHub integrations](./integrations.md)
 - [Public site structure](./public-site.md)
 - [Deployment guide](./deployment.md)

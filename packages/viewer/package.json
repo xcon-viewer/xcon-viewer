@@ -1,6 +1,6 @@
 {
   "name": "@xcon-viewer/viewer",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "description": "XCON viewer-only renderer. Renders XCON documents safely — scripts are blocked by design. Embed UI in Markdown, share from anyone, open anywhere.",
   "keywords": [
@@ -55,7 +55,7 @@
   },
   "dependencies": {
     "@observablehq/plot": "^0.6.17",
-    "@xcon-viewer/core": "0.2.0",
+    "@xcon-viewer/core": "0.2.1",
     "d3": "^7.9.0",
     "d3-chord": "^3.0.1",
     "d3-force": "^3.0.0",
